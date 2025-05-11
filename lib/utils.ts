@@ -164,14 +164,14 @@ export function getAllColors({
 // ==========================================
 export function getAvailableColors({
   size,
-  productsForAvailableSizes,
+  availableProducts,
 }: {
   size: string | string[] | undefined;
-  productsForAvailableSizes: Product[];
+  availableProducts: Product[];
 }) {
   const availableColorsMap = new Map();
   const selectedSize = Array.isArray(size) ? size : size ? size : [];
-  productsForAvailableSizes
+  availableProducts
     .flatMap((p) =>
       selectedSize.length > 0
         ? p.sizes.filter((s) => selectedSize.includes(s.value))

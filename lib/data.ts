@@ -24,8 +24,10 @@ export async function fetchAllProducts({
   const query = qs.stringify({
     filters: {
       sizes: {
-        value: { $eq: size },
-        colors: { name: { $eq: color } },
+        value: Array.isArray(size) ? { $in: size } : { $eq: size },
+        colors: {
+          name: Array.isArray(color) ? { $in: color } : { $eq: color },
+        },
       },
       ...(price_min !== undefined || price_max !== undefined
         ? {
@@ -65,7 +67,7 @@ export async function fetchAllProducts({
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 3600, tags: ["products"] },
+      next: { revalidate: 60, tags: ["products"] },
     }
   );
 
@@ -141,7 +143,11 @@ export async function fetchRelatedProducts(
 // [2] fetch by category
 export async function fetchProductsByCategory(
   slug: string,
-  sort: string | string[] | undefined = "createdAt:desc"
+  sort: string | string[] | undefined = "createdAt:desc",
+  size?: string | string[] | undefined,
+  color?: string | string[] | undefined,
+  price_min?: string | string[] | undefined,
+  price_max?: string | string[] | undefined
 ): Promise<{ products: Product[] }> {
   const query = qs.stringify({
     filters: {
@@ -150,6 +156,22 @@ export async function fetchProductsByCategory(
           $eq: slug,
         },
       },
+      ...((size || color) && {
+        sizes: {
+          value: Array.isArray(size) ? { $in: size } : { $eq: size },
+          colors: {
+            name: Array.isArray(color) ? { $in: color } : { $eq: color },
+          },
+        },
+      }),
+      ...(price_min !== undefined || price_max !== undefined
+        ? {
+            price: {
+              ...(price_min !== undefined && { $gte: price_min }),
+              ...(price_max !== undefined && { $lte: price_max }),
+            },
+          }
+        : {}),
     },
     sort: [sort],
     populate: {
@@ -169,6 +191,14 @@ export async function fetchProductsByCategory(
         populate: {
           colors: {
             fields: ["name"],
+            populate: {
+              images: {
+                fields: ["url", "alternativeText"],
+              },
+              pattern: {
+                fields: ["url", "alternativeText"],
+              },
+            },
           },
         },
       },
@@ -180,7 +210,7 @@ export async function fetchProductsByCategory(
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 3600 },
+      next: { revalidate: 60, tags: ["products", `category:${slug}`] },
     }
   );
 

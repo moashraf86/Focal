@@ -2,9 +2,18 @@ import { fetchCategories, fetchProductsByCategory } from "@/lib/data";
 import ProductList from "../../products/ProductList";
 import Link from "next/link";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import {
+  cn,
+  getAllColors,
+  getAllSizes,
+  getAvailableColors,
+  getAvailableSizes,
+} from "@/lib/utils";
 import StoreFeatures from "@/components/shared/StoreFeatures";
 import ProductSorting from "@/components/product/ProductSorting";
+import ProductsFilter from "@/components/product/ProductsFilter";
+
+const ALL_SIZES = ["32mm", "36mm", "39mm"];
 
 export default async function CategoryPage({
   params,
@@ -14,8 +23,36 @@ export default async function CategoryPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { slug } = await params;
-  const { sort_by } = await searchParams;
-  const { categories } = await fetchCategories();
+  const { sort_by, size, color, price_min, price_max } = await searchParams;
+  const [{ categories }, { products }, { products: allProducts }] =
+    await Promise.all([
+      fetchCategories(),
+      fetchProductsByCategory(slug, sort_by, size, color, price_min, price_max),
+      fetchProductsByCategory(slug, sort_by),
+    ]);
+
+  // Flattened arrays of sizes and colors from all products
+  const allSizesData = allProducts.flatMap((product) => product.sizes);
+  const allColorsData = allSizesData.flatMap((size) => size.colors);
+
+  const allSizes = getAllSizes({
+    allSizesData,
+    ALL_SIZES,
+  });
+
+  const availableSizes = getAvailableSizes({
+    color,
+    productsForAvailableSizes: products,
+  });
+
+  const allColors = getAllColors({
+    allColorsData,
+  });
+
+  const availableColors = getAvailableColors({
+    size,
+    availableProducts: products,
+  });
 
   // get current category
   const category = categories.find((category) => category.slug === slug);
@@ -23,9 +60,6 @@ export default async function CategoryPage({
     url: "/categories/all.webp",
     alternativeText: "Category Banner",
   };
-
-  // Fetch products by category
-  const { products } = await fetchProductsByCategory(slug, sort_by);
 
   return (
     <main>
@@ -88,16 +122,32 @@ export default async function CategoryPage({
           </div>
         </div>
       </div>
-      {/* Products */}
       <section className="container max-w-screen-xl py-10">
-        {/* Products numbers / Sorting */}
-        <div className="flex items-center justify-between mb-5">
-          <span className="text-sm">{products.length} Products</span>
-          <ProductSorting />
+        <div className="grid grid-cols-2 mb-5 gap-4">
+          <div className="flex items-center gap-10 col-span-1">
+            <ProductsFilter
+              sizes={allSizes}
+              colors={allColors}
+              availableSizes={availableSizes}
+              availableColors={availableColors}
+            />
+            <span className="hidden md:inline-block text-sm ">
+              {products.length} Products
+            </span>
+          </div>
+          <div className="col-span-1 flex justify-end md:order-1">
+            <ProductSorting />
+          </div>
+          <span className="md:hidden text-sm text-center col-span-2">
+            {products.length} Products
+          </span>
         </div>
-        <ProductList products={products} />
+        <ProductList
+          products={products}
+          selectedSize={size}
+          selectedColor={color}
+        />
       </section>
-      {/* Store Features */}
       <StoreFeatures />
     </main>
   );

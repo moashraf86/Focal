@@ -53,7 +53,7 @@ export default async function Categories({
 
   const availableColors = getAvailableColors({
     size,
-    productsForAvailableSizes,
+    availableProducts: products,
   });
 
   return (
