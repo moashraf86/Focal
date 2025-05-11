@@ -195,7 +195,7 @@ export default function ProductsFilter({
                   Watch Size
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {sizes.map((size) => {
                       const isAvailable = availableSizes?.some(
                         (sizeObj) => sizeObj.value === size.value
@@ -205,7 +205,7 @@ export default function ProductsFilter({
                       return (
                         <div
                           key={size.id}
-                          className={cn("flex items-center gap-2", {
+                          className={cn("flex items-center gap-2 p-1", {
                             "opacity-50 [&>label]:cursor-not-allowed":
                               !isAvailable,
                           })}
@@ -214,6 +214,9 @@ export default function ProductsFilter({
                             className="disabled:cursor-not-allowed disabled:bg-gray-400"
                             id={size.value}
                             onCheckedChange={() => handleSizeChange(size.value)}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && handleSizeChange(size.value)
+                            }
                             checked={isSelected}
                             disabled={!isAvailable}
                           />
