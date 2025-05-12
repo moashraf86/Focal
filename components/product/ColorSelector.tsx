@@ -23,7 +23,6 @@ export default function ColorSelector({
   const [selectedColorsState, setSelectedColorsState] = useState<string[]>(
     selectedColors || []
   );
-  console.log(colors, selectedColorsState, availableColors);
 
   const updateQueryParam = (key: string, values: string[]) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -55,7 +54,7 @@ export default function ColorSelector({
   }, [searchParams]);
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,40px)] gap-3 p-1">
+    <div className="grid grid-cols-[repeat(auto-fit,36px)] gap-3 p-1">
       {colors.map((color) => {
         const isAvailable =
           mode === "single"
