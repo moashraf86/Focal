@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Color, Product, Size } from "./definitions";
+import { Color, Filter, Product, Size } from "./definitions";
 import { ReadonlyURLSearchParams } from "next/navigation";
 import { MAX_PRICE, MIN_PRICE } from "./constants";
 
@@ -29,7 +29,7 @@ export function buildActiveFilters({
   priceMin: number;
   priceMax: number;
   collectionValues: string[];
-}) {
+}): Filter[] {
   const sizeFilter = sizeValues.map((size) => {
     const sizeObj = sizes.find((s) => s.value === size);
     const params = new URLSearchParams(searchParams.toString());
@@ -40,7 +40,6 @@ export function buildActiveFilters({
     return {
       name: "size",
       value: sizeObj?.value,
-      removeUrl: `?${params.toString()}`,
     };
   });
 
@@ -54,7 +53,6 @@ export function buildActiveFilters({
     return {
       name: "color",
       value: colorObj?.name,
-      removeUrl: `?${params.toString()}`,
     };
   });
 
@@ -64,7 +62,7 @@ export function buildActiveFilters({
     (priceMax === MAX_PRICE && priceMin !== MIN_PRICE) ||
     (priceMin !== MIN_PRICE && priceMax !== MAX_PRICE)
       ? `$${priceMin.toString()}` + " - " + `$${priceMax.toString()}`
-      : null,
+      : undefined,
   ];
 
   const priceFilter = priceRange.map((price) => {
@@ -74,7 +72,6 @@ export function buildActiveFilters({
     return {
       name: "price",
       value: price,
-      removeUrl: `?${params.toString()}`,
     };
   });
   const collectionFilter = collectionValues.map((collection) => {
@@ -87,7 +84,6 @@ export function buildActiveFilters({
     return {
       name: "collection",
       value: collectionObj,
-      removeUrl: `?${params.toString()}`,
     };
   });
 
@@ -97,7 +93,7 @@ export function buildActiveFilters({
     ...colorFilter,
     ...priceFilter,
     ...collectionFilter,
-  ].filter((filter) => filter.value !== null);
+  ].filter((filter) => filter.value !== undefined);
   return filters;
 }
 

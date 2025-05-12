@@ -48,6 +48,12 @@ export interface Collection {
   slug: string;
   count?: number;
 }
+
+export interface Filter {
+  name: string;
+  value: string | undefined;
+}
+
 interface StrapiRichText {
   children: Array<{
     text: string;

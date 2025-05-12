@@ -16,7 +16,7 @@ import {
 } from "../ui/accordion";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Collection, Color, Size } from "@/lib/definitions";
+import { Collection, Color, Filter, Size } from "@/lib/definitions";
 import ColorSelector from "./ColorSelector";
 import { useWindowScroll } from "@uidotdev/usehooks";
 import { buildActiveFilters } from "@/lib/utils";
@@ -33,12 +33,6 @@ type ProductsFilterProps = {
   availableSizes: Size[];
   availableColors: Color[];
   availableCollections: Collection[];
-};
-
-type Filter = {
-  name: string;
-  value: string | null | undefined;
-  removeUrl: string;
 };
 
 export default function ProductsFilter({
@@ -92,9 +86,18 @@ export default function ProductsFilter({
   useEffect(() => {
     setActiveFilters(filters);
     setFiltersCount(filters.length);
-    if (filters.length > 0) {
-      scrollToProducts();
-    }
+    // skip scrolling on first render
+    if (typeof window === "undefined") return;
+
+    // delay scroll just a bit to wait for re-render
+    const timeout = setTimeout(() => {
+      if (filters.length > 0) {
+        console.log(filters.length);
+
+        scrollToProducts();
+      }
+    }, 100);
+    return () => clearTimeout(timeout);
   }, [searchParams]);
 
   return (
@@ -127,7 +130,7 @@ export default function ProductsFilter({
               </p>
             </SheetTitle>
           </SheetHeader>
-          <div className="px-6">
+          <div className="px-6 md:px-10 overflow-y-auto">
             {activeFilters.length > 0 && (
               <ActiveFilters activeFilters={activeFilters} />
             )}
