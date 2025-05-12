@@ -3,6 +3,7 @@ export interface Product {
   documentId: string;
   name: string;
   slug: string;
+  type: string;
   description: Array<StrapiRichText>;
   images: StrapiImage[];
   bannerImage: StrapiImage[];
@@ -31,7 +32,7 @@ export interface Color {
   id: number;
   name: string;
   images?: StrapiImage[];
-  pattern: StrapiImage;
+  pattern?: StrapiImage;
 }
 export interface Strap {
   documentId: string;
@@ -39,6 +40,13 @@ export interface Strap {
   name: string;
   slug: string;
   images: StrapiImage[];
+}
+export interface Collection {
+  id: number | string;
+  documentId: string;
+  name: string;
+  slug: string;
+  count?: number;
 }
 interface StrapiRichText {
   children: Array<{

@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Color, Product, Size } from "./definitions";
 import { ReadonlyURLSearchParams } from "next/navigation";
+import { MAX_PRICE, MIN_PRICE } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -16,14 +17,18 @@ export function buildActiveFilters({
   searchParams,
   sizeValues,
   colorValues,
-  priceRange,
+  priceMin,
+  priceMax,
+  collectionValues,
 }: {
   sizes: Size[];
   colors: Color[];
   searchParams: ReadonlyURLSearchParams;
   sizeValues: string[];
   colorValues: string[];
-  priceRange: (string | null)[];
+  priceMin: number;
+  priceMax: number;
+  collectionValues: string[];
 }) {
   const sizeFilter = sizeValues.map((size) => {
     const sizeObj = sizes.find((s) => s.value === size);
@@ -53,6 +58,15 @@ export function buildActiveFilters({
     };
   });
 
+  // Adjust the range if it exceeds the limits
+  const priceRange = [
+    (priceMin === MIN_PRICE && priceMax !== MAX_PRICE) ||
+    (priceMax === MAX_PRICE && priceMin !== MIN_PRICE) ||
+    (priceMin !== MIN_PRICE && priceMax !== MAX_PRICE)
+      ? `$${priceMin.toString()}` + " - " + `$${priceMax.toString()}`
+      : null,
+  ];
+
   const priceFilter = priceRange.map((price) => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("price_min");
@@ -63,43 +77,48 @@ export function buildActiveFilters({
       removeUrl: `?${params.toString()}`,
     };
   });
+  const collectionFilter = collectionValues.map((collection) => {
+    const collectionObj = collectionValues.find((c) => c === collection);
+    const params = new URLSearchParams(searchParams.toString());
+    const hasCollection = params.has("collection", collection);
+    if (hasCollection) {
+      params.delete("collection", collection);
+    }
+    return {
+      name: "collection",
+      value: collectionObj,
+      removeUrl: `?${params.toString()}`,
+    };
+  });
+
   // remove null values from the array
-  const filters = [...sizeFilter, ...colorFilter, ...priceFilter].filter(
-    (filter) => filter.value !== null
-  );
+  const filters = [
+    ...sizeFilter,
+    ...colorFilter,
+    ...priceFilter,
+    ...collectionFilter,
+  ].filter((filter) => filter.value !== null);
   return filters;
 }
 
 // ================================
 // Get all sizes in products page
 // ================================
-export function getAllSizes({
-  allSizesData,
-  ALL_SIZES,
-}: {
-  allSizesData: Size[];
-  ALL_SIZES: string[];
-}) {
-  const allSizes = ALL_SIZES.map((size: string) => {
-    const matchingSizes = allSizesData.filter((s) => s.value === size);
-
-    // Deduplicate colors by name
-    const uniqueColorsMap = new Map();
-    matchingSizes.forEach((s) => {
-      s.colors?.forEach((color) => {
-        if (!uniqueColorsMap.has(color.name)) {
-          uniqueColorsMap.set(color.name, color);
-        }
+export function getAllSizes({ allSizesData }: { allSizesData: Size[] }) {
+  // Deduplicate sizes by value
+  const uniqueSizesMap = new Map();
+  allSizesData.forEach((size) => {
+    if (!uniqueSizesMap.has(size.value)) {
+      uniqueSizesMap.set(size.value, {
+        id: crypto.randomUUID().slice(0, 3),
+        value: size.value,
+        count: allSizesData.filter((s) => s.value === size.value).length,
+        colors: size.colors,
       });
-    });
-
-    return {
-      id: crypto.randomUUID().slice(0, 3),
-      value: size,
-      count: matchingSizes.length,
-      colors: Array.from(uniqueColorsMap.values()),
-    };
+    }
   });
+  const allSizes = Array.from(uniqueSizesMap.values());
+
   return allSizes;
 }
 
@@ -190,4 +209,55 @@ export function getAvailableColors({
     });
   const availableColors = Array.from(availableColorsMap.values());
   return availableColors;
+}
+
+// =========================================
+// Get All Collections
+// ==========================================
+export function getAllCollections({
+  allCollectionsData,
+}: {
+  allCollectionsData: { slug: string; name: string }[];
+}) {
+  const allCollectionsMap = new Map();
+  allCollectionsData.forEach((collection) => {
+    if (!allCollectionsMap.has(collection.slug)) {
+      allCollectionsMap.set(collection.slug, {
+        id: crypto.randomUUID().slice(0, 3),
+        slug: collection.slug,
+        name: collection.name,
+        count: allCollectionsData.filter((c) => c.slug === collection.slug)
+          .length,
+      });
+    }
+  });
+  const allCollections = Array.from(allCollectionsMap.values());
+  return allCollections;
+}
+
+// ===============================================
+// Get available collections for the selected size
+// ===============================================
+export function getAvailableCollections({
+  availableProducts,
+}: {
+  availableProducts: Product[];
+}) {
+  const availableCollectionsMap = new Map();
+  availableProducts
+    .flatMap((product) => product.collections)
+    .forEach((collection) => {
+      if (!availableCollectionsMap.has(collection.slug)) {
+        availableCollectionsMap.set(collection.slug, {
+          id: crypto.randomUUID().slice(0, 3),
+          slug: collection.slug,
+          name: collection.name,
+          count: availableProducts.filter((p) =>
+            p.collections.some((c) => c.slug === collection.slug)
+          ).length,
+        });
+      }
+    });
+  const availableCollections = Array.from(availableCollectionsMap.values());
+  return availableCollections;
 }

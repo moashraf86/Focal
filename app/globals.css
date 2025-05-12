@@ -86,7 +86,7 @@
   h4,
   h5,
   h6 {
-    @apply text-primary font-jost;
+    @apply text-primary font-jost font-light tracking-tighter;
   }
 
   p,

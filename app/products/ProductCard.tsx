@@ -12,14 +12,13 @@ export default function ProductCard({
   selectedSize?: string | string[] | undefined;
 }) {
   // check if the params are arrays or undefined
-  const size = Array.isArray(selectedSize)
-    ? product.sizes?.[0]?.value
-    : selectedSize;
+  const size = Array.isArray(selectedSize) ? selectedSize[0] : selectedSize;
 
-  const color =
-    Array.isArray(selectedColor) || !selectedColor
-      ? product.sizes?.[0]?.colors?.[0]?.name
-      : selectedColor;
+  const color = !selectedColor
+    ? product.sizes?.[0]?.colors?.[0]?.name
+    : Array.isArray(selectedColor)
+    ? selectedColor[0]
+    : selectedColor;
 
   // Get chosen size and color
   let chosenSize = product.sizes?.find((s) => s.value === size);
@@ -38,9 +37,12 @@ export default function ProductCard({
   const chosenColor = chosenSize?.colors?.find((c) => c.name === color);
 
   // Get the first image of the chosen color or fallback to the first image of the product
-  const image = chosenColor?.images?.[0] || product.images[0];
+  const image = chosenColor?.images?.[0] || product.images?.[0];
   const imageUrl = image?.url;
   const imageAlt = image?.alternativeText;
+
+  const hoverImage = product.images?.[1];
+  const hoverImageUrl = hoverImage?.url;
 
   return (
     <Link
@@ -57,8 +59,8 @@ export default function ProductCard({
         />
         <Image
           className="opacity-0 group-hover:opacity-100 object-cover transition-opacity duration-300"
-          src={product.images[1].url}
-          alt={product.images[1].alternativeText || "product image Hover"}
+          src={hoverImageUrl}
+          alt={hoverImageUrl || "product image Hover"}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
@@ -69,7 +71,7 @@ export default function ProductCard({
         )} */}
       </div>
       <div className="px-2 space-y-2">
-        <h2 className="text-sm text-center font-barlow">{product.name}</h2>
+        <h2 className="text-center font-barlow">{product.name}</h2>
         <p className="text-sm text-center">${product.price.toFixed(2)} USD</p>
       </div>
     </Link>

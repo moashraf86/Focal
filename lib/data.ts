@@ -1,5 +1,9 @@
 import qs from "qs";
 
+type filterType = {
+  [key: string]: string | string[] | undefined;
+};
+
 import {
   Category,
   Product,
@@ -7,19 +11,11 @@ import {
   StrapiResponse,
 } from "./definitions";
 // [1] fetch all products
-export async function fetchAllProducts({
-  sort = "createdAt:desc",
-  size = undefined,
-  color = undefined,
-  price_min = undefined,
-  price_max = undefined,
-}: {
-  sort?: string | string[] | undefined;
-  size?: string | string[] | undefined;
-  color?: string | string[] | undefined;
-  price_min?: string | string[] | undefined;
-  price_max?: string | string[] | undefined;
-}): Promise<{ products: Product[] }> {
+export async function fetchAllProducts(
+  { sort, size, color, price_min, price_max, collection }: filterType = {
+    sort: "createdAt:desc",
+  }
+): Promise<{ products: Product[] }> {
   // build deep query string to fetch product by slug with all related data
   const query = qs.stringify({
     filters: {
@@ -37,9 +33,19 @@ export async function fetchAllProducts({
             },
           }
         : {}),
+      ...(collection && {
+        collections: {
+          slug: {
+            $eq: collection,
+          },
+        },
+      }),
     },
     sort: [sort],
     populate: {
+      collections: {
+        fields: ["name", "slug"],
+      },
       images: {
         fields: ["url", "alternativeText"],
       },
@@ -87,7 +93,7 @@ export async function fetchAllProducts({
 // [2] fetch all related products
 export async function fetchRelatedProducts(
   cat: string,
-  face: string
+  face?: string
 ): Promise<{ products: Product[] }> {
   // build deep query string to fetch product by slug with all related data
   const query = qs.stringify({
@@ -142,12 +148,9 @@ export async function fetchRelatedProducts(
 
 // [2] fetch by category
 export async function fetchProductsByCategory(
-  slug: string,
-  sort: string | string[] | undefined = "createdAt:desc",
-  size?: string | string[] | undefined,
-  color?: string | string[] | undefined,
-  price_min?: string | string[] | undefined,
-  price_max?: string | string[] | undefined
+  { slug, sort, size, color, price_min, price_max, collection }: filterType = {
+    sort: "createdAt:desc",
+  }
 ): Promise<{ products: Product[] }> {
   const query = qs.stringify({
     filters: {
@@ -172,9 +175,19 @@ export async function fetchProductsByCategory(
             },
           }
         : {}),
+      ...(collection && {
+        collections: {
+          slug: {
+            $eq: collection,
+          },
+        },
+      }),
     },
     sort: [sort],
     populate: {
+      collections: {
+        fields: ["name", "slug"],
+      },
       categories: {
         fields: ["name", "slug"],
         populate: {

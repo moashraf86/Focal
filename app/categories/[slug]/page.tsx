@@ -4,16 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   cn,
+  getAllCollections,
   getAllColors,
   getAllSizes,
+  getAvailableCollections,
   getAvailableColors,
   getAvailableSizes,
 } from "@/lib/utils";
 import StoreFeatures from "@/components/shared/StoreFeatures";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
-
-const ALL_SIZES = ["32mm", "36mm", "39mm"];
 
 export default async function CategoryPage({
   params,
@@ -23,21 +23,39 @@ export default async function CategoryPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { slug } = await params;
-  const { sort_by, size, color, price_min, price_max } = await searchParams;
+  const { sort_by, size, color, price_min, price_max, collection } =
+    await searchParams;
   const [{ categories }, { products }, { products: allProducts }] =
     await Promise.all([
       fetchCategories(),
-      fetchProductsByCategory(slug, sort_by, size, color, price_min, price_max),
-      fetchProductsByCategory(slug, sort_by),
+      fetchProductsByCategory({
+        slug,
+        sort_by,
+        size,
+        color,
+        price_min,
+        price_max,
+        collection,
+      }),
+      fetchProductsByCategory({ slug }),
     ]);
+
+  // Get current category
+  const category = categories.find((category) => category.slug === slug);
+  const catBanner = category?.banner || {
+    url: "/categories/all.webp",
+    alternativeText: "Category Banner",
+  };
 
   // Flattened arrays of sizes and colors from all products
   const allSizesData = allProducts.flatMap((product) => product.sizes);
   const allColorsData = allSizesData.flatMap((size) => size.colors);
+  const allCollectionsData = allProducts.flatMap(
+    (product) => product.collections
+  );
 
   const allSizes = getAllSizes({
     allSizesData,
-    ALL_SIZES,
   });
 
   const availableSizes = getAvailableSizes({
@@ -54,12 +72,13 @@ export default async function CategoryPage({
     availableProducts: products,
   });
 
-  // get current category
-  const category = categories.find((category) => category.slug === slug);
-  const catBanner = category?.banner || {
-    url: "/categories/all.webp",
-    alternativeText: "Category Banner",
-  };
+  const allCollections = getAllCollections({
+    allCollectionsData,
+  });
+
+  const availableCollections = getAvailableCollections({
+    availableProducts: products,
+  });
 
   return (
     <main>
@@ -128,25 +147,42 @@ export default async function CategoryPage({
             <ProductsFilter
               sizes={allSizes}
               colors={allColors}
+              collections={allCollections}
               availableSizes={availableSizes}
               availableColors={availableColors}
+              availableCollections={availableCollections}
             />
-            <span className="hidden md:inline-block text-sm ">
-              {products.length} Products
-            </span>
+            {products.length > 0 && (
+              <span className="hidden md:inline-block text-sm ">
+                {products.length} Products
+              </span>
+            )}
           </div>
           <div className="col-span-1 flex justify-end md:order-1">
             <ProductSorting />
           </div>
-          <span className="md:hidden text-sm text-center col-span-2">
-            {products.length} Products
-          </span>
+          {products.length > 0 && (
+            <span className="md:hidden text-sm text-center col-span-2">
+              {products.length} Products
+            </span>
+          )}
         </div>
-        <ProductList
-          products={products}
-          selectedSize={size}
-          selectedColor={color}
-        />
+        {products.length > 0 ? (
+          <ProductList
+            products={products}
+            selectedSize={size}
+            selectedColor={color}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-[250px]">
+            <h2 className="text-2xl md:text-3xl text-primary uppercase">
+              No products found
+            </h2>
+            <p className="text-sm text-gray-500">
+              Please try a different filter or check back later.
+            </p>
+          </div>
+        )}
       </section>
       <StoreFeatures />
     </main>

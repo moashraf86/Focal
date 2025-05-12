@@ -22,7 +22,7 @@ export default async function RelatedProducts({
   try {
     relatedProducts = await fetchRelatedProducts(
       product.categories[0].slug,
-      product.faces[0].slug
+      product.faces ? product.faces[0]?.slug : undefined
     );
   } catch (error) {
     console.error("Failed to fetch related products:", error);

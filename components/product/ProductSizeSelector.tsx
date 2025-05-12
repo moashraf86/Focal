@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Size } from "@/lib/definitions";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function SizeSelector({
+export default function ProductSizeSelector({
   sizes,
   defaultColor,
 }: {
