@@ -7,8 +7,8 @@ export default function ProductList({
   selectedColor,
 }: {
   products: Product[];
-  selectedSize: string | string[] | undefined;
-  selectedColor: string | string[] | undefined;
+  selectedSize?: string | string[] | undefined;
+  selectedColor?: string | string[] | undefined;
 }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

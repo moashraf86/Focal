@@ -10,7 +10,7 @@ import {
 } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import ProductList from "../products/ProductList";
+import ProductList from "../../components/product/ProductList";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 

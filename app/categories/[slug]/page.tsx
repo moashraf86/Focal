@@ -1,5 +1,5 @@
 import { fetchCategories, fetchProductsByCategory } from "@/lib/data";
-import ProductList from "../../products/ProductList";
+import ProductList from "../../../components/product/ProductList";
 import Link from "next/link";
 import Image from "next/image";
 import {

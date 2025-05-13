@@ -1,4 +1,4 @@
-import ProductCard from "@/app/products/ProductCard";
+import ProductCard from "@/components/product/ProductCard";
 import { fetchRelatedProducts } from "@/lib/data";
 import { Product } from "@/lib/definitions";
 import {
