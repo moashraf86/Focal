@@ -44,6 +44,15 @@ export default function ProductCard({
   const hoverImage = product.images?.[1];
   const hoverImageUrl = hoverImage?.url;
 
+  //check if the product has any featured labels
+  const isLimitedEdition = product.categories?.some(
+    (category) => category.slug === "limited-edition"
+  );
+
+  const isNew = product.collections?.some(
+    (category) => category.slug === "new-arrival"
+  );
+
   return (
     <Link
       href={`/products/${product.slug}?size=${chosenSize?.value}&color=${chosenColor?.name}`}
@@ -64,11 +73,21 @@ export default function ProductCard({
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
-        {/* {isBestselling && (
-          <span className="absolute top-2 inline-block left-2 py-px px-[5px] bg-orange-500 text-primary-foreground text-[10px] uppercase font-barlow font-semibold">
-            Bestselling
-          </span>
-        )} */}
+        {/* Product Labels */}
+        <div className="absolute top-2 left-2 flex flex-col items-center justify-center gap-1">
+          <>
+            {isLimitedEdition && (
+              <span className="inline-block left-2 py-0.5 px-1.5 bg-[#1f8f8f] text-primary-foreground text-xs uppercase font-barlow font-semibold tracking-wider">
+                Limited Edition
+              </span>
+            )}
+            {isNew && (
+              <span className="inline-block left-2 py-0.5 px-1.5 bg-[#051e38] text-primary-foreground text-xs uppercase font-barlow font-semibold tracking-wider">
+                New
+              </span>
+            )}
+          </>
+        </div>
       </div>
       <div className="px-2 space-y-2">
         <h2 className="text-center font-barlow">{product.name}</h2>

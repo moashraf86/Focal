@@ -46,6 +46,9 @@ export async function fetchAllProducts(
       collections: {
         fields: ["name", "slug"],
       },
+      categories: {
+        fields: ["name", "slug"],
+      },
       images: {
         fields: ["url", "alternativeText"],
       },
