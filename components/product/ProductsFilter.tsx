@@ -3,7 +3,9 @@
 import { ListFilter } from "lucide-react";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -25,6 +27,7 @@ import SizeFilter from "./SizeFilter";
 import CollectionFilter from "./CollectionFilter";
 import ActiveFilters from "./ActiveFilters";
 import { MAX_PRICE, MIN_PRICE } from "@/lib/constants";
+import { Button } from "../ui/button";
 
 type ProductsFilterProps = {
   sizes: Size[];
@@ -33,6 +36,7 @@ type ProductsFilterProps = {
   availableSizes: Size[];
   availableColors: Color[];
   availableCollections: Collection[];
+  resultsCount: number;
 };
 
 export default function ProductsFilter({
@@ -42,6 +46,7 @@ export default function ProductsFilter({
   availableColors,
   collections,
   availableCollections,
+  resultsCount,
 }: ProductsFilterProps) {
   const [activeFilters, setActiveFilters] = useState<Filter[]>([]);
   const [filtersCount, setFiltersCount] = useState(0);
@@ -130,11 +135,11 @@ export default function ProductsFilter({
               </p>
             </SheetTitle>
           </SheetHeader>
-          <div className="px-6 md:px-10 overflow-y-auto">
+          <div className="overflow-y-auto h-full">
             {activeFilters.length > 0 && (
               <ActiveFilters activeFilters={activeFilters} />
             )}
-            <Accordion type="multiple">
+            <Accordion type="multiple" className="px-6 md:px-10">
               <AccordionItem value="size">
                 <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
                   Watch Size
@@ -181,6 +186,17 @@ export default function ProductsFilter({
               </AccordionItem>
             </Accordion>
           </div>
+          <SheetFooter className="bg-[white] sticky bottom-0 z-10 px-6 md:px-10 before:absolute before:content-[''] before:w-full before:left-0 before:bottom-full before:h-6 before:bg-gradient-to-t before:from-[#FFF] before:to-transparent before:z-[1] before:pointer-events-none">
+            <Button
+              asChild
+              variant="emphasis"
+              type="button"
+              size="lg"
+              className="w-full mb-5 md:mb-10"
+            >
+              <SheetClose>View Results ({resultsCount})</SheetClose>
+            </Button>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
     </>

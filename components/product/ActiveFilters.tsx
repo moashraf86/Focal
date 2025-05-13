@@ -24,7 +24,7 @@ export default function ActiveFilters({
   };
 
   return (
-    <div className="flex items-center flex-wrap gap-2 py-5">
+    <div className="flex items-center flex-wrap gap-2 py-5 px-6 md:px-10">
       {activeFilters.map((filter) => {
         return (
           <Button

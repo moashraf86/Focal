@@ -149,6 +149,7 @@ export default async function Categories({
               availableSizes={availableSizes}
               availableColors={availableColors}
               availableCollections={availableCollections}
+              resultsCount={products.length}
             />
             {products.length > 0 && (
               <span className="hidden md:inline-block text-sm ">
