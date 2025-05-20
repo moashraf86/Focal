@@ -8,7 +8,12 @@ import { CartItem, Product } from "@/lib/definitions";
 import { useUser } from "@clerk/nextjs";
 import useSWR, { mutate } from "swr";
 import { toast } from "./use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  CART_KEY,
+  loadFromLocalStorage,
+  saveToLocalStorage,
+} from "@/lib/localStorage";
 
 const fetcher = (email: string | undefined) => fetchCartItems(email);
 
@@ -25,8 +30,15 @@ export const useCart = () => {
     data: cartItems = [],
     error,
     isLoading: swrLoading,
-  } = useSWR<CartItem[]>(userLoaded && email ? ["cart", email] : null, () =>
-    fetcher(email)
+  } = useSWR<CartItem[]>(
+    userLoaded && email ? ["cart", email] : null,
+    () => fetcher(email),
+    {
+      fallbackData: loadFromLocalStorage(),
+      onSuccess: (data) => {
+        saveToLocalStorage(data);
+      },
+    }
   );
   const isLoading = swrLoading || !userLoaded;
 
@@ -124,6 +136,15 @@ export const useCart = () => {
       console.error("Error clearing cart:", error);
     }
   };
+
+  // 6. sync local cart with server cart
+  useEffect(() => {
+    if (cartItems && cartItems.length > 0) {
+      saveToLocalStorage(cartItems);
+    } else {
+      localStorage.removeItem(CART_KEY);
+    }
+  }, [cartItems]);
 
   return {
     cartItems,

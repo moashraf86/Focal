@@ -1,11 +1,15 @@
 "use client";
+import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import { Jost } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
+
+const NoSSRHeader = dynamic(() => import("@/components/layout/Header"), {
+  ssr: false,
+});
 
 const jost = Jost({
   variable: "--font-jost",
@@ -27,7 +31,7 @@ export default function RootLayout({
     <ClerkProvider afterSignOutUrl="/sign-in">
       <html lang="en">
         <body className={cn(jost.className, "antialiased")}>
-          <Header />
+          <NoSSRHeader />
           {children}
           <Toaster />
         </body>

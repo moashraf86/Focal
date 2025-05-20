@@ -341,7 +341,7 @@ export async function fetchCartItems(email: string | undefined) {
     },
     populate: {
       cart_items: {
-        fields: ["quantity", "size", "color"],
+        fields: ["quantity", "size", "color", "createdAt"],
         populate: {
           product: {
             fields: ["name", "slug", "price"],
