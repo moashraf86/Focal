@@ -19,16 +19,8 @@ export default function ProductActions({
   const { user } = useUser();
   const { addProductToCart, isAdding } = useCart();
 
+  // Add product to cart
   const handleAddToCart = () => {
-    // check if user is signed in
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to add items to your cart",
-      });
-      return;
-    }
-    // add product to cart
     addProductToCart(product, quantity, selectedSize, color);
   };
 

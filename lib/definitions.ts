@@ -113,7 +113,7 @@ export interface StrapiResponse<T> {
 }
 
 export interface CartItem {
-  id: number;
+  id: number | string;
   documentId: string;
   quantity: number;
   product: Product;
