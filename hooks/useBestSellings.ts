@@ -52,7 +52,10 @@ export function useBestsellingProducts(gender: string) {
     },
   });
   const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/products?${query}`;
-  const { data, error, isLoading } = useSWR<Product[]>(url, fetcher);
+  const { data, error, isLoading } = useSWR<Product[]>(url, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
 
   return {
     products: data ?? [],

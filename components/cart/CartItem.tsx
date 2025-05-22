@@ -36,7 +36,8 @@ export default function CartItem({
   const selectedColorImage =
     item.product?.sizes
       ?.find((size) => size.value === item.size)
-      ?.colors?.find((color) => color.name === item.color)?.images?.[0] ?? null;
+      ?.colors?.find((color) => color.name === item.color)?.images?.[0] ??
+    item.product?.images?.[0];
 
   return (
     <tr className={cn("font-light", className)} style={style}>
@@ -57,7 +58,8 @@ export default function CartItem({
               {item.product?.name}
             </Link>
             <p>
-              {item.size} / {item.color}
+              {item.size && <span>{item.size}</span>}{" "}
+              {item.color && <span> / {item.color}</span>}
             </p>
             <ProductPrice
               price={item.product?.price}

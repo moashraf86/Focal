@@ -11,6 +11,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 export default function BestsellingProducts() {
   const [gender, setGender] = useState<string>("men");
@@ -62,6 +64,11 @@ export default function BestsellingProducts() {
             <CarouselPrevious className="w-14 h-14 rounded-none -left-7 top-[calc(50%-25px)] shadow-none disabled:hidden" />
             <CarouselNext className="w-14 h-14 rounded-none -right-7 top-[calc(50%-25px)] shadow-none disabled:hidden" />
           </Carousel>
+          <div className="flex justify-center mt-4">
+            <Button asChild variant="emphasis" size="lg">
+              <Link href={`/categories/${gender}`}>View All {gender}</Link>
+            </Button>
+          </div>
         </>
       )}
     </section>

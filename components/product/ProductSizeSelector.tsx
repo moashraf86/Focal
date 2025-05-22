@@ -12,7 +12,7 @@ export default function ProductSizeSelector({
 }) {
   const searchParams = useSearchParams();
   const url = useRouter();
-  const selectedSize = searchParams.get("size") || sizes[0].value;
+  const selectedSize = searchParams.get("size") || sizes[0]?.value;
 
   // Handle size change
   const handleSizeChange = (value: string) => {

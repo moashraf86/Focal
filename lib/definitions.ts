@@ -8,6 +8,7 @@ export interface Product {
   images: StrapiImage[];
   bannerImage: StrapiImage[];
   bannerBgColor: string;
+  featuredBannerImg: StrapiImage;
   buyWith: Product[];
   categories: Array<{ slug: string; name: string }>;
   collections: Array<{ slug: string; name: string }>;
