@@ -34,7 +34,7 @@ export default function FeaturedProductsSlider({
   });
 
   return (
-    <div className="relative h-[700px] w-full overflow-hidden mb-10">
+    <div className="relative h-[700px] w-full overflow-hidden">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-300 animate-pulse"></div>
       )}

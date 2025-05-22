@@ -42,7 +42,7 @@ export default function ProductHotspotCard({
     <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
       <div
         className={cn(
-          "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-transparent rounded-full border-[6px] border-white transition-all duration-300 delay-300 ease-in-out cursor-pointer",
+          "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-transparent rounded-full border-[6px] border-white transition-all duration-300 delay-300 ease-in-out cursor-pointer after:absolute after:content-[''] after:-top-3 after:-left-3 after:w-8 after:h-8 after:bg-transparent after:animate-scale after:border-2 after:border-white/60 after:rounded-full",
           isActive ? "opacity-100 scale-100" : "opacity-0 scale-0"
         )}
         onClick={() => {

@@ -5,6 +5,8 @@ import BestsellingProducts from "../components/product/BestsellingProducts";
 import FeaturedProductsSlider from "@/components/product/FeaturedProductsSlider";
 import QuickViewDrawer from "@/components/shared/QuickViewDrawer";
 import { useQuickView } from "@/hooks/useQuickView";
+import StoreFeatures from "@/components/shared/StoreFeatures";
+import WhyChooseUs from "@/components/shared/WhyChooseUs";
 
 export default function Home() {
   const { isOpen, openQuickView, closeQuickView, product } = useQuickView();
@@ -19,6 +21,8 @@ export default function Home() {
         setIsOpen={closeQuickView}
         product={product}
       />
+      <WhyChooseUs />
+      <StoreFeatures />
     </main>
   );
 }
