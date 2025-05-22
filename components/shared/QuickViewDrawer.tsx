@@ -1,11 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "../ui/sheet";
+import { useWindowSize } from "@uidotdev/usehooks";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { Product } from "@/lib/definitions";
 import Image from "next/image";
 import ProductPrice from "../product/ProductPrice";
@@ -42,6 +37,9 @@ export default function QuickViewDrawer({
     allColors.find((color) => color.name === selectedColor)?.images?.[0]
       ?.formats?.small?.url ?? null;
 
+  const { width } = useWindowSize();
+  const isMobile = width && width < 768;
+
   useEffect(() => {
     // Set default URL params when the drawer is opened
     if (isOpen) {
@@ -59,13 +57,42 @@ export default function QuickViewDrawer({
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetContent side="right" className="min-w-[500px]">
+      <SheetContent
+        side={isMobile ? "bottom" : "right"}
+        className="min-w-[500px] max-h-[75vh] md:max-h-full overflow-y-auto"
+      >
         <SheetHeader>
-          <SheetTitle className="tracking-normal">Choose options</SheetTitle>
+          <SheetTitle className="tracking-normal">
+            {product && (
+              <div className="flex md:hidden items-center gap-4">
+                <Image
+                  src={selectedImage || product.images[0].formats.small.url}
+                  alt={product?.images[0].alternativeText || ""}
+                  width="65"
+                  height="80"
+                  quality={100}
+                  className="object-cover object-center"
+                />
+                <div className="space-y-1">
+                  <a href={`/products/${product?.slug}`}>{product?.name}</a>
+                  <div className="flex items-center gap-2">
+                    <ProductPrice price={product?.price || 0} />
+                    <a
+                      href={`products/${product.slug}?size=${selectedSize}&color=${selectedColor}`}
+                      className="capitalize text-sm md:text-base font-barlow font-light underline underline-offset-2 decoration-primary/50 text-primary/70 hover:text-primary hover:decoration-primary"
+                    >
+                      View details
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+            <span className="hidden md:block">Choose options</span>
+          </SheetTitle>
         </SheetHeader>
         {product && (
-          <div className="space-y-8 mt-8 px-6 md:px-10">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 md:gap-8 mt-4 md:mt-8">
+            <div className="hidden md:flex items-center gap-4 px-6 md:px-10">
               <Image
                 src={selectedImage || product.images[0].formats.small.url}
                 alt={product.images[0].alternativeText || ""}
@@ -84,33 +111,37 @@ export default function QuickViewDrawer({
                 <ProductPrice price={product?.price || 0} />
               </div>
             </div>
-            <ProductSizeSelector
-              sizes={product.sizes || []}
-              defaultColor={defaultColor || ""}
-            />
-            <ColorSelector
-              colors={allColors}
-              selectedColors={[selectedColor]}
-              mode="single"
-            />
-            <div className="space-y-1">
-              <span>Quantity:</span>
-              <QuantitySelector
+            <div className="px-6 md:px-10 space-y-4">
+              <ProductSizeSelector
+                sizes={product.sizes || []}
+                defaultColor={defaultColor || ""}
+              />
+              <ColorSelector
+                colors={allColors}
+                selectedColors={[selectedColor]}
+                mode="single"
+              />
+              <div className="space-y-1">
+                <span>Quantity:</span>
+                <QuantitySelector
+                  quantity={quantity}
+                  setQuantity={setQuantity}
+                  mode="product"
+                />
+              </div>
+            </div>
+            <div className="pt-4 px-6 md:px-10 border-t border-border md:border-none md:pt-0">
+              <ProductActions
+                product={product}
                 quantity={quantity}
-                setQuantity={setQuantity}
-                mode="product"
+                selectedSize={searchParams.get("size") || defaultSize}
+                color={searchParams.get("color") || defaultColor}
               />
             </div>
-            <ProductActions
-              product={product}
-              quantity={quantity}
-              selectedSize={searchParams.get("size") || defaultSize}
-              color={searchParams.get("color") || defaultColor}
-            />
             <div className="flex items-center justify-center">
               <a
                 href={`products/${product.slug}?size=${selectedSize}&color=${selectedColor}`}
-                className="font-barlow font-light underline underline-offset-2 decoration-primary/50 text-primary/70 hover:text-primary hover:decoration-primary"
+                className="hidden md:inline-block font-barlow font-light underline underline-offset-2 decoration-primary/50 text-primary/70 hover:text-primary hover:decoration-primary"
               >
                 View details
               </a>
@@ -118,7 +149,6 @@ export default function QuickViewDrawer({
           </div>
         )}
       </SheetContent>
-      <SheetFooter>{/* Footer content */}</SheetFooter>
     </Sheet>
   );
 }

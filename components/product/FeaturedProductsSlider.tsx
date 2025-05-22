@@ -68,18 +68,18 @@ export default function FeaturedProductsSlider({
         );
       })}
 
-      <div className="absolute bottom-5 left-10 grid grid-cols-3 backdrop-blur bg-white z-20">
-        <span className="inline-flex justify-center items-center h-14 text-xs tracking-[1px] font-semibold uppercase col-span-3 border-b border-border">
+      <div className="absolute bottom-5 left-10 grid grid-cols-2 md:grid-cols-3 backdrop-blur bg-white z-20">
+        <span className="hidden md:inline-flex justify-center items-center h-14 text-xs tracking-[1px] font-semibold uppercase col-span-3 border-b border-border">
           Shop the look
         </span>
         <button
           onClick={prevSlide}
-          className="group text-sm font-light px-4 h-[50px]"
+          className="group text-sm font-light px-4 w-14 h-14 border-r border-border"
         >
           <ArrowLeft className="w-4 h-4 mr-1 inline" />
           <div className="sr-only">Previous</div>
         </button>
-        <span className="inline-flex justify-center items-center w-14 h-14 text-sm font-light text-center col-span-1">
+        <span className="hidden md:inline-flex justify-center items-center w-14 h-14 text-sm font-light text-center col-span-1 border-r border-border">
           {current + 1} / {products.length}
         </span>
         <button onClick={nextSlide} className="text-sm font-light w-14 h-14">
