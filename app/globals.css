@@ -78,7 +78,7 @@
     @apply focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
   body {
-    @apply bg-background text-foreground font-barlow;
+    @apply bg-background text-foreground font-barlow antialiased;
   }
   h1,
   h2,

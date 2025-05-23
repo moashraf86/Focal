@@ -1,26 +1,34 @@
 "use client";
 import Link from "next/link";
-import React from "react";
 import { Search, ShoppingBag, UserRound } from "lucide-react";
 import { Button } from "../ui/button";
-import Logo from "./Logo";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useCart } from "@/hooks/useCart";
+import { useMeasure, useWindowScroll } from "@uidotdev/usehooks";
+import Image from "next/image";
 
 export default function Header() {
   const pathname = usePathname();
   const { user } = useUser();
-  const isSignedIn = !!user;
   const { cartItems, getTotalItems } = useCart();
+  const isSignedIn = !!user;
+  const [{ y: scrollY }] = useWindowScroll();
+  const [ref, { height }] = useMeasure();
+  const isHomePage = pathname === "/";
 
   return (
     <header
+      ref={ref}
+      style={isHomePage ? { marginBottom: `-${height}px` } : undefined}
       className={cn(
-        "bg-transparent text-primary-foreground fixed top-0 left-0 right-0 z-10 hover:bg-background hover:text-foreground group",
-        pathname !== "/" &&
-          "sticky top-0 bg-background text-foreground border-b border-border"
+        "bg-transparent text-primary-foreground sticky top-0 left-0 right-0 z-50 hover:bg-background hover:text-foreground border-b border-transparent group transition-colors duration-300 ease-in-out",
+        scrollY &&
+          scrollY > 20 &&
+          "bg-background text-foreground border-border",
+        !isHomePage &&
+          "sticky top-0 bg-background text-foreground border-border"
       )}
     >
       <div className="mx-auto flex h-16 max-w-screen-xl items-center px-4 sm:px-6 lg:px-8">
@@ -70,7 +78,18 @@ export default function Header() {
         {/* Logo */}
         <Link className="block" href="/">
           <span className="sr-only">Home</span>
-          <Logo />
+          <Image
+            alt="Logo"
+            src="/logo.avif"
+            width={96}
+            height={20}
+            quality={100}
+            className={cn(
+              "object-scale-down object-center group-hover:invert transition-all duration-300",
+              scrollY && scrollY > 20 && "invert",
+              !isHomePage && "invert"
+            )}
+          />
         </Link>
 
         {/* Actions */}
@@ -78,14 +97,14 @@ export default function Header() {
           <div className="flex gap-5">
             <Link
               href="/search"
-              className="flex justify-center items-center size-7"
+              className="flex justify-center items-center size-7 text-inherit"
             >
               <Search className="block size-5 text-inherit " />
             </Link>
 
             <Link
               href="/cart"
-              className="relative flex justify-center items-center size-7"
+              className="relative flex justify-center items-center size-7 text-inherit"
             >
               <ShoppingBag className="block size-5 text-inherit" />
               <span>
@@ -101,9 +120,9 @@ export default function Header() {
             ) : (
               <Link
                 href="/sign-in"
-                className="flex justify-center items-center size-7"
+                className="flex justify-center items-center size-7 text-inherit"
               >
-                <UserRound className="block size-5 text-inherit" />
+                <UserRound className="block size-5" />
               </Link>
             )}
           </div>
