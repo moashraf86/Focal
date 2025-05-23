@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useCart } from "@/hooks/useCart";
 import { useMeasure, useWindowScroll } from "@uidotdev/usehooks";
-import Image from "next/image";
+import Logo from "../shared/Logo";
 
 export default function Header() {
   const pathname = usePathname();
@@ -76,22 +76,12 @@ export default function Header() {
           </Button>
         </nav>
         {/* Logo */}
-        <Link className="block" href="/">
-          <span className="sr-only">Home</span>
-          <Image
-            alt="Logo"
-            src="/logo.avif"
-            width={96}
-            height={20}
-            quality={100}
-            className={cn(
-              "object-scale-down object-center group-hover:invert transition-all duration-300",
-              scrollY && scrollY > 20 && "invert",
-              !isHomePage && "invert"
-            )}
-          />
-        </Link>
-
+        <Logo
+          className={cn(
+            (scrollY && scrollY > 20) || !isHomePage ? "invert" : "",
+            isHomePage ? "group-hover:invert" : ""
+          )}
+        />
         {/* Actions */}
         <div className="flex items-center gap-4 flex-1 justify-end">
           <div className="flex gap-5">
