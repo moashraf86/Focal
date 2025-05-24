@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import ProductCard from "@/components/product/ProductCard";
 import { fetchRelatedProducts } from "@/lib/data";
 import { Product } from "@/lib/definitions";
@@ -9,64 +12,67 @@ import {
   CarouselPrevious,
 } from "../ui/carousel";
 
-export default async function RelatedProducts({
+export default function RelatedProducts({
+  category,
+  face,
   product,
 }: {
-  product: Product;
+  category: string;
+  face?: string;
+  product?: Product;
 }) {
-  // Guard clause: product must have at least one category
-  if (!product.categories || product.categories.length === 0) return null;
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
-  let relatedProducts;
+  useEffect(() => {
+    if (!category) return;
 
-  try {
-    relatedProducts = await fetchRelatedProducts(
-      product.categories[0].slug,
-      product.faces ? product.faces[0]?.slug : undefined
-    );
-  } catch (error) {
-    console.error("Failed to fetch related products:", error);
-    return null;
-  }
+    const fetchData = async () => {
+      try {
+        const response = await fetchRelatedProducts(category, face);
+        const filtered = product
+          ? response.products.filter((p) => p.id !== product.id)
+          : response.products;
+        setRelatedProducts(filtered);
+      } catch (error) {
+        console.error("Failed to fetch related products:", error);
+      }
+    };
 
-  // Filter out the current product
-  const filteredProducts = relatedProducts.products.filter(
-    (p) => p.id !== product.id
-  );
+    fetchData();
+  }, [category, face, product]);
 
-  // If no other related products found
-  if (filteredProducts.length === 0) return null;
+  if (!relatedProducts || relatedProducts.length === 0) return null;
 
   return (
     <section className="container max-w-screen-xl mb-20 space-y-10">
       <h2
         className="text-3xl md:text-4xl lg:text-5xl text-center font-light uppercase leading-tight tracking-tight"
-        aria-label={`More products like ${product.name}`}
+        aria-label={`More products like ${product?.name}`}
       >
         Available styles
       </h2>
-      {/* Visible on screens < 1024px */}
+
+      {/* Mobile: horizontal scroll */}
       <div className="grid auto-cols-[52vw] md:auto-cols-[35vw] grid-cols-none grid-flow-col gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:hidden">
-        {filteredProducts.map((product) => (
+        {relatedProducts.map((product) => (
           <div key={product.id} className="snap-center snap-always">
             <ProductCard product={product} />
           </div>
         ))}
       </div>
-      {/* Visible on screens > 1024px */}
+
+      {/* Desktop: carousel */}
       <Carousel
         className="w-full hidden lg:flex"
         opts={{ align: "start", slidesToScroll: 4 }}
       >
         <CarouselContent className="-ml-6">
-          {Array.from({ length: filteredProducts.length }).map((_, index) => (
+          {relatedProducts.map((product) => (
             <CarouselItem
-              key={index}
+              key={product.id}
               className="pl-6 md:basis-1/2 lg:basis-1/4"
             >
-              <ProductCard
-                product={filteredProducts[index % filteredProducts.length]}
-              />
+              <ProductCard product={product} />
             </CarouselItem>
           ))}
         </CarouselContent>

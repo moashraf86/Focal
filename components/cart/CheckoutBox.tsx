@@ -10,7 +10,7 @@ export default function CheckoutBox() {
   const name = user?.fullName;
 
   return (
-    <div className="space-y-4 border p-6 col-span-3 lg:col-span-1 max-h-fit">
+    <div className="space-y-4 border p-6 col-span-3 lg:col-span-1 max-h-fit lg:sticky lg:top-20">
       <div className="flex justify-between items-center w-full">
         <p className="text-xl uppercase tracking-widest font-semibold">Total</p>
         <span className="text-xl font-semibold">

@@ -3,7 +3,7 @@ import Logo from "../shared/Logo";
 
 export default function Footer() {
   return (
-    <footer className="bg-white text-foreground pt-12 pb-8 md:pt-16 font-barlow">
+    <footer className="bg-[#FFF] text-foreground pt-12 pb-8 md:pt-16 font-barlow">
       <div className="max-w-screen-2xl mx-auto px-5 md:px-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-none lg:grid-flow-col gap-10">
         {/* Logo */}
         <div className="col-span-2 md:col-span-3 lg:col-span-1">

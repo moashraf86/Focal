@@ -5,7 +5,6 @@ import BestsellingProducts from "../components/product/BestsellingProducts";
 import FeaturedProductsSlider from "@/components/product/FeaturedProductsSlider";
 import QuickViewDrawer from "@/components/shared/QuickViewDrawer";
 import { useQuickView } from "@/hooks/useQuickView";
-import StoreFeatures from "@/components/shared/StoreFeatures";
 import WhyChooseUs from "@/components/shared/WhyChooseUs";
 
 export default function Home() {
@@ -22,7 +21,6 @@ export default function Home() {
         product={product}
       />
       <WhyChooseUs />
-      <StoreFeatures />
     </main>
   );
 }

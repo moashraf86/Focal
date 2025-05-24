@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 import Footer from "@/components/layout/Footer";
+import StoreFeatures from "@/components/shared/StoreFeatures";
 
 const NoSSRHeader = dynamic(() => import("@/components/layout/Header"), {
   ssr: false,
@@ -34,6 +35,7 @@ export default function RootLayout({
         <body className={cn(jost.className, "antialiased")}>
           <NoSSRHeader />
           {children}
+          <StoreFeatures />
           <Footer />
           <Toaster />
         </body>
