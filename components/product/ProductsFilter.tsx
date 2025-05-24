@@ -16,7 +16,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Collection, Color, Filter, Size } from "@/lib/definitions";
 import ColorSelector from "./ColorSelector";
@@ -51,6 +51,8 @@ export default function ProductsFilter({
   const [activeFilters, setActiveFilters] = useState<Filter[]>([]);
   const [filtersCount, setFiltersCount] = useState(0);
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const [selectedColorsState, setSelectedColorsState] = useState<string[]>([]);
 
   const ref = useRef<HTMLButtonElement>(null);
   const [{ y: pageScrollY }, scrollTo] = useWindowScroll();
@@ -64,6 +66,31 @@ export default function ProductsFilter({
       behavior: "smooth",
     });
   };
+
+  // Update the URL query parameters without reloading the page
+  const updateQueryParam = (key: string, values: string[]) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete(key);
+    values.forEach((value) => params.append(key, value));
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
+
+  // Handle size selection
+  const handleColorSelect = (colorName: string) => {
+    const newSelectedColors = selectedColorsState.includes(colorName)
+      ? selectedColorsState.filter((color) => color !== colorName)
+      : [...selectedColorsState, colorName];
+
+    setSelectedColorsState(newSelectedColors);
+    updateQueryParam("color", newSelectedColors);
+  };
+  // Initialize selected colors from URL on first render
+  useEffect(() => {
+    const colorParam = searchParams.getAll("color");
+    if (colorParam) {
+      setSelectedColorsState(colorParam);
+    }
+  }, [searchParams]);
 
   // Get all the params values from the URL
   const sizeValues = searchParams.getAll("size");
@@ -154,9 +181,11 @@ export default function ProductsFilter({
                 </AccordionTrigger>
                 <AccordionContent>
                   <ColorSelector
+                    mode="multiple"
                     colors={colors}
                     availableColors={availableColors}
-                    mode="multiple"
+                    selectedColors={selectedColorsState}
+                    onColorSelect={handleColorSelect}
                   />
                 </AccordionContent>
               </AccordionItem>

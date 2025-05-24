@@ -7,10 +7,10 @@ import ProductPrice from "../product/ProductPrice";
 import QuantitySelector from "./QuantitySelector";
 import ProductActions from "../product/ProductActions";
 import { useQuickView } from "@/hooks/useQuickView";
-import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ProductSizeSelector from "../product/ProductSizeSelector";
+import ColorSelector from "../product/ColorSelector";
 
 export default function QuickViewDrawer({
   isOpen,
@@ -145,66 +145,22 @@ export default function QuickViewDrawer({
             </div>
           </div>
 
-          {/* Size Selector */}
           <div className="px-6 md:px-10 space-y-4">
-            <div className="space-y-2">
-              <span>Watch Sizes</span>
-              <div className="flex flex-wrap gap-2">
-                {product.sizes.map((size) => (
-                  <Button
-                    key={size.id}
-                    variant="outline"
-                    className={cn(
-                      "text-sm font-normal lowercase h-12 shadow-none",
-                      {
-                        "border-2 border-primary bg-accent/50":
-                          selectedSize === size.value,
-                      }
-                    )}
-                    onClick={() => handleSizeChange(size.value)}
-                  >
-                    {size.value}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <ProductSizeSelector
+              sizes={product.sizes}
+              selectedSize={selectedSize}
+              onSizeChange={handleSizeChange}
+            />
 
-            {/* Color Selector */}
-            <div className="space-y-2">
-              <span>Strap Color</span>
-              <div className="flex flex-wrap gap-2">
-                {allColors.map((color) => (
-                  <Button
-                    key={color.name}
-                    variant="outline"
-                    title={color.name}
-                    className={cn(
-                      "relative w-9 h-9 p-[1px] border-0 shadow-none",
-                      "after:absolute after:inset-[-3px] after:z-[-1]",
-                      "after:border-2 after:transition-all after:duration-200",
-                      {
-                        "after:border-primary after:scale-100 after:opacity-100":
-                          selectedColor === color.name,
-                        "after:border-transparent after:scale-90 after:opacity-0":
-                          selectedColor !== color.name,
-                      }
-                    )}
-                    onClick={() => updateState({ selectedColor: color.name })}
-                    aria-label={`Select ${color.name} color`}
-                  >
-                    <Image
-                      src={color?.pattern?.url || "/fallback-pattern.jpg"}
-                      alt={color?.pattern?.alternativeText || "Color pattern"}
-                      width={32}
-                      height={32}
-                      className="object-cover w-full h-full"
-                    />
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <ColorSelector
+              mode="single"
+              colors={allColors}
+              selectedColors={[selectedColor]}
+              onColorSelect={(colorName) =>
+                updateState({ selectedColor: colorName })
+              }
+            />
 
-            {/* Quantity Selector */}
             <div className="space-y-1">
               <span>Quantity:</span>
               <QuantitySelector

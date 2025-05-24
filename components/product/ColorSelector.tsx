@@ -2,14 +2,13 @@ import { cn } from "@/lib/utils";
 import { Color } from "@/lib/definitions";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 
 type ColorSelectorProps = {
   colors: Color[];
   selectedColors?: string[];
   mode: "single" | "multiple";
   availableColors?: Color[];
+  onColorSelect: (colorName: string) => void;
 };
 
 export default function ColorSelector({
@@ -17,42 +16,8 @@ export default function ColorSelector({
   selectedColors,
   mode = "multiple",
   availableColors = [],
+  onColorSelect,
 }: ColorSelectorProps) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [selectedColorsState, setSelectedColorsState] = useState<string[]>(
-    selectedColors || []
-  );
-
-  const updateQueryParam = (key: string, values: string[]) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete(key);
-    values.forEach((value) => params.append(key, value));
-    router.push(`?${params.toString()}`, { scroll: false });
-  };
-
-  // Handle color selection
-  const handleClick = (colorName: string) => {
-    if (mode === "single") {
-      setSelectedColorsState([colorName]);
-      updateQueryParam("color", [colorName]);
-    } else {
-      const newSelectedColors = selectedColorsState.includes(colorName)
-        ? selectedColorsState.filter((color) => color !== colorName)
-        : [...selectedColorsState, colorName];
-
-      setSelectedColorsState(newSelectedColors);
-      updateQueryParam("color", newSelectedColors);
-    }
-  };
-
-  useEffect(() => {
-    const colorParam = searchParams.getAll("color");
-    if (colorParam) {
-      setSelectedColorsState(colorParam);
-    }
-  }, [searchParams]);
-
   return (
     <div className="grid grid-cols-[repeat(auto-fit,36px)] gap-3 p-1">
       {colors.map((color) => {
@@ -60,8 +25,7 @@ export default function ColorSelector({
           mode === "single"
             ? true
             : availableColors.some((c) => c.name === color.name);
-        const isSelected =
-          selectedColorsState?.includes(color.name) && isAvailable;
+        const isSelected = selectedColors?.includes(color.name) || false;
 
         return (
           <Button
@@ -79,7 +43,7 @@ export default function ColorSelector({
                 "cursor-not-allowed": !isAvailable,
               }
             )}
-            onClick={() => isAvailable && handleClick(color.name)}
+            onClick={() => isAvailable && onColorSelect(color.name)}
             disabled={!isAvailable}
           >
             <Image

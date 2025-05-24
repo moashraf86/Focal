@@ -45,6 +45,16 @@ export default function ProductDetails({
 
   const [quantity, setQuantity] = useState<number>(initialQuantity);
 
+  // Handle size change
+  const handleSizeChange = (value: string) => {
+    URL.push(`?size=${value}&color=${defaultColor}`, { scroll: false });
+  };
+
+  // Handle color change
+  const handleColorChange = (value: string) => {
+    URL.push(`?size=${selectedSize}&color=${value}`, { scroll: false });
+  };
+
   // Update carousel images when selected size or color changes
   useEffect(() => {
     setResetCarousel((prev) => !prev);
@@ -81,14 +91,16 @@ export default function ProductDetails({
           </div>
           <ProductSizeSelector
             sizes={product.sizes}
-            defaultColor={defaultColor}
+            selectedSize={selectedSize}
+            onSizeChange={handleSizeChange}
           />
           <div className="space-y-2">
             <span>Strap: {selectedColor}</span>
             <ColorSelector
+              mode="single"
               colors={allColors}
               selectedColors={[selectedColor]}
-              mode="single"
+              onColorSelect={handleColorChange}
             />
           </div>
           <div className="space-y-1">
