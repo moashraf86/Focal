@@ -8,6 +8,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 import Footer from "@/components/layout/Footer";
 import StoreFeatures from "@/components/shared/StoreFeatures";
+import QuickView from "@/components/shared/QuickView";
 
 const NoSSRHeader = dynamic(() => import("@/components/layout/Header"), {
   ssr: false,
@@ -37,6 +38,7 @@ export default function RootLayout({
           {children}
           <StoreFeatures />
           <Footer />
+          <QuickView />
           <Toaster />
         </body>
       </html>

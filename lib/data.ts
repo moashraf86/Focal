@@ -114,13 +114,21 @@ export async function fetchRelatedProducts(
     },
     populate: {
       images: {
-        fields: ["url", "alternativeText"],
+        fields: ["url", "alternativeText", "formats"],
       },
       sizes: {
         fields: ["value"],
         populate: {
           colors: {
             fields: ["name"],
+            populate: {
+              images: {
+                fields: ["url", "alternativeText", "formats"],
+              },
+              pattern: {
+                fields: ["url", "alternativeText"],
+              },
+            },
           },
         },
       },
@@ -200,7 +208,7 @@ export async function fetchProductsByCategory(
         },
       },
       images: {
-        fields: ["url", "alternativeText"],
+        fields: ["url", "alternativeText", "formats"],
       },
       sizes: {
         fields: ["value"],
@@ -209,7 +217,7 @@ export async function fetchProductsByCategory(
             fields: ["name"],
             populate: {
               images: {
-                fields: ["url", "alternativeText"],
+                fields: ["url", "alternativeText", "formats"],
               },
               pattern: {
                 fields: ["url", "alternativeText"],

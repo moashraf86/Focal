@@ -80,7 +80,10 @@ export default function WhyChooseUs() {
             ref={gridRef}
           >
             {WhyChooseUs.map((item) => (
-              <figure className="space-y-4" key={item.id}>
+              <figure
+                className="space-y-4 snap-center snap-always"
+                key={item.id}
+              >
                 <Image
                   src={item.image}
                   alt={item.title}

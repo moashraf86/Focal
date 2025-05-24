@@ -39,13 +39,21 @@ export function useBestsellingProducts(gender: string) {
         fields: ["name", "slug"],
       },
       images: {
-        fields: ["url", "alternativeText"],
+        fields: ["url", "alternativeText", "formats"],
       },
       sizes: {
         fields: ["value"],
         populate: {
           colors: {
             fields: ["name"],
+            populate: {
+              images: {
+                fields: ["url", "alternativeText", "formats"],
+              },
+              pattern: {
+                fields: ["url", "alternativeText"],
+              },
+            },
           },
         },
       },

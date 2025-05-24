@@ -1,4 +1,5 @@
 import { useCart } from "@/hooks/useCart";
+import { useQuickView } from "@/hooks/useQuickView";
 import { Product } from "@/lib/definitions";
 import { cn } from "@/lib/utils";
 import { useWindowSize } from "@uidotdev/usehooks";
@@ -10,15 +11,14 @@ export default function ProductHotspotCard({
   odd,
   product,
   hasOptions,
-  onQuickView,
 }: {
   isActive: boolean;
   odd: boolean;
   product: Product;
   hasOptions: boolean;
-  onQuickView: (product: Product) => void;
 }) {
   const { addProductToCart } = useCart();
+  const { openQuickView } = useQuickView();
   const { width } = useWindowSize();
   const isMobile = width && width < 768;
 
@@ -34,8 +34,7 @@ export default function ProductHotspotCard({
 
   // Handle Quick View logic here
   const handleQuickView = (product: Product) => {
-    // Add your logic to open the quick view modal
-    onQuickView(product);
+    openQuickView(product);
   };
 
   return (

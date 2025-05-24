@@ -5,13 +5,8 @@ import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useFeaturedProducts } from "@/hooks/useFeatured";
 import ProductHotspotCard from "./ProductHotspotCard";
-import { Product } from "@/lib/definitions";
 
-export default function FeaturedProductsSlider({
-  onQuickView,
-}: {
-  onQuickView: (product: Product) => void;
-}) {
+export default function FeaturedProductsSlider() {
   const { products, isLoading } = useFeaturedProducts();
   const [current, setCurrent] = useState(0);
 
@@ -23,7 +18,7 @@ export default function FeaturedProductsSlider({
     setCurrent((prev) => (prev === 0 ? products.length - 1 : prev - 1));
   };
 
-  // Detremine if the products have size or color options or not
+  // Determine if the products have size or color options or not
   const hasOptions = products.map((product) => {
     return (
       product.sizes.length > 1 ||
@@ -62,7 +57,6 @@ export default function FeaturedProductsSlider({
               odd={odd}
               product={product}
               hasOptions={hasOptions[index]}
-              onQuickView={onQuickView}
             />
           </div>
         );

@@ -1,26 +1,64 @@
 "use client";
+
+import * as React from "react";
 import { Product } from "@/lib/definitions";
-import { useCallback, useState } from "react";
+
+type QuickViewState = {
+  isOpen: boolean;
+  product: Product | null;
+  selectedSize: string;
+  selectedColor: string;
+  quantity: number;
+};
+
+const listeners = new Set<(state: QuickViewState) => void>();
+let memoryState: QuickViewState = {
+  isOpen: false,
+  product: null,
+  selectedSize: "",
+  selectedColor: "",
+  quantity: 1,
+};
 
 export function useQuickView() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [product, setProduct] = useState<Product | null>(null);
+  const [state, setState] = React.useState<QuickViewState>(memoryState);
 
-  const openQuickView = useCallback((product: Product) => {
-    setProduct(product);
-    setIsOpen(true);
+  React.useEffect(() => {
+    listeners.add(setState);
+    return () => void listeners.delete(setState);
   }, []);
 
-  const closeQuickView = useCallback(() => {
-    setProduct(null);
-    setIsOpen(false);
-  }, []);
+  const updateState = (partial: Partial<QuickViewState>) => {
+    memoryState = { ...memoryState, ...partial };
+    listeners.forEach((listener) => listener(memoryState));
+  };
+
+  const openQuickView = (product: Product) => {
+    updateState({
+      isOpen: true,
+      product,
+      selectedSize: product.sizes?.[0]?.value || "",
+      selectedColor: product.sizes?.[0]?.colors?.[0]?.name || "",
+      quantity: 1,
+    });
+  };
+
+  const closeQuickView = () => {
+    updateState({
+      isOpen: false,
+      selectedSize: "",
+      selectedColor: "",
+      quantity: 1,
+    });
+  };
+
+  const setQuantity = (qty: number) => updateState({ quantity: qty });
 
   return {
-    isOpen,
-    product,
-    setIsOpen,
+    ...state,
     openQuickView,
     closeQuickView,
+    updateState,
+    setQuantity,
   };
 }
