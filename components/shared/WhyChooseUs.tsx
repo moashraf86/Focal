@@ -2,7 +2,42 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 
 export default function WhyChooseUs() {
-  // detect scroll-x distance of grid to move scrollbar based on scroll-x
+  // why choose us section
+  const WhyChooseUs = [
+    {
+      id: 1,
+      title: "Straps",
+      description:
+        "Switching out your strap is a fast and easy way to give your watch a personal makeover.",
+      image:
+        "https://res.cloudinary.com/daswys0i8/image/upload/v1747927160/150570269_464565051574396_7083552002018217712_n_1000x_jyk2kl.webp",
+    },
+    {
+      id: 2,
+      title: "Materials",
+      description:
+        "We chose to use a super domed sapphire crystal, a flat bezel and an undercut dial with a luminescent filling for the 1926.",
+      image:
+        "https://res.cloudinary.com/daswys0i8/image/upload/v1748079184/118456764_162078678868212_6502903075854884077_n_1080x_dyb8ze.webp",
+    },
+    {
+      id: 3,
+      title: "Swiss Made",
+      description:
+        "Historical and memorable moments in Swiss horology is not only a chapter, but a whole book of its own.",
+      image:
+        "https://res.cloudinary.com/daswys0i8/image/upload/v1748079265/118398347_235568284440214_2957685996929562109_n_1080x_qzvi2d.webp",
+    },
+    {
+      id: 4,
+      title: "History",
+      description:
+        "When we launched the Green Turtle, we never thought it would become one of the most iconic models.",
+      image:
+        "https://res.cloudinary.com/daswys0i8/image/upload/v1748079361/118510182_184719909693049_3950583242858546453_n_1080x_dsmlaf.webp",
+    },
+  ];
+
   const gridRef = useRef<HTMLDivElement>(null);
   const [scrollWidth, setScrollWidth] = useState(0);
   const [scrollPercentage, setScrollPercentage] = useState(0);
@@ -19,11 +54,11 @@ export default function WhyChooseUs() {
   return (
     <section>
       <div className="relative container py-9 md:py-12 mb-10">
-        <div className="space-y-4 max-w-lg mx-auto text-center mb-9 md:mb-12">
-          <h2 className="text-3xl md:text-4xl font-jost font-light text-center uppercase tracking-tight">
+        <div className="space-y-6  max-w-xl lg:max-w-2xl mx-auto text-center mb-9 md:mb-12">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-jost font-light text-center uppercase tracking-tight">
             Get the perfect watches
           </h2>
-          <p className="text-sm font-light text-pretty text-primary">
+          <p className="text-sm lg:text-base font-light text-pretty text-primary">
             In your endeavors to get the perfect men’s watch, the best place to
             visit is About Vintage. Not only do they offer the highest quality
             watches but also excellent services. When you place your order, you
@@ -44,74 +79,24 @@ export default function WhyChooseUs() {
             onScroll={handleScroll}
             ref={gridRef}
           >
-            <figure className="space-y-4">
-              <Image
-                src="https://res.cloudinary.com/daswys0i8/image/upload/v1747927160/150570269_464565051574396_7083552002018217712_n_1000x_jyk2kl.webp"
-                alt="Straps"
-                width={500}
-                height={500}
-                className="w-full h-auto object-cover"
-              />
-              <figcaption>
-                <p className="text-sm text-start">
-                  <strong>Straps</strong>
-                  <br />
-                  Switching out your strap is a fast and easy way to give your
-                  watch a personal makeover.
-                </p>
-              </figcaption>
-            </figure>
-            <figure className="space-y-4">
-              <Image
-                src="https://res.cloudinary.com/daswys0i8/image/upload/v1747927160/150570269_464565051574396_7083552002018217712_n_1000x_jyk2kl.webp"
-                alt="Straps"
-                width={500}
-                height={500}
-                className="w-full h-auto object-cover"
-              />
-              <figcaption>
-                <p className="text-sm text-start">
-                  <strong>Straps</strong>
-                  <br />
-                  Switching out your strap is a fast and easy way to give your
-                  watch a personal makeover.
-                </p>
-              </figcaption>
-            </figure>
-            <figure className="space-y-4">
-              <Image
-                src="https://res.cloudinary.com/daswys0i8/image/upload/v1747927160/150570269_464565051574396_7083552002018217712_n_1000x_jyk2kl.webp"
-                alt="Straps"
-                width={500}
-                height={500}
-                className="w-full h-auto object-cover"
-              />
-              <figcaption>
-                <p className="text-sm text-start">
-                  <strong>Straps</strong>
-                  <br />
-                  Switching out your strap is a fast and easy way to give your
-                  watch a personal makeover.
-                </p>
-              </figcaption>
-            </figure>
-            <figure className="space-y-4">
-              <Image
-                src="https://res.cloudinary.com/daswys0i8/image/upload/v1747927160/150570269_464565051574396_7083552002018217712_n_1000x_jyk2kl.webp"
-                alt="Straps"
-                width={500}
-                height={500}
-                className="w-full h-auto object-cover"
-              />
-              <figcaption>
-                <p className="text-sm text-start">
-                  <strong>Straps</strong>
-                  <br />
-                  Switching out your strap is a fast and easy way to give your
-                  watch a personal makeover.
-                </p>
-              </figcaption>
-            </figure>
+            {WhyChooseUs.map((item) => (
+              <figure className="space-y-4" key={item.id}>
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  width={500}
+                  height={500}
+                  className="w-full h-auto object-cover"
+                />
+                <figcaption>
+                  <p className="text-sm text-start">
+                    <strong>{item.title}</strong>
+                    <br />
+                    {item.description}
+                  </p>
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </div>
         {/* Custom scrollbar */}
