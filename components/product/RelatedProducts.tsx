@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import ProductCard from "@/components/product/ProductCard";
-import { fetchRelatedProducts } from "@/lib/data";
 import { Product } from "@/lib/definitions";
 import {
   Carousel,
@@ -11,6 +9,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../ui/carousel";
+import { useRelatedProducts } from "@/hooks/useRelated";
+import RelatedProductsSkeleton from "./RelatedProductsSkelton";
 
 export default function RelatedProducts({
   category,
@@ -21,25 +21,14 @@ export default function RelatedProducts({
   face?: string;
   product?: Product;
 }) {
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const { products: relatedProducts, isLoading } = useRelatedProducts({
+    cat: category,
+    face: face || "",
+  });
 
-  useEffect(() => {
-    if (!category) return;
-
-    const fetchData = async () => {
-      try {
-        const response = await fetchRelatedProducts(category, face);
-        const filtered = product
-          ? response.products.filter((p) => p.id !== product.id)
-          : response.products;
-        setRelatedProducts(filtered);
-      } catch (error) {
-        console.error("Failed to fetch related products:", error);
-      }
-    };
-
-    fetchData();
-  }, [category, face, product]);
+  if (isLoading) {
+    return <RelatedProductsSkeleton />;
+  }
 
   if (!relatedProducts || relatedProducts.length === 0) return null;
 

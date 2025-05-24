@@ -12,6 +12,24 @@ import RelatedProducts from "@/components/product/RelatedProducts";
 import ProductBanner from "@/components/product/ProductBanner";
 import FAQ from "@/components/shared/FAQ";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const { slug } = await params;
+  const slugWithoutHyphens = slug.replace(/-/g, " ");
+  const capitalizedSlug = slugWithoutHyphens
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  return {
+    title: `${capitalizedSlug}`,
+    description: `Explore our ${capitalizedSlug} collection. Find the perfect product that suits your style and needs.`,
+  };
+}
+
 export default async function Product({
   params,
 }: {

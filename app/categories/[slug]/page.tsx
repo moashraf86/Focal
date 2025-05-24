@@ -15,6 +15,25 @@ import StoreFeatures from "@/components/shared/StoreFeatures";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 
+// Generate dynamic metadata for the category page
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const { slug } = params;
+  const slugWithoutHyphens = slug.replace(/-/g, " ");
+  const capitalizedSlug = slugWithoutHyphens
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  return {
+    title: `${capitalizedSlug}`,
+    description: `Explore our ${capitalizedSlug} collection. Find the perfect product that suits your style and needs.`,
+  };
+}
+
 export default async function CategoryPage({
   params,
   searchParams,

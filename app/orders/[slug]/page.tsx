@@ -1,14 +1,12 @@
-import OrderDetailsSummary from "@/components/order/OrderDetailsSummary";
-import OrderItem from "@/components/order/OrderItem";
-import OrderTable from "@/components/order/OrderTable";
 import { fetchOrderById } from "@/lib/data";
-import { OrderItem as orderItemType } from "@/lib/definitions";
+import OrderDetails from "@/components/order/OrderDetails";
 
-export default async function OrderDetails({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export const metadata = {
+  title: "Order Details",
+  description: "View details of your order.",
+};
+
+export default async function Order({ params }: { params: { slug: string } }) {
   const { slug: orderId } = await params;
 
   // Fetch order details by ID
@@ -24,15 +22,7 @@ export default async function OrderDetails({
           Check the status of your order, manage returns, and discover
         </p>
       </div>
-      {/* Order details */}
-      <div key={order.id} className="mb-20">
-        <OrderDetailsSummary order={order} />
-        <OrderTable>
-          {order.order_items.map((item: orderItemType) => (
-            <OrderItem key={item.id} item={item} />
-          ))}
-        </OrderTable>
-      </div>
+      <OrderDetails order={order} />
     </section>
   );
 }

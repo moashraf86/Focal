@@ -5,6 +5,11 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+export const metadata = {
+  title: "Payment Confirmation",
+  description: "Your payment has been successfully processed.",
+};
+
 export default async function PaymentConfirm({
   searchParams,
 }: {

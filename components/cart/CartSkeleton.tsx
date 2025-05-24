@@ -28,7 +28,7 @@ export default function CartSkeleton() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {Array.from({ length: 3 }).map((_, index) => (
+                    {Array.from({ length: 2 }).map((_, index) => (
                       <CartSkeletonItem key={index} />
                     ))}
                   </tbody>

@@ -50,7 +50,7 @@ export async function fetchAllProducts(
         fields: ["name", "slug"],
       },
       images: {
-        fields: ["url", "alternativeText"],
+        fields: ["url", "alternativeText", "formats"],
       },
       sizes: {
         fields: ["value"],
@@ -59,7 +59,7 @@ export async function fetchAllProducts(
             fields: ["name"],
             populate: {
               images: {
-                fields: ["url", "alternativeText"],
+                fields: ["url", "alternativeText", "formats"],
               },
               pattern: {
                 fields: ["url", "alternativeText"],
@@ -331,7 +331,6 @@ export async function fetchProductBySlug(
   if (!res.ok) {
     throw new Error("Failed to fetch product");
   }
-
   const response: SingleStrapiResponse<Product[]> = await res.json();
 
   const product = response.data[0];
@@ -410,6 +409,7 @@ export const fetchOrderById = async (id: string) => {
         headers: {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
         },
+        next: { revalidate: 3600, tags: [`order:${id}`] },
       }
     );
 
@@ -419,9 +419,6 @@ export const fetchOrderById = async (id: string) => {
         `Failed to fetch order: ${errorData.error || "Unknown error"}`
       );
     }
-
-    // simulate long loading for 2 seconds for development
-    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const response = await res.json();
     return response;
@@ -437,13 +434,34 @@ export const fetchOrderById = async (id: string) => {
 
 // Fetch all orders
 export const fetchOrders = async (email: string | undefined) => {
+  const query = qs.stringify({
+    filters: {
+      email: {
+        $eq: email,
+      },
+    },
+    populate: {
+      order_items: {
+        populate: {
+          product: {
+            populate: {
+              images: {
+                fields: ["url", "alternativeText", "formats"],
+              },
+            },
+          },
+        },
+      },
+    },
+  });
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/orders?filters[email][$eq]=${email}&populate[order_items][populate][product][populate]=*`,
+      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/orders?${query}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
         },
+        next: { revalidate: 3600, tags: [`orders-${email}`] },
       }
     );
 
@@ -455,7 +473,8 @@ export const fetchOrders = async (email: string | undefined) => {
     }
 
     const response = await res.json();
-    return response;
+    const orders = response.data || [];
+    return orders;
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Error in fetchOrders:", error.message);

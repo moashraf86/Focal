@@ -14,6 +14,11 @@ import ProductList from "../../components/product/ProductList";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 
+export const metadata = {
+  title: "All Products",
+  description: "Browse all products available in the Focal Store.",
+};
+
 export default async function Categories({
   searchParams,
 }: {

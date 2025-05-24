@@ -152,14 +152,16 @@ export default function QuickViewDrawer({
               onSizeChange={handleSizeChange}
             />
 
-            <ColorSelector
-              mode="single"
-              colors={allColors}
-              selectedColors={[selectedColor]}
-              onColorSelect={(colorName) =>
-                updateState({ selectedColor: colorName })
-              }
-            />
+            <div className="space-y-2">
+              <ColorSelector
+                mode="single"
+                colors={allColors}
+                selectedColors={[selectedColor]}
+                onColorSelect={(colorName) =>
+                  updateState({ selectedColor: colorName })
+                }
+              />
+            </div>
 
             <div className="space-y-1">
               <span>Quantity:</span>
