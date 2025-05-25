@@ -8,8 +8,10 @@ import { UserButton, useUser } from "@clerk/nextjs";
 import { useCart } from "@/hooks/useCart";
 import { useMeasure, useWindowScroll } from "@uidotdev/usehooks";
 import Logo from "../shared/Logo";
+import { useEffect, useState } from "react";
 
 export default function Header() {
+  const [hasMounted, setHasMounted] = useState(false);
   const pathname = usePathname();
   const { user } = useUser();
   const { cartItems, getTotalItems } = useCart();
@@ -18,10 +20,17 @@ export default function Header() {
   const [ref, { height }] = useMeasure();
   const isHomePage = pathname === "/";
 
+  useEffect(() => {
+    // Ensure the component has mounted before applying styles
+    setHasMounted(true);
+  }, []);
+
   return (
     <header
       ref={ref}
-      style={isHomePage ? { marginBottom: `-${height}px` } : undefined}
+      style={
+        isHomePage && hasMounted ? { marginBottom: `-${height}px` } : undefined
+      }
       className={cn(
         "bg-transparent text-primary-foreground sticky top-0 left-0 right-0 z-50 hover:bg-background hover:text-foreground border-b border-transparent group transition-colors duration-300 ease-in-out",
         scrollY &&
@@ -89,7 +98,7 @@ export default function Header() {
               href="/search"
               className="flex justify-center items-center size-7 text-inherit"
             >
-              <Search className="block size-5 text-inherit " />
+              <Search className="block size-5 text-inherit" />
             </Link>
 
             <Link
@@ -98,16 +107,18 @@ export default function Header() {
             >
               <ShoppingBag className="block size-5 text-inherit" />
               <span>
-                {cartItems?.length > 0 && (
+                {cartItems?.length > 0 && hasMounted && (
                   <span className="absolute top-0 -right-1 flex items-center justify-center min-w-4 min-h-4 ps-1 pe-1 text-[9px] font-medium text-white bg-primary rounded-full">
                     {getTotalItems()}
                   </span>
                 )}
               </span>
             </Link>
-            {isSignedIn ? (
+            {isSignedIn && hasMounted && (
               <UserButton afterSwitchSessionUrl="/sign-in" />
-            ) : (
+            )}
+
+            {!isSignedIn && hasMounted && (
               <Link
                 href="/sign-in"
                 className="flex justify-center items-center size-7 text-inherit"
