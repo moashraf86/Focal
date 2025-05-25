@@ -111,7 +111,7 @@ export const useCart = () => {
         product,
         color
       );
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       toast({
         title: "Product added to cart",
         description: "Item has been added to your cart",
@@ -167,7 +167,7 @@ export const useCart = () => {
       } else {
         if (!email) throw new Error("User email is missing");
         await apiUpdateItemQuantity(itemId, quantity);
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 200));
         mutate(swrKey);
       }
 

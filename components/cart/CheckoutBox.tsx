@@ -2,10 +2,8 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { useCart } from "@/hooks/useCart";
-export default function CheckoutBox() {
+export default function CheckoutBox({ total }: { total?: number }) {
   const { user } = useUser();
-  const { getTotalPrice } = useCart();
   const email = user?.emailAddresses[0]?.emailAddress;
   const name = user?.fullName;
 
@@ -17,7 +15,7 @@ export default function CheckoutBox() {
           {new Intl.NumberFormat("en-US", {
             style: "currency",
             currency: "USD",
-          }).format(getTotalPrice())}
+          }).format(total || 0)}
         </span>
       </div>
       <p className="text-sm">Taxes and shipping calculated at checkout.</p>
@@ -26,7 +24,7 @@ export default function CheckoutBox() {
       <Button asChild variant="emphasis" className="w-full" size="lg">
         <Link
           prefetch={false}
-          href={`checkout?amount=${getTotalPrice()}&email=${email}&name=${name}`}
+          href={`checkout?amount=${total}&email=${email}&name=${name}`}
         >
           Checkout
         </Link>

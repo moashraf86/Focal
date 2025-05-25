@@ -1,37 +1,37 @@
 "use client";
-import CartItem from "@/components/cart/CartItem";
+import Cart from "@/components/cart/Cart";
 import CartSkeleton from "@/components/cart/CartSkeleton";
-import CartTable from "@/components/cart/CartTable";
 import CheckoutBox from "@/components/cart/CheckoutBox";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
-import { cn } from "@/lib/utils";
 import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function CartPage() {
   //  fetch cart items
-  const { cartItems, removeCartItem, isLoading, isEmpty } = useCart();
-  const [itemToRemove, setItemToRemove] = useState<string | null>(null);
+  const { cartItems, isLoading, getTotalPrice } = useCart();
+  // local state to manage visible items
+  const [visibleItems, setVisibleItems] = useState(cartItems);
 
-  // sorted cart items last added first
-  const sortedCartItems = cartItems.sort((a, b) => {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
-
-  // Remove cart item
-  const handleRemoveCartItem = (id: string) => {
-    setItemToRemove(id);
-    // Simulate a delay to show the animation
-    setTimeout(() => {
-      removeCartItem(id);
-    }, 250); // Adjust the duration to match your animation
+  // handle item removal
+  const handleItemRemoved = (itemId: string) => {
+    setVisibleItems((prev) =>
+      prev.filter((item) => item.documentId !== itemId)
+    );
   };
 
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      setVisibleItems(cartItems);
+    }
+  }, [cartItems]);
+
+  const isCartEmpty = visibleItems.length === 0 && !isLoading;
+
   // if cart is empty
-  if (isEmpty) {
+  if (isCartEmpty) {
     return (
       <section className="container max-w-screen-xl h-[calc(100vh-10rem)] flex items-center justify-center">
         <div className="space-y-6 max-w-md mx-auto text-center">
@@ -61,42 +61,12 @@ export default function CartPage() {
           {/* Cart items */}
           {!isLoading && cartItems.length > 0 && (
             <>
-              <div className="space-y-6 col-span-3 lg:col-span-2">
-                <CartTable>
-                  {sortedCartItems.map((item, index) => (
-                    <CartItem
-                      key={item.documentId}
-                      item={item}
-                      removeCartItem={() =>
-                        handleRemoveCartItem(item.documentId)
-                      }
-                      style={{
-                        animationDuration: `${300 + index * 100}ms`,
-                      }}
-                      className={cn(
-                        "animate-in slide-in-from-top-4 fade-in duration-300 transition-transform ease-in-out will-change-transform",
-                        itemToRemove === item.documentId &&
-                          "animate-out slide-out-to-left fade-out"
-                      )}
-                    />
-                  ))}
-                </CartTable>
-                {/* Cart items count */}
-                {!isLoading && cartItems.length > 0 && (
-                  <p className="text-sm text-gray-500">
-                    {(() => {
-                      const totalItems = cartItems.reduce(
-                        (total, item) => total + item.quantity,
-                        0
-                      );
-                      return `You have ${totalItems} item${
-                        totalItems > 1 ? "s" : ""
-                      } in your cart.`;
-                    })()}
-                  </p>
-                )}
-              </div>
-              <CheckoutBox />
+              <Cart
+                cartItems={visibleItems}
+                isLoading={isLoading}
+                onRemoveItem={handleItemRemoved}
+              />
+              <CheckoutBox total={getTotalPrice()} />
             </>
           )}
         </div>

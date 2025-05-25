@@ -14,6 +14,9 @@ const fetcher = async (url: string) => {
   if (!res.ok) {
     throw new Error("Failed to fetch data");
   }
+  // simulate a delay for testing purposes
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
   const response: StrapiResponse<Product> = await res.json();
 
   if (!response.data) {
@@ -72,8 +75,6 @@ export function useRelatedProducts({
     revalidateOnFocus: false,
     dedupingInterval: 60000,
   });
-
-  console.log("related from swr", data);
 
   return {
     products: data ?? [],

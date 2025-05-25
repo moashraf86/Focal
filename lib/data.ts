@@ -393,6 +393,9 @@ export async function fetchCartItems(email: string | undefined) {
     throw new Error("Failed to fetch cart items");
   }
 
+  // simulate delay for testing
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   const response: StrapiResponse<Product> = await res.json();
 
   const cartItems = response.data[0]?.cart_items || [];
