@@ -45,7 +45,7 @@ export const useCart = () => {
       }
     },
     {
-      fallbackData: loadFromLocalStorage(),
+      fallbackData: isGuest ? loadFromLocalStorage() : [],
       onSuccess: (data) => isGuest && saveToLocalStorage(data),
       revalidateOnFocus: false,
       dedupingInterval: 60000,

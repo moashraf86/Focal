@@ -76,7 +76,7 @@ export async function fetchAllProducts(
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60, tags: ["products"] },
+      next: { revalidate: 60 },
     }
   );
 
@@ -140,7 +140,7 @@ export async function fetchRelatedProducts(
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60, tags: [`related-products-${cat}-${face}`] },
+      next: { revalidate: 60 },
     }
   );
 
@@ -412,7 +412,6 @@ export const fetchOrderById = async (id: string) => {
         headers: {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
         },
-        next: { revalidate: 3600, tags: [`order:${id}`] },
       }
     );
 
@@ -422,6 +421,9 @@ export const fetchOrderById = async (id: string) => {
         `Failed to fetch order: ${errorData.error || "Unknown error"}`
       );
     }
+
+    // simulate delay for testing
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const response = await res.json();
     return response;
@@ -457,6 +459,9 @@ export const fetchOrders = async (email: string | undefined) => {
       },
     },
   });
+  // if no email is provided, return empty array
+  if (!email) return [];
+
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/orders?${query}`,
@@ -464,7 +469,7 @@ export const fetchOrders = async (email: string | undefined) => {
         headers: {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
         },
-        next: { revalidate: 3600, tags: [`orders-${email}`] },
+        next: { tags: ["orders"] },
       }
     );
 
@@ -474,6 +479,8 @@ export const fetchOrders = async (email: string | undefined) => {
         `Failed to fetch orders: ${errorData.error || "Unknown error"}`
       );
     }
+    // simulate delay for testing
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const response = await res.json();
     const orders = response.data || [];
