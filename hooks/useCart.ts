@@ -63,10 +63,11 @@ export const useCart = () => {
   ) => {
     try {
       if (isGuest) {
+        setIsAddingProduct(true);
+        await new Promise((resolve) => setTimeout(resolve, 200));
         // handle guest cart (localStorage)
         const existingCart = loadFromLocalStorage();
         const updatedCart = [...existingCart];
-
         const existingIndex = updatedCart.findIndex(
           (item) =>
             item.product.id === product.id &&
@@ -89,14 +90,8 @@ export const useCart = () => {
             color,
           });
         }
-
         saveToLocalStorage(updatedCart);
         mutate(swrKey, updatedCart, false);
-
-        toast({
-          title: "Product added to cart",
-          description: "Item has been added to your cart",
-        });
         return;
       }
 
@@ -112,10 +107,6 @@ export const useCart = () => {
         color
       );
       await new Promise((resolve) => setTimeout(resolve, 200));
-      toast({
-        title: "Product added to cart",
-        description: "Item has been added to your cart",
-      });
       mutate(swrKey);
     } catch (error) {
       toast({
@@ -159,6 +150,7 @@ export const useCart = () => {
       setIsUpdatingProduct(true);
       setCurrentUpdatingProduct(itemId);
       if (isGuest) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
         const updatedCart = cartItems.map((item) =>
           item.documentId === itemId ? { ...item, quantity } : item
         );
@@ -170,11 +162,6 @@ export const useCart = () => {
         await new Promise((resolve) => setTimeout(resolve, 200));
         mutate(swrKey);
       }
-
-      toast({
-        title: "Product quantity updated",
-        description: "Item quantity has been updated",
-      });
     } catch (error) {
       toast({
         title: "Error",
