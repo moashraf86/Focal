@@ -7,7 +7,7 @@ import Link from "next/link";
 export default function OrderItem({ item }: { item: OrderItemType }) {
   return (
     <>
-      <tr className="border-b border-border">
+      <tr>
         <td className="p-6 ps-0 text-start text-sm font-medium">
           <div className="flex items-center sm:items-start gap-4">
             <Image

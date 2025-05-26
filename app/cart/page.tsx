@@ -33,27 +33,29 @@ export default function CartPage() {
   // if cart is empty
   if (isCartEmpty) {
     return (
-      <section className="container max-w-screen-xl h-[calc(100vh-10rem)] flex items-center justify-center">
-        <div className="space-y-6 max-w-md mx-auto text-center">
-          <div className="inline-block relative">
-            <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-xs">
-              0
-            </span>
-            <ShoppingBag className="size-12" />
+      <main className="container max-w-screen-xl mx-auto py-10">
+        <section className="h-[50vh] flex items-center justify-center">
+          <div className="space-y-6 max-w-md mx-auto text-center">
+            <div className="inline-block relative">
+              <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-xs">
+                0
+              </span>
+              <ShoppingBag className="size-12" />
+            </div>
+            <p className="text-2xl font-light">Your cart is empty</p>
+            <Button asChild variant="emphasis" className="w-full" size="lg">
+              <Link href="/">Start Shopping</Link>
+            </Button>
           </div>
-          <p className="text-2xl font-light">Your cart is empty</p>
-          <Button asChild variant="emphasis" className="w-full" size="lg">
-            <Link href="/">Start Shopping</Link>
-          </Button>
-        </div>
-      </section>
+        </section>
+      </main>
     );
   }
 
   return (
-    <main>
-      <section className="container max-w-screen-xl mb-10">
-        <h1 className="text-4xl font-light uppercase text-center tracking-tight py-10">
+    <main className="space-y-20 pt-10 pb-20">
+      <section className="container max-w-screen-xl mx-auto space-y-10 mb-10">
+        <h1 className="text-4xl font-light uppercase text-center tracking-tight">
           Cart
         </h1>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

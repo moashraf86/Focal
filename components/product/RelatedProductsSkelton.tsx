@@ -19,9 +19,9 @@ export default function RelatedProductsSkeleton() {
       </div>
 
       {/* Desktop skeleton: carousel */}
-      <div className="w-full hidden lg:flex">
+      <div className="w-full hidden lg:flex gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="pl-6 md:basis-1/2 lg:basis-1/4 space-y-4">
+          <div key={i} className="md:basis-1/2 lg:basis-1/4 space-y-4">
             <Skeleton className="w-full h-[320px]" />
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-1/2" />

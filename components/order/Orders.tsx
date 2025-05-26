@@ -13,17 +13,19 @@ export default function Orders({ orders }: { orders: Promise<Order[]> }) {
 
   if (!allOrders || allOrders.length === 0) {
     return (
-      <div className="space-y-6 max-w-md mx-auto text-center">
-        <h1 className="text-4xl font-light uppercase text-center tracking-tight">
-          Orders
-        </h1>
-        <p className="text-2xl font-light">
-          You have not placed any orders yet.
-        </p>
-        <Button asChild variant="emphasis" size="lg">
-          <Link href="/">Start Shopping</Link>
-        </Button>
-      </div>
+      <section className="h-[50vh] flex items-center justify-center">
+        <div className="space-y-6 max-w-md mx-auto text-center">
+          <h1 className="text-4xl font-light uppercase text-center tracking-tight">
+            Orders
+          </h1>
+          <p className="text-2xl font-light">
+            You have not placed any orders yet.
+          </p>
+          <Button asChild variant="emphasis" size="lg">
+            <Link href="/">Start Shopping</Link>
+          </Button>
+        </div>
+      </section>
     );
   }
 
@@ -39,7 +41,7 @@ export default function Orders({ orders }: { orders: Promise<Order[]> }) {
         </p>
       </div>
       {allOrders?.map((order: Order) => (
-        <div key={order.id}>
+        <div key={order.id} className="border-b border-border last:border-0">
           <OrderSummary order={order} />
           <OrderTable>
             {order.order_items.map((item) => (
