@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Product } from "@/lib/definitions";
+import { Color, Product, Size } from "@/lib/definitions";
 
 type QuickViewState = {
   isOpen: boolean;
@@ -33,12 +33,16 @@ export function useQuickView() {
     listeners.forEach((listener) => listener(memoryState));
   };
 
-  const openQuickView = (product: Product) => {
+  const openQuickView = (
+    product: Product,
+    chosenSize: Size,
+    chosenColor: Color
+  ) => {
     updateState({
       isOpen: true,
       product,
-      selectedSize: product.sizes?.[0]?.value || "",
-      selectedColor: product.sizes?.[0]?.colors?.[0]?.name || "",
+      selectedSize: chosenSize.value || "",
+      selectedColor: chosenColor.name || "",
       quantity: 1,
     });
   };

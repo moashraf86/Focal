@@ -26,8 +26,14 @@ export default function QuickViewDrawer({
   const { width } = useWindowSize();
   const isMobile = width && width < 768;
 
-  const defaultSize = useMemo(() => getInitialSize(product), [product]);
-  const defaultColor = useMemo(() => getInitialColor(product), [product]);
+  const defaultSize = useMemo(
+    () => selectedSize ?? getInitialSize(product),
+    [product]
+  );
+  const defaultColor = useMemo(
+    () => selectedColor ?? getInitialColor(product),
+    [product]
+  );
 
   const allColors = useMemo(
     () => getAvailableColors(product, selectedSize),
@@ -61,6 +67,8 @@ export default function QuickViewDrawer({
 
   // Set initial values when product changes
   useEffect(() => {
+    console.log(selectedColor, selectedSize, product?.id);
+
     if (product) {
       updateState({
         selectedSize: defaultSize,
@@ -68,7 +76,7 @@ export default function QuickViewDrawer({
         quantity: 1,
       });
     }
-  }, [product?.id]);
+  }, [product]);
 
   if (!product) return null;
 
