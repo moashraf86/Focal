@@ -13,7 +13,7 @@ export default async function OrdersPage() {
   const orders = fetchOrders(email);
 
   return (
-    <main className="container max-w-screen-lg mx-auto pt-10 pb-20">
+    <main className="container max-w-screen-xl mx-auto pt-10 pb-20">
       <Orders orders={orders} />
     </main>
   );

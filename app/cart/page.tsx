@@ -5,7 +5,6 @@ import CheckoutBox from "@/components/cart/CheckoutBox";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
-import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -33,17 +32,17 @@ export default function CartPage() {
   // if cart is empty
   if (isCartEmpty) {
     return (
-      <main className="container max-w-screen-xl mx-auto py-10">
+      <main className="container max-w-screen-xl mx-auto pt-10 pb-20">
         <section className="h-[50vh] flex items-center justify-center">
           <div className="space-y-6 max-w-md mx-auto text-center">
-            <div className="inline-block relative">
-              <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-xs">
+            <h1 className="relative inline-block text-4xl font-light uppercase text-center tracking-tight">
+              Cart
+              <span className="absolute top-0 -right-8 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-xs">
                 0
               </span>
-              <ShoppingBag className="size-12" />
-            </div>
-            <p className="text-2xl font-light">Your cart is empty</p>
-            <Button asChild variant="emphasis" className="w-full" size="lg">
+            </h1>
+            <p className="text-lg font-light">Your cart is empty.</p>
+            <Button asChild variant="emphasis" size="lg">
               <Link href="/">Start Shopping</Link>
             </Button>
           </div>

@@ -15,10 +15,13 @@ export default function Orders({ orders }: { orders: Promise<Order[]> }) {
     return (
       <section className="h-[50vh] flex items-center justify-center">
         <div className="space-y-6 max-w-md mx-auto text-center">
-          <h1 className="text-4xl font-light uppercase text-center tracking-tight">
+          <h1 className="relative inline-block text-4xl font-light uppercase text-center tracking-tight">
             Orders
+            <span className="absolute top-0 -right-8 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-xs">
+              0
+            </span>
           </h1>
-          <p className="text-2xl font-light">
+          <p className="text-lg font-light">
             You have not placed any orders yet.
           </p>
           <Button asChild variant="emphasis" size="lg">
