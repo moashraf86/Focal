@@ -22,20 +22,41 @@ export default function ProductCard({
   // check if the params are arrays or undefined
   const size = Array.isArray(selectedSize) ? selectedSize[0] : selectedSize;
 
-  const color = !selectedColor
-    ? product.sizes?.[0]?.colors?.[0]?.name
-    : Array.isArray(selectedColor)
-    ? selectedColor[0]
-    : selectedColor;
+  let color: string | undefined;
+
+  if (!selectedColor) {
+    color = product.sizes?.[0]?.colors?.[0]?.name;
+  } else {
+    const selectedColors = Array.isArray(selectedColor)
+      ? selectedColor
+      : [selectedColor];
+
+    // Find the first selected color that exists in the product
+    outer: for (const selected of selectedColors) {
+      for (const size of product.sizes || []) {
+        if (size.colors?.some((c) => c.name === selected)) {
+          color = selected;
+          break outer;
+        }
+      }
+    }
+
+    // If none matched, fallback to first available
+    if (!color) {
+      color = product.sizes?.[0]?.colors?.[0]?.name;
+    }
+  }
 
   // Get chosen size and color
   let chosenSize = product.sizes?.find((s) => s.value === size);
+
   // if no size selected but color selected, find the size that has the color
   if (!chosenSize && color) {
     chosenSize = product.sizes?.find((sizeObj) =>
       sizeObj.colors?.some((colorObj) => colorObj.name === color)
     );
   }
+
   // if no size or color selected, fallback to the first size and color
   if (!chosenSize) {
     chosenSize = product.sizes?.[0];
@@ -77,7 +98,13 @@ export default function ProductCard({
 
   // Handle quick view action
   const handleQuickView = (product: Product) => {
-    openQuickView(product);
+    if (!chosenSize || !chosenColor) {
+      console.error(
+        "Product must have a size and color selected for quick view."
+      );
+      return;
+    }
+    openQuickView(product, chosenSize, chosenColor);
   };
 
   return (
