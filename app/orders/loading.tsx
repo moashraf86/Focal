@@ -1,5 +1,5 @@
 import OrderSkeleton from "@/components/order/OrderSkeleton";
-import { Skeleton } from "@/components/ui/skeleton";
+import React from "react";
 
 export default function Loading() {
   return (
@@ -7,13 +7,14 @@ export default function Loading() {
       <section className="space-y-10">
         <div className="space-y-2">
           <h1 className="text-4xl font-light uppercase text-center tracking-tight">
-            Order #<Skeleton className="inline-block w-[100px] h-6" />
+            Orders
           </h1>
           <p className="text-center">
-            Check the status of your order, manage returns, and discover
+            Check the status of your order, manage returns, and discover similar
+            products.
           </p>
         </div>
-        <OrderSkeleton mode="details" />
+        <OrderSkeleton mode="history" />
       </section>
     </main>
   );

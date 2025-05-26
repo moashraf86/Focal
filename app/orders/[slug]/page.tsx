@@ -13,16 +13,18 @@ export default async function Order({ params }: { params: { slug: string } }) {
   const { data: order } = await fetchOrderById(orderId);
 
   return (
-    <section className="container max-w-screen-lg mx-auto">
-      <div className="space-y-2 py-10">
-        <h1 className="text-4xl font-light uppercase text-center tracking-tight">
-          Order #<span className="font-semibold">{order.order_number}</span>
-        </h1>
-        <p className="text-center">
-          Check the status of your order, manage returns, and discover
-        </p>
-      </div>
-      <OrderDetails order={order} />
-    </section>
+    <main className="container max-w-screen-lg mx-auto py-10">
+      <section className="space-y-10">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-light uppercase text-center tracking-tight">
+            Order #<span className="font-semibold">{order.order_number}</span>
+          </h1>
+          <p className="text-center">
+            Check the status of your order, manage returns, and discover
+          </p>
+        </div>
+        <OrderDetails order={order} />
+      </section>
+    </main>
   );
 }
