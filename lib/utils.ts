@@ -257,3 +257,71 @@ export function getAvailableCollections({
   const availableCollections = Array.from(availableCollectionsMap.values());
   return availableCollections;
 }
+
+// =========================================
+// Expanded Products Logic
+// =========================================
+export function expandProducts(
+  products: Product[],
+  selectedSize?: string | string[] | undefined,
+  selectedColor?: string | string[] | undefined
+): {
+  product: Product;
+  color?: string;
+}[] {
+  const selectedColors = Array.isArray(selectedColor)
+    ? selectedColor
+    : selectedColor
+    ? [selectedColor]
+    : [];
+
+  const size = Array.isArray(selectedSize) ? selectedSize[0] : selectedSize;
+
+  const expandedProducts: {
+    product: Product;
+    color?: string;
+  }[] = [];
+
+  for (const product of products) {
+    const matchedColors: Set<string> = new Set();
+
+    if (size) {
+      const chosenSize = product.sizes?.find((s) => s.value === size);
+      if (chosenSize && selectedColors.length > 0) {
+        chosenSize.colors?.forEach((colorObj) => {
+          if (selectedColors.includes(colorObj.name)) {
+            matchedColors.add(colorObj.name);
+          }
+        });
+      }
+
+      const uniqueColors = Array.from(matchedColors);
+      if (uniqueColors.length > 0) {
+        for (const color of uniqueColors) {
+          expandedProducts.push({ product, color });
+        }
+      } else {
+        expandedProducts.push({ product }); // fallback
+      }
+    } else {
+      product.sizes?.forEach((s) => {
+        s.colors?.forEach((colorObj) => {
+          if (selectedColors.includes(colorObj.name)) {
+            matchedColors.add(colorObj.name);
+          }
+        });
+      });
+
+      const uniqueColors = Array.from(matchedColors);
+      if (uniqueColors.length > 0) {
+        for (const color of uniqueColors) {
+          expandedProducts.push({ product, color });
+        }
+      } else {
+        expandedProducts.push({ product });
+      }
+    }
+  }
+
+  return expandedProducts;
+}

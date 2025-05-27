@@ -1,6 +1,7 @@
 import { fetchAllProducts, fetchCategories } from "@/lib/data";
 import {
   cn,
+  expandProducts,
   getAllCollections,
   getAllColors,
   getAllSizes,
@@ -83,11 +84,13 @@ export default async function Categories({
     allCollectionsData,
   });
 
-  console.log("available Products", products);
-
   const availableCollections = getAvailableCollections({
     availableProducts: products,
   });
+
+  // Get expanded products length
+  const expandedProducts = expandProducts(products, size, color);
+  const resultsCount = expandedProducts.length;
 
   return (
     <main>
@@ -154,11 +157,11 @@ export default async function Categories({
               availableSizes={availableSizes}
               availableColors={availableColors}
               availableCollections={availableCollections}
-              resultsCount={products.length}
+              resultsCount={resultsCount}
             />
             {products.length > 0 && (
               <span className="hidden md:inline-block text-sm ">
-                {products.length} Products
+                {resultsCount} Results
               </span>
             )}
           </div>
@@ -167,7 +170,7 @@ export default async function Categories({
           </div>
           {products.length > 0 && (
             <span className="md:hidden text-sm text-center col-span-2">
-              {products.length} Products
+              {resultsCount} Results
             </span>
           )}
         </div>

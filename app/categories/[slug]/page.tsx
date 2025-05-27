@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   cn,
+  expandProducts,
   getAllCollections,
   getAllColors,
   getAllSizes,
@@ -99,6 +100,10 @@ export default async function CategoryPage({
     availableProducts: products,
   });
 
+  // get expanded products based on selected size and color
+  const expandedProducts = expandProducts(products, size, color);
+  const resultsCount = expandedProducts.length;
+
   return (
     <main>
       {/* Banner image */}
@@ -170,11 +175,11 @@ export default async function CategoryPage({
               availableSizes={availableSizes}
               availableColors={availableColors}
               availableCollections={availableCollections}
-              resultsCount={products.length}
+              resultsCount={resultsCount}
             />
             {products.length > 0 && (
               <span className="hidden md:inline-block text-sm ">
-                {products.length} Products
+                {resultsCount} Results
               </span>
             )}
           </div>
@@ -183,7 +188,7 @@ export default async function CategoryPage({
           </div>
           {products.length > 0 && (
             <span className="md:hidden text-sm text-center col-span-2">
-              {products.length} Products
+              {resultsCount} Results
             </span>
           )}
         </div>
