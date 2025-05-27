@@ -7,6 +7,8 @@ import CartTable from "@/components/cart/CartTable";
 import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import ItemsCount from "./ItemsCount";
+import { Button } from "../ui/button";
+import { Trash } from "lucide-react";
 
 export default function Cart({
   cartItems,
@@ -18,7 +20,7 @@ export default function Cart({
   onRemoveItem?: (id: string) => void;
 }) {
   const [itemToRemove, setItemToRemove] = useState<string | null>(null);
-  const { removeCartItem } = useCart();
+  const { removeCartItem, clearCart } = useCart();
 
   // Remove cart item
   const handleRemoveCartItem = (id: string) => {
@@ -33,10 +35,8 @@ export default function Cart({
     }, 350);
   };
 
-  // sorted cart items last added first
-  const sortedCartItems = [...cartItems].sort((a, b) => {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  // reverse the order to show the last added items first
+  const sortedCartItems = [...cartItems].reverse();
 
   return (
     <>
@@ -59,7 +59,19 @@ export default function Cart({
             />
           ))}
         </CartTable>
-        {!isLoading && cartItems.length > 0 && <ItemsCount items={cartItems} />}
+        {!isLoading && cartItems.length > 0 && (
+          <div className="flex items-center justify-between">
+            <ItemsCount items={cartItems} />
+            <Button
+              variant="ghost"
+              className="text-gray-500 hover:text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2"
+              onClick={clearCart}
+            >
+              <Trash className="mr-2 h-4 w-4" />
+              Clear Cart
+            </Button>
+          </div>
+        )}
       </div>
     </>
   );

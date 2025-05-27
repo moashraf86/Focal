@@ -24,6 +24,8 @@ export default function CartPage() {
   useEffect(() => {
     if (cartItems.length > 0) {
       setVisibleItems(cartItems);
+    } else {
+      setVisibleItems([]);
     }
   }, [cartItems]);
 
