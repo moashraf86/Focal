@@ -1,6 +1,6 @@
 import { Product } from "@/lib/definitions";
 import ProductCard from "./ProductCard";
-import { expandProducts } from "@/lib/utils";
+import { expandProducts } from "@/lib/helper";
 
 export default function ProductList({
   products,

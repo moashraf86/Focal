@@ -2,8 +2,8 @@ import { fetchCategories, fetchProductsByCategory } from "@/lib/data";
 import ProductList from "../../../components/product/ProductList";
 import Link from "next/link";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 import {
-  cn,
   expandProducts,
   getAllCollections,
   getAllColors,
@@ -11,7 +11,7 @@ import {
   getAvailableCollections,
   getAvailableColors,
   getAvailableSizes,
-} from "@/lib/utils";
+} from "@/lib/helper";
 import StoreFeatures from "@/components/shared/StoreFeatures";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";

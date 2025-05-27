@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { Collection, Color, Filter, Size } from "@/lib/definitions";
 import ColorSelector from "./ColorSelector";
 import { useWindowScroll } from "@uidotdev/usehooks";
-import { buildActiveFilters } from "@/lib/utils";
+import { buildActiveFilters } from "@/lib/helper";
 import PriceFilter from "./PriceFilter";
 import SizeFilter from "./SizeFilter";
 import CollectionFilter from "./CollectionFilter";

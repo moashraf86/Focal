@@ -1,6 +1,6 @@
 import { fetchAllProducts, fetchCategories } from "@/lib/data";
+import { cn } from "@/lib/utils";
 import {
-  cn,
   expandProducts,
   getAllCollections,
   getAllColors,
@@ -8,7 +8,7 @@ import {
   getAvailableCollections,
   getAvailableColors,
   getAvailableSizes,
-} from "@/lib/utils";
+} from "@/lib/helper";
 import Image from "next/image";
 import Link from "next/link";
 import ProductList from "../../components/product/ProductList";
