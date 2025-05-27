@@ -6,6 +6,8 @@ import { Button } from "../ui/button";
 import { useQuickView } from "@/hooks/useQuickView";
 import { useCart } from "@/hooks/useCart";
 import { Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { ToastAction } from "../ui/toast";
 
 export default function ProductCard({
   product,
@@ -88,12 +90,26 @@ export default function ProductCard({
     product.sizes?.length > 1;
 
   // Handle add to cart action
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = async (product: Product) => {
     if (!chosenSize || !chosenColor) {
       console.error("Product must have a size and color selected.");
       return;
     }
     addProductToCart(product, 1, chosenSize.value, chosenColor.name);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    // Optionally, you can show a toast or notification here
+    toast({
+      title: "Product added to cart",
+      variant: "success",
+      duration: 1500,
+      action: (
+        <ToastAction altText="view-cart">
+          <Link href="/cart" className="text-inherit">
+            View Cart
+          </Link>
+        </ToastAction>
+      ),
+    });
   };
 
   // Handle quick view action
