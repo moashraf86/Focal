@@ -6,6 +6,7 @@ export default function CheckoutBox({ total }: { total?: number }) {
   const { user } = useUser();
   const email = user?.emailAddresses[0]?.emailAddress;
   const name = user?.fullName;
+  const isGuest = !email;
 
   return (
     <div className="space-y-4 border p-6 col-span-3 lg:col-span-1 max-h-fit lg:sticky lg:top-20">
@@ -23,8 +24,11 @@ export default function CheckoutBox({ total }: { total?: number }) {
       <Textarea placeholder="Order notes" />
       <Button asChild variant="emphasis" className="w-full" size="lg">
         <Link
-          prefetch={false}
-          href={`checkout?amount=${total}&email=${email}&name=${name}`}
+          href={
+            isGuest
+              ? `/checkout/guest`
+              : `/checkout?amount=${total}&email=${email}&name=${name}`
+          }
         >
           Checkout
         </Link>
