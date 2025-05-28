@@ -34,6 +34,10 @@ export default function CartSkeleton() {
                   </tbody>
                 </table>
               </div>
+              <div className="flex items-center justify-between mt-4">
+                <Skeleton className="h-2 w-48" />
+                <Skeleton className="h-8 w-32" />
+              </div>
             </div>
           </div>
         </div>
@@ -43,10 +47,7 @@ export default function CartSkeleton() {
           <Skeleton className="h-6 w-16" />
           <Skeleton className="h-6 w-20" />
         </div>
-        <div className="space-y-1">
-          <Skeleton className="h-2 w-3/4" />
-          <Skeleton className="h-2 w-1/2" />
-        </div>
+        <Skeleton className="h-2 w-3/4" />
         <Skeleton className="h-[60px] w-full bg-transparent border border-border" />
         <Skeleton className="h-12 w-full animate-none" />
       </div>
