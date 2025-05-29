@@ -1,4 +1,5 @@
 import { Order } from "@/lib/definitions";
+import ProductPrice from "../product/ProductPrice";
 
 export default function OrderDetailsSummary({ order }: { order: Order }) {
   return (
@@ -34,9 +35,10 @@ export default function OrderDetailsSummary({ order }: { order: Order }) {
         </div>
         <div className="flex justify-between gap-1 sm:col-span-3 sm:border-t border-border sm:pt-4">
           <span className="text-sm sm:text-lg font-medium">Total amount</span>
-          <span className="text-sm sm:text-lg font-medium">
-            ${order.amount}
-          </span>
+          <ProductPrice
+            className="text-sm sm:text-lg font-medium"
+            price={order.amount}
+          />
         </div>
       </div>
     </div>

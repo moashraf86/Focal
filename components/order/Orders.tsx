@@ -11,7 +11,10 @@ import Link from "next/link";
 export default function Orders({ orders }: { orders: Promise<Order[]> }) {
   const allOrders = use(orders);
 
-  if (!allOrders || allOrders.length === 0) {
+  // reverse the order items to show the latest orders first
+  const sortedOrders = allOrders?.slice().reverse();
+
+  if (!sortedOrders || sortedOrders.length === 0) {
     return (
       <section className="h-[50vh] flex items-center justify-center">
         <div className="space-y-6 max-w-md mx-auto text-center">
@@ -43,7 +46,7 @@ export default function Orders({ orders }: { orders: Promise<Order[]> }) {
           similar products.
         </p>
       </div>
-      {allOrders?.map((order: Order) => (
+      {sortedOrders?.map((order: Order) => (
         <div key={order.id} className="border-b border-border last:border-0">
           <OrderSummary order={order} />
           <OrderTable>

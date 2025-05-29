@@ -13,8 +13,8 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
             <Image
               src={item.product.images[0].formats.small.url}
               alt={item.product.images[0].alternativeText}
-              width={100}
-              height={100}
+              width={96}
+              height={96}
               className="sm:aspect-square object-cover object-center rounded"
               loading="lazy"
             />

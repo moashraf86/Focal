@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Order } from "@/lib/definitions";
+import ProductPrice from "../product/ProductPrice";
 
 export default function OrderSummary({ order }: { order: Order }) {
   return (
@@ -18,7 +19,7 @@ export default function OrderSummary({ order }: { order: Order }) {
         </div>
         <div className="flex justify-between sm:flex-col gap-1 col-span-1 border-b sm:border-b-0 border-border pb-4 sm:pb-0">
           <span className="text-sm font-medium">Total amount</span>
-          <span className="text-sm font-medium">${order.amount}</span>
+          <ProductPrice className="text-sm font-medium" price={order.amount} />
         </div>
       </div>
       <Button asChild variant="outline" className="w-full sm:w-auto">
