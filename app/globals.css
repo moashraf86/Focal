@@ -75,10 +75,10 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
   body {
-    @apply bg-background text-foreground font-barlow;
+    @apply bg-background text-foreground font-barlow antialiased;
   }
   h1,
   h2,
@@ -86,7 +86,7 @@
   h4,
   h5,
   h6 {
-    @apply text-primary font-jost;
+    @apply text-primary font-jost font-light tracking-tighter;
   }
 
   p,
@@ -111,5 +111,23 @@
   /* Firefox */
   input[type="number"] {
     -moz-appearance: textfield;
+  }
+}
+
+@layer utilities {
+  .animate-scale {
+    animation: scale 2s ease-in-out infinite;
+  }
+
+  @keyframes scale {
+    0% {
+      opacity: 1;
+      transform: scale(0.4);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale(1.3);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import ProductCard from "@/app/products/ProductCard";
+import ProductCard from "@/components/product/ProductCard";
 import { Product } from "@/lib/definitions";
 
 export default function BuyWithProducts({ product }: { product: Product }) {

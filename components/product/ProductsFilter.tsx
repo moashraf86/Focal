@@ -1,9 +1,11 @@
 "use client";
 
-import { ListFilter, X } from "lucide-react";
+import { ListFilter } from "lucide-react";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -14,50 +16,48 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import { Checkbox } from "../ui/checkbox";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Color, Size } from "@/lib/definitions";
+import { Collection, Color, Filter, Size } from "@/lib/definitions";
 import ColorSelector from "./ColorSelector";
 import { useWindowScroll } from "@uidotdev/usehooks";
-import { buildActiveFilters, cn } from "@/lib/utils";
+import { buildActiveFilters } from "@/lib/helper";
 import PriceFilter from "./PriceFilter";
-import Link from "next/link";
+import SizeFilter from "./SizeFilter";
+import CollectionFilter from "./CollectionFilter";
+import ActiveFilters from "./ActiveFilters";
+import { MAX_PRICE, MIN_PRICE } from "@/lib/constants";
+import { Button } from "../ui/button";
 
 type ProductsFilterProps = {
   sizes: Size[];
   colors: Color[];
-  availableSizes: { id: string; value: string | undefined; colors: Color[] }[];
-  availableColors: { id: string; name: string | undefined }[];
+  collections: Collection[];
+  availableSizes: Size[];
+  availableColors: Color[];
+  availableCollections: Collection[];
+  resultsCount: number;
 };
 
-type Filter = {
-  name: string;
-  value: string | null | undefined;
-  removeUrl: string;
-};
-
-const MIN_PRICE = 100;
-const MAX_PRICE = 1000;
-
-const DEFAULT_RANGE: [number, number] = [MIN_PRICE, MAX_PRICE];
 export default function ProductsFilter({
   sizes,
   colors,
   availableSizes,
   availableColors,
+  collections,
+  availableCollections,
+  resultsCount,
 }: ProductsFilterProps) {
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [activeFilters, setActiveFilters] = useState<Filter[]>([]);
   const [filtersCount, setFiltersCount] = useState(0);
-  const [range, setRange] = useState<[number, number]>(DEFAULT_RANGE);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [selectedColorsState, setSelectedColorsState] = useState<string[]>([]);
 
   const ref = useRef<HTMLButtonElement>(null);
   const [{ y: pageScrollY }, scrollTo] = useWindowScroll();
 
+  // Scroll to the products section when filters are applied
   const scrollToProducts = () => {
     scrollTo({
       top: ref.current
@@ -67,6 +67,7 @@ export default function ProductsFilter({
     });
   };
 
+  // Update the URL query parameters without reloading the page
   const updateQueryParam = (key: string, values: string[]) => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete(key);
@@ -74,66 +75,61 @@ export default function ProductsFilter({
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
-  const handleSizeChange = (size: string) => {
-    scrollToProducts();
-    const current = new Set(selectedSizes);
-    if (current.has(size)) {
-      current.delete(size);
-    } else {
-      current.add(size);
+  // Handle size selection
+  const handleColorSelect = (colorName: string) => {
+    const newSelectedColors = selectedColorsState.includes(colorName)
+      ? selectedColorsState.filter((color) => color !== colorName)
+      : [...selectedColorsState, colorName];
+
+    setSelectedColorsState(newSelectedColors);
+    updateQueryParam("color", newSelectedColors);
+  };
+  // Initialize selected colors from URL on first render
+  useEffect(() => {
+    const colorParam = searchParams.getAll("color");
+    if (colorParam) {
+      setSelectedColorsState(colorParam);
     }
-    const newSelected = Array.from(current);
-    setSelectedSizes(newSelected);
-    updateQueryParam("size", newSelected);
-  };
+  }, [searchParams]);
 
-  const handleColorChange = (colors: string | string[]) => {
-    scrollToProducts();
-    const newSelected = Array.isArray(colors) ? colors : [colors];
-    setSelectedColors(newSelected);
-    updateQueryParam("color", newSelected);
-  };
+  // Get all the params values from the URL
+  const sizeValues = searchParams.getAll("size");
+  const colorValues = searchParams.getAll("color");
+  const priceMin = parseInt(
+    searchParams.get("price_min") ?? MIN_PRICE.toString()
+  );
+  const priceMax = parseInt(
+    searchParams.get("price_max") ?? MAX_PRICE.toString()
+  );
+  const collectionValues = searchParams.getAll("collection");
 
-  const commitRangeChange = (newRange: [number, number]) => {
-    setRange(newRange as [number, number]);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("price_min", newRange[0].toString());
-    params.set("price_max", newRange[1].toString());
-    router.replace(`?${params.toString()}`, { scroll: false });
-    scrollToProducts();
-  };
+  // Create active filters based on the URL params
+  const filters = buildActiveFilters({
+    sizes,
+    colors,
+    searchParams,
+    sizeValues,
+    colorValues,
+    priceMin,
+    priceMax,
+    collectionValues,
+  });
 
   useEffect(() => {
-    const sizeValues = searchParams.getAll("size");
-    const colorValues = searchParams.getAll("color");
-    const priceMin = parseInt(
-      searchParams.get("price_min") ?? MIN_PRICE.toString()
-    );
-    const priceMax = parseInt(
-      searchParams.get("price_max") ?? MAX_PRICE.toString()
-    );
-    setSelectedSizes(sizeValues);
-    setSelectedColors(colorValues);
-    setRange([priceMin, priceMax]);
-
-    // Adjust the range if it exceeds the limits
-    const priceRange = [
-      (priceMin === MIN_PRICE && priceMax !== MAX_PRICE) ||
-      (priceMax === MAX_PRICE && priceMin !== MIN_PRICE) ||
-      (priceMin !== MIN_PRICE && priceMax !== MAX_PRICE)
-        ? `$${priceMin.toString()}` + " - " + `$${priceMax.toString()}`
-        : null,
-    ];
-    const filters = buildActiveFilters({
-      sizes,
-      colors,
-      searchParams,
-      sizeValues,
-      colorValues,
-      priceRange,
-    });
     setActiveFilters(filters);
     setFiltersCount(filters.length);
+    // skip scrolling on first render
+    if (typeof window === "undefined") return;
+
+    // delay scroll just a bit to wait for re-render
+    const timeout = setTimeout(() => {
+      if (filters.length > 0) {
+        console.log(filters.length);
+
+        scrollToProducts();
+      }
+    }, 100);
+    return () => clearTimeout(timeout);
   }, [searchParams]);
 
   return (
@@ -166,67 +162,17 @@ export default function ProductsFilter({
               </p>
             </SheetTitle>
           </SheetHeader>
-          <div className="px-6">
+          <div className="overflow-y-auto h-full">
             {activeFilters.length > 0 && (
-              <div className="flex items-center flex-wrap gap-2 py-5">
-                {activeFilters.map((filter) => {
-                  return (
-                    <Link
-                      key={filter.value}
-                      href={filter?.removeUrl}
-                      className="flex items-center gap-2 px-3 py-1 text-sm font-barlow font-light tracking-[1px] bg-gray-100 hover:bg-gray-200 text-primary focus:outline-none focus:ring-1 focus:ring-ring"
-                    >
-                      {filter.value}
-                      <X className="h-4 w-4" />
-                    </Link>
-                  );
-                })}
-                <Link
-                  href="/categories"
-                  className="text-sm font-barlow font-light tracking-[1px] underline underline-offset-2 focus:outline-none focus:ring-1 focus:ring-ring"
-                >
-                  Clear All
-                </Link>
-              </div>
+              <ActiveFilters activeFilters={activeFilters} />
             )}
-            <Accordion type="multiple">
+            <Accordion type="multiple" className="px-6 md:px-10">
               <AccordionItem value="size">
                 <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
                   Watch Size
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-4">
-                    {sizes.map((size) => {
-                      const isAvailable = availableSizes?.some(
-                        (sizeObj) => sizeObj.value === size.value
-                      );
-                      const isSelected = selectedSizes.includes(size.value);
-
-                      return (
-                        <div
-                          key={size.id}
-                          className={cn("flex items-center gap-2", {
-                            "opacity-50 [&>label]:cursor-not-allowed":
-                              !isAvailable,
-                          })}
-                        >
-                          <Checkbox
-                            className="disabled:cursor-not-allowed disabled:bg-gray-400"
-                            id={size.value}
-                            onCheckedChange={() => handleSizeChange(size.value)}
-                            checked={isSelected}
-                            disabled={!isAvailable}
-                          />
-                          <label
-                            htmlFor={size.value}
-                            className="font-barlow text-sm cursor-pointer"
-                          >
-                            {size.value} ({size.count})
-                          </label>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <SizeFilter sizes={sizes} availableSizes={availableSizes} />
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="color">
@@ -235,11 +181,11 @@ export default function ProductsFilter({
                 </AccordionTrigger>
                 <AccordionContent>
                   <ColorSelector
+                    mode="multiple"
                     colors={colors}
                     availableColors={availableColors}
-                    selectedColors={selectedColors}
-                    onColorChange={handleColorChange}
-                    mode="multiple"
+                    selectedColors={selectedColorsState}
+                    onColorSelect={handleColorSelect}
                   />
                 </AccordionContent>
               </AccordionItem>
@@ -248,19 +194,38 @@ export default function ProductsFilter({
                   <div className="flex items-center justify-between w-full">
                     Price
                     <span className="text-xs font-barlow font-light text-primary mr-1">
-                      {range && range.map((price) => `$${price}`).join(" - ")}
+                      {`$${priceMin}`} - {`$${priceMax}`}
                     </span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <PriceFilter
-                    range={range}
-                    onRangeChange={commitRangeChange}
+                  <PriceFilter />
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="type">
+                <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
+                  Product Type
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CollectionFilter
+                    collections={collections}
+                    availableCollections={availableCollections}
                   />
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
           </div>
+          <SheetFooter className="bg-[white] sticky bottom-0 z-10 px-6 md:px-10 before:absolute before:content-[''] before:w-full before:left-0 before:bottom-full before:h-6 before:bg-gradient-to-t before:from-[#FFF] before:to-transparent before:z-[1] before:pointer-events-none">
+            <Button
+              asChild
+              variant="emphasis"
+              type="button"
+              size="lg"
+              className="w-full mb-5 md:mb-10"
+            >
+              <SheetClose>View Results ({resultsCount})</SheetClose>
+            </Button>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
     </>

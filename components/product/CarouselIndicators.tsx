@@ -44,6 +44,7 @@ export default function CarouselIndicators({
               fill
               quality={100}
               className="object-cover object-center"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </button>
         ))}

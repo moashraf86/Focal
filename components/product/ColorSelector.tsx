@@ -5,37 +5,27 @@ import { Button } from "../ui/button";
 
 type ColorSelectorProps = {
   colors: Color[];
-  selectedColors: string[];
-  onColorChange: (color: string | string[]) => void;
-  mode?: "single" | "multiple";
-  availableColors?: { id: string; name: string | undefined }[];
+  selectedColors?: string[];
+  mode: "single" | "multiple";
+  availableColors?: Color[];
+  onColorSelect: (colorName: string) => void;
 };
 
 export default function ColorSelector({
   colors,
   selectedColors,
-  onColorChange,
   mode = "multiple",
   availableColors = [],
+  onColorSelect,
 }: ColorSelectorProps) {
-  // Handle color selection
-  const handleClick = (colorName: string) => {
-    if (mode === "single") {
-      onColorChange(colorName);
-    } else {
-      onColorChange(
-        selectedColors.includes(colorName)
-          ? selectedColors.filter((c) => c !== colorName)
-          : [...selectedColors, colorName]
-      );
-    }
-  };
-
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,40px)] gap-3 p-1">
+    <div className="grid grid-cols-[repeat(auto-fit,36px)] gap-3 p-1">
       {colors.map((color) => {
-        const isAvailable = availableColors.some((c) => c.name === color.name);
-        const isSelected = selectedColors.includes(color.name) && isAvailable;
+        const isAvailable =
+          mode === "single"
+            ? true
+            : availableColors.some((c) => c.name === color.name);
+        const isSelected = selectedColors?.includes(color.name) || false;
 
         return (
           <Button
@@ -53,12 +43,12 @@ export default function ColorSelector({
                 "cursor-not-allowed": !isAvailable,
               }
             )}
-            onClick={() => isAvailable && handleClick(color.name)}
+            onClick={() => isAvailable && onColorSelect(color.name)}
             disabled={!isAvailable}
           >
             <Image
-              src={color.pattern.url}
-              alt={color.pattern.alternativeText}
+              src={color?.pattern?.url || ""}
+              alt={color?.pattern?.alternativeText || "Pattern Image"}
               width={32}
               height={32}
               className="object-cover w-full h-full"

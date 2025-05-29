@@ -10,7 +10,7 @@ export default function Loading() {
         <Skeleton className="h-4 w-[50px]" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mb-20">
         {/* Product Image */}
         <div className="w-full flex flex-col-reverse lg:flex-row gap-4 lg:col-span-7">
           <div className="grid grid-flow-col auto-cols-fr sm:auto-cols-max gap-2 p-2 lg:flex lg:flex-col">

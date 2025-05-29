@@ -1,31 +1,29 @@
 import qs from "qs";
 
+type filterType = {
+  [key: string]: string | string[] | undefined;
+};
+
 import {
   Category,
   Product,
   SingleStrapiResponse,
   StrapiResponse,
 } from "./definitions";
-// [1] fetch all products
-export async function fetchAllProducts({
-  sort = "createdAt:desc",
-  size = undefined,
-  color = undefined,
-  price_min = undefined,
-  price_max = undefined,
-}: {
-  sort?: string | string[] | undefined;
-  size?: string | string[] | undefined;
-  color?: string | string[] | undefined;
-  price_min?: string | string[] | undefined;
-  price_max?: string | string[] | undefined;
-}): Promise<{ products: Product[] }> {
+// Fetch all products
+export async function fetchAllProducts(
+  { sort, size, color, price_min, price_max, collection }: filterType = {
+    sort: "createdAt:desc",
+  }
+): Promise<{ products: Product[] }> {
   // build deep query string to fetch product by slug with all related data
   const query = qs.stringify({
     filters: {
       sizes: {
-        value: { $eq: size },
-        colors: { name: { $eq: color } },
+        value: Array.isArray(size) ? { $in: size } : { $eq: size },
+        colors: {
+          name: Array.isArray(color) ? { $in: color } : { $eq: color },
+        },
       },
       ...(price_min !== undefined || price_max !== undefined
         ? {
@@ -35,11 +33,24 @@ export async function fetchAllProducts({
             },
           }
         : {}),
+      ...(collection && {
+        collections: {
+          slug: {
+            $eq: collection,
+          },
+        },
+      }),
     },
     sort: [sort],
     populate: {
+      collections: {
+        fields: ["name", "slug"],
+      },
+      categories: {
+        fields: ["name", "slug"],
+      },
       images: {
-        fields: ["url", "alternativeText"],
+        fields: ["url", "alternativeText", "formats"],
       },
       sizes: {
         fields: ["value"],
@@ -48,7 +59,7 @@ export async function fetchAllProducts({
             fields: ["name"],
             populate: {
               images: {
-                fields: ["url", "alternativeText"],
+                fields: ["url", "alternativeText", "formats"],
               },
               pattern: {
                 fields: ["url", "alternativeText"],
@@ -65,7 +76,7 @@ export async function fetchAllProducts({
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 3600, tags: ["products"] },
+      next: { revalidate: 60 },
     }
   );
 
@@ -82,10 +93,10 @@ export async function fetchAllProducts({
   };
 }
 
-// [2] fetch all related products
+// Fetch all related products
 export async function fetchRelatedProducts(
   cat: string,
-  face: string
+  face?: string
 ): Promise<{ products: Product[] }> {
   // build deep query string to fetch product by slug with all related data
   const query = qs.stringify({
@@ -103,13 +114,21 @@ export async function fetchRelatedProducts(
     },
     populate: {
       images: {
-        fields: ["url", "alternativeText"],
+        fields: ["url", "alternativeText", "formats"],
       },
       sizes: {
         fields: ["value"],
         populate: {
           colors: {
             fields: ["name"],
+            populate: {
+              images: {
+                fields: ["url", "alternativeText", "formats"],
+              },
+              pattern: {
+                fields: ["url", "alternativeText"],
+              },
+            },
           },
         },
       },
@@ -121,7 +140,7 @@ export async function fetchRelatedProducts(
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60, tags: [`related-products-${cat}-${face}`] },
+      next: { revalidate: 60 },
     }
   );
 
@@ -138,10 +157,11 @@ export async function fetchRelatedProducts(
   };
 }
 
-// [2] fetch by category
+// Fetch by category
 export async function fetchProductsByCategory(
-  slug: string,
-  sort: string | string[] | undefined = "createdAt:desc"
+  { slug, sort, size, color, price_min, price_max, collection }: filterType = {
+    sort: "createdAt:desc",
+  }
 ): Promise<{ products: Product[] }> {
   const query = qs.stringify({
     filters: {
@@ -150,9 +170,35 @@ export async function fetchProductsByCategory(
           $eq: slug,
         },
       },
+      ...((size || color) && {
+        sizes: {
+          value: Array.isArray(size) ? { $in: size } : { $eq: size },
+          colors: {
+            name: Array.isArray(color) ? { $in: color } : { $eq: color },
+          },
+        },
+      }),
+      ...(price_min !== undefined || price_max !== undefined
+        ? {
+            price: {
+              ...(price_min !== undefined && { $gte: price_min }),
+              ...(price_max !== undefined && { $lte: price_max }),
+            },
+          }
+        : {}),
+      ...(collection && {
+        collections: {
+          slug: {
+            $eq: collection,
+          },
+        },
+      }),
     },
     sort: [sort],
     populate: {
+      collections: {
+        fields: ["name", "slug"],
+      },
       categories: {
         fields: ["name", "slug"],
         populate: {
@@ -162,13 +208,21 @@ export async function fetchProductsByCategory(
         },
       },
       images: {
-        fields: ["url", "alternativeText"],
+        fields: ["url", "alternativeText", "formats"],
       },
       sizes: {
         fields: ["value"],
         populate: {
           colors: {
             fields: ["name"],
+            populate: {
+              images: {
+                fields: ["url", "alternativeText", "formats"],
+              },
+              pattern: {
+                fields: ["url", "alternativeText"],
+              },
+            },
           },
         },
       },
@@ -180,7 +234,7 @@ export async function fetchProductsByCategory(
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 3600 },
+      next: { revalidate: 60, tags: ["products", `category:${slug}`] },
     }
   );
 
@@ -199,37 +253,7 @@ export async function fetchProductsByCategory(
   };
 }
 
-// [3] fetch bestselling products
-export async function fetchBestSellingProducts(
-  gender: string
-): Promise<{ products: Product[] }> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/products?populate=*&filters[$and][0][categories][name][$eq]=bestselling&filters[$and][1][categories][name][$eq]=${gender}`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
-      },
-      next: { revalidate: 60 },
-    }
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch products");
-  }
-
-  // simulate long loading for 2 seconds
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  const response: StrapiResponse<Product> = await res.json();
-
-  const products = response.data;
-
-  return {
-    products,
-  };
-}
-
-// [4] fetch product by id
+// Fetch product by id
 export async function fetchProductBySlug(
   slug: string
 ): Promise<{ product: Product }> {
@@ -307,7 +331,6 @@ export async function fetchProductBySlug(
   if (!res.ok) {
     throw new Error("Failed to fetch product");
   }
-
   const response: SingleStrapiResponse<Product[]> = await res.json();
 
   const product = response.data[0];
@@ -315,7 +338,7 @@ export async function fetchProductBySlug(
   return { product };
 }
 
-// [5] fetch cart products from strapi
+// Fetch cart products from strapi
 export async function fetchCartItems(email: string | undefined) {
   const query = qs.stringify({
     filter: {
@@ -325,10 +348,14 @@ export async function fetchCartItems(email: string | undefined) {
     },
     populate: {
       cart_items: {
+        fields: ["quantity", "size", "color", "createdAt"],
         populate: {
           product: {
             fields: ["name", "slug", "price"],
             populate: {
+              images: {
+                fields: ["url", "alternativeText", "formats"],
+              },
               sizes: {
                 fields: ["value"],
                 populate: {
@@ -366,6 +393,9 @@ export async function fetchCartItems(email: string | undefined) {
     throw new Error("Failed to fetch cart items");
   }
 
+  // simulate delay for testing
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   const response: StrapiResponse<Product> = await res.json();
 
   const cartItems = response.data[0]?.cart_items || [];
@@ -373,7 +403,7 @@ export async function fetchCartItems(email: string | undefined) {
   return cartItems;
 }
 
-// [6] fetch order by id
+// Fetch order by id
 export const fetchOrderById = async (id: string) => {
   try {
     const res = await fetch(
@@ -392,8 +422,8 @@ export const fetchOrderById = async (id: string) => {
       );
     }
 
-    // simulate long loading for 2 seconds for development
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // simulate delay for testing
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const response = await res.json();
     return response;
@@ -407,15 +437,39 @@ export const fetchOrderById = async (id: string) => {
   }
 };
 
-// [7] fetch all orders
+// Fetch all orders
 export const fetchOrders = async (email: string | undefined) => {
+  const query = qs.stringify({
+    filters: {
+      email: {
+        $eq: email,
+      },
+    },
+    populate: {
+      order_items: {
+        populate: {
+          product: {
+            populate: {
+              images: {
+                fields: ["url", "alternativeText", "formats"],
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  // if no email is provided, return empty array
+  if (!email) return [];
+
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/orders?filters[email][$eq]=${email}&populate[order_items][populate][product][populate]=*`,
+      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/orders?${query}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
         },
+        next: { tags: ["orders"] },
       }
     );
 
@@ -425,9 +479,12 @@ export const fetchOrders = async (email: string | undefined) => {
         `Failed to fetch orders: ${errorData.error || "Unknown error"}`
       );
     }
+    // simulate delay for testing
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const response = await res.json();
-    return response;
+    const orders = response.data || [];
+    return orders;
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Error in fetchOrders:", error.message);
@@ -438,7 +495,7 @@ export const fetchOrders = async (email: string | undefined) => {
   }
 };
 
-// [8] fetch all categories
+// Fetch all categories
 export async function fetchCategories(): Promise<{ categories: Category[] }> {
   // build deep query string to fetch product by slug with all related data
   const query = qs.stringify({

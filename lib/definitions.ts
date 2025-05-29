@@ -3,10 +3,12 @@ export interface Product {
   documentId: string;
   name: string;
   slug: string;
+  type: string;
   description: Array<StrapiRichText>;
   images: StrapiImage[];
   bannerImage: StrapiImage[];
   bannerBgColor: string;
+  featuredBannerImg: StrapiImage;
   buyWith: Product[];
   categories: Array<{ slug: string; name: string }>;
   collections: Array<{ slug: string; name: string }>;
@@ -31,7 +33,7 @@ export interface Color {
   id: number;
   name: string;
   images?: StrapiImage[];
-  pattern: StrapiImage;
+  pattern?: StrapiImage;
 }
 export interface Strap {
   documentId: string;
@@ -40,6 +42,19 @@ export interface Strap {
   slug: string;
   images: StrapiImage[];
 }
+export interface Collection {
+  id: number | string;
+  documentId: string;
+  name: string;
+  slug: string;
+  count?: number;
+}
+
+export interface Filter {
+  name: string;
+  value: string | undefined;
+}
+
 interface StrapiRichText {
   children: Array<{
     text: string;
@@ -99,7 +114,7 @@ export interface StrapiResponse<T> {
 }
 
 export interface CartItem {
-  id: number;
+  id: number | string;
   documentId: string;
   quantity: number;
   product: Product;
@@ -235,7 +250,23 @@ export interface Order {
   order_number: string;
   payment_id: string;
   payment_method: PaymentMethod;
-  publishedAt: string;
   shipping_address: Address;
-  updatedAt: string;
+}
+
+export interface GuestOrder {
+  amount: number;
+  order_items: OrderItem[];
+  shipping_address: {
+    line1: string;
+    line2: string;
+    city: string;
+    state: string;
+    country: string;
+    postal_code: string;
+  };
+  createdAt: string;
+  order_number: string;
+  payment_method: {
+    type: "cash";
+  };
 }

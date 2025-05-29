@@ -1,25 +1,32 @@
 import { fetchAllProducts, fetchCategories } from "@/lib/data";
+import { cn } from "@/lib/utils";
 import {
-  cn,
+  expandProducts,
+  getAllCollections,
   getAllColors,
   getAllSizes,
+  getAvailableCollections,
   getAvailableColors,
   getAvailableSizes,
-} from "@/lib/utils";
+} from "@/lib/helper";
 import Image from "next/image";
 import Link from "next/link";
-import ProductList from "../products/ProductList";
+import ProductList from "../../components/product/ProductList";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 
-const ALL_SIZES = ["32mm", "36mm", "39mm"];
+export const metadata = {
+  title: "All Products",
+  description: "Browse all products available in the Focal Store.",
+};
 
 export default async function Categories({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const { sort_by, size, color, price_min, price_max } = await searchParams;
+  const { sort_by, size, color, price_min, price_max, collection } =
+    await searchParams;
 
   const [
     { categories },
@@ -28,18 +35,35 @@ export default async function Categories({
     { products: productsForAvailableSizes },
   ] = await Promise.all([
     fetchCategories(),
-    fetchAllProducts({ sort: sort_by, size, color, price_min, price_max }),
-    fetchAllProducts({ sort: sort_by }),
-    fetchAllProducts({ sort: sort_by, color, price_min, price_max }),
+    fetchAllProducts({
+      sort: sort_by,
+      size,
+      color,
+      price_min,
+      price_max,
+      collection,
+    }),
+    fetchAllProducts(),
+    fetchAllProducts({
+      sort: sort_by,
+      color,
+      price_min,
+      price_max,
+      collection,
+    }),
   ]);
 
   // Flattened arrays of sizes and colors from all products
-  const allSizesData = allProducts.flatMap((product) => product.sizes);
+  const allSizesData = allProducts.flatMap((product) =>
+    product.type === "watch" ? product.sizes : []
+  );
   const allColorsData = allSizesData.flatMap((size) => size.colors);
+  const allCollectionsData = allProducts.flatMap(
+    (product) => product.collections
+  );
 
   const allSizes = getAllSizes({
     allSizesData,
-    ALL_SIZES,
   });
 
   const availableSizes = getAvailableSizes({
@@ -53,8 +77,20 @@ export default async function Categories({
 
   const availableColors = getAvailableColors({
     size,
-    productsForAvailableSizes,
+    availableProducts: products,
   });
+
+  const allCollections = getAllCollections({
+    allCollectionsData,
+  });
+
+  const availableCollections = getAvailableCollections({
+    availableProducts: products,
+  });
+
+  // Get expanded products length
+  const expandedProducts = expandProducts(products, size, color);
+  const resultsCount = expandedProducts.length;
 
   return (
     <main>
@@ -112,31 +148,48 @@ export default async function Categories({
         </div>
       </div>
       <section className="container max-w-screen-xl py-10">
-        {/* Filters - Products Number - Sorting /*/}
         <div className="grid grid-cols-2 mb-5 gap-4">
           <div className="flex items-center gap-10 col-span-1">
             <ProductsFilter
               sizes={allSizes}
               colors={allColors}
+              collections={allCollections}
               availableSizes={availableSizes}
               availableColors={availableColors}
+              availableCollections={availableCollections}
+              resultsCount={resultsCount}
             />
-            <span className="hidden md:inline-block text-sm ">
-              {products.length} Products
-            </span>
+            {products.length > 0 && (
+              <span className="hidden md:inline-block text-sm ">
+                {resultsCount} Results
+              </span>
+            )}
           </div>
           <div className="col-span-1 flex justify-end md:order-1">
             <ProductSorting />
           </div>
-          <span className="md:hidden text-sm text-center col-span-2">
-            {products.length} Products
-          </span>
+          {products.length > 0 && (
+            <span className="md:hidden text-sm text-center col-span-2">
+              {resultsCount} Results
+            </span>
+          )}
         </div>
-        <ProductList
-          products={products}
-          selectedSize={size}
-          selectedColor={color}
-        />
+        {products.length > 0 ? (
+          <ProductList
+            products={products}
+            selectedSize={size}
+            selectedColor={color}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-[250px]">
+            <h2 className="text-2xl md:text-3xl text-primary uppercase">
+              No products found
+            </h2>
+            <p className="text-sm text-gray-500">
+              Please try a different filter or check back later.
+            </p>
+          </div>
+        )}
       </section>
     </main>
   );

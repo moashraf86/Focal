@@ -1,43 +1,58 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
 import { Slider } from "../ui/slider";
 import { useEffect, useState } from "react";
+import { DEFAULT_RANGE, MAX_PRICE, MIN_PRICE, STEP } from "@/lib/constants";
 
-const MIN_PRICE = 100;
-const MAX_PRICE = 1000;
-const STEP = 10;
+export default function PriceFilter() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-type PriceFilterProps = {
-  range: [number, number];
-  onRangeChange: (newRange: [number, number]) => void;
-};
-
-export default function PriceFilter({
-  range,
-  onRangeChange,
-}: PriceFilterProps) {
+  const [range, setRange] = useState<[number, number]>(DEFAULT_RANGE);
   const [tempMin, setTempMin] = useState(range[0]);
   const [tempMax, setTempMax] = useState(range[1]);
 
-  // Sync inputs when parent range changes
-  useEffect(() => {
-    setTempMin(range[0]);
-    setTempMax(range[1]);
-  }, [range]);
+  // Handle price range changes
+  const handleRangeChange = (newRange: [number, number]) => {
+    //TODO: Scroll to the products section
+    setRange(newRange as [number, number]);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("price_min", newRange[0].toString());
+    params.set("price_max", newRange[1].toString());
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   const handleBlurMin = () => {
     const newMin = Math.min(tempMin, range[1] - 1);
     const validatedMin =
       isNaN(newMin) || newMin < MIN_PRICE ? MIN_PRICE : newMin;
-    onRangeChange([validatedMin, range[1]]);
+    handleRangeChange([validatedMin, range[1]]);
   };
 
   const handleBlurMax = () => {
     const newMax = Math.max(tempMax, range[0] + 1);
     const validatedMax =
       isNaN(newMax) || newMax > MAX_PRICE ? MAX_PRICE : newMax;
-    onRangeChange([range[0], validatedMax]);
+    handleRangeChange([range[0], validatedMax]);
   };
+
+  // Sync inputs when parent range changes
+  useEffect(() => {
+    const priceMin = parseInt(
+      searchParams.get("price_min") ?? MIN_PRICE.toString()
+    );
+    const priceMax = parseInt(
+      searchParams.get("price_max") ?? MAX_PRICE.toString()
+    );
+    const newRange: [number, number] = [
+      isNaN(priceMin) ? MIN_PRICE : priceMin,
+      isNaN(priceMax) ? MAX_PRICE : priceMax,
+    ];
+    setRange(newRange);
+    setTempMin(newRange[0]);
+    setTempMax(newRange[1]);
+  }, [searchParams]);
 
   return (
     <div className="space-y-4">
@@ -46,7 +61,7 @@ export default function PriceFilter({
         max={MAX_PRICE}
         step={STEP}
         value={range}
-        onValueChange={(value) => onRangeChange(value as [number, number])}
+        onValueChange={handleRangeChange}
       />
 
       <div className="grid grid-cols-2 gap-4">

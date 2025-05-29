@@ -1,3 +1,6 @@
+"use server";
+
+import { revalidateTag } from "next/cache";
 import { Address, CartItem, PaymentMethod, Product } from "./definitions";
 
 // [1] create cart entry
@@ -349,11 +352,11 @@ export const createOrder = async (data: {
     );
 
     // 6. Return the created order
-    console.log("Order created successfully:", order);
-
     return order;
   } catch (error: unknown) {
     console.error("Error creating order:", error);
     throw error;
+  } finally {
+    revalidateTag("orders");
   }
 };

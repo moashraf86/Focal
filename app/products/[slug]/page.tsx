@@ -11,7 +11,24 @@ import ProductDetails from "@/components/product/ProductDetails";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import ProductBanner from "@/components/product/ProductBanner";
 import FAQ from "@/components/shared/FAQ";
-import StoreFeatures from "@/components/shared/StoreFeatures";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const { slug } = await params;
+  const slugWithoutHyphens = slug.replace(/-/g, " ");
+  const capitalizedSlug = slugWithoutHyphens
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  return {
+    title: `${capitalizedSlug}`,
+    description: `Explore our ${capitalizedSlug} collection. Find the perfect product that suits your style and needs.`,
+  };
+}
 
 export default async function Product({
   params,
@@ -37,9 +54,12 @@ export default async function Product({
       </Breadcrumb>
       <ProductDetails product={product} />
       <ProductBanner product={product} />
-      <RelatedProducts product={product} />
+      <RelatedProducts
+        category={product.categories[0]?.slug}
+        face={product.faces[0]?.slug}
+        product={product}
+      />
       <FAQ />
-      <StoreFeatures />
     </main>
   );
 }

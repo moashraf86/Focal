@@ -1,10 +1,39 @@
 import { fetchCategories, fetchProductsByCategory } from "@/lib/data";
-import ProductList from "../../products/ProductList";
+import ProductList from "../../../components/product/ProductList";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import {
+  expandProducts,
+  getAllCollections,
+  getAllColors,
+  getAllSizes,
+  getAvailableCollections,
+  getAvailableColors,
+  getAvailableSizes,
+} from "@/lib/helper";
 import StoreFeatures from "@/components/shared/StoreFeatures";
 import ProductSorting from "@/components/product/ProductSorting";
+import ProductsFilter from "@/components/product/ProductsFilter";
+
+// Generate dynamic metadata for the category page
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const { slug } = params;
+  const slugWithoutHyphens = slug.replace(/-/g, " ");
+  const capitalizedSlug = slugWithoutHyphens
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  return {
+    title: `${capitalizedSlug}`,
+    description: `Explore our ${capitalizedSlug} collection. Find the perfect product that suits your style and needs.`,
+  };
+}
 
 export default async function CategoryPage({
   params,
@@ -14,18 +43,66 @@ export default async function CategoryPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { slug } = await params;
-  const { sort_by } = await searchParams;
-  const { categories } = await fetchCategories();
+  const { sort_by, size, color, price_min, price_max, collection } =
+    await searchParams;
+  const [{ categories }, { products }, { products: allProducts }] =
+    await Promise.all([
+      fetchCategories(),
+      fetchProductsByCategory({
+        slug,
+        sort_by,
+        size,
+        color,
+        price_min,
+        price_max,
+        collection,
+      }),
+      fetchProductsByCategory({ slug }),
+    ]);
 
-  // get current category
+  // Get current category
   const category = categories.find((category) => category.slug === slug);
   const catBanner = category?.banner || {
     url: "/categories/all.webp",
     alternativeText: "Category Banner",
   };
 
-  // Fetch products by category
-  const { products } = await fetchProductsByCategory(slug, sort_by);
+  // Flattened arrays of sizes and colors from all products
+  const allSizesData = allProducts.flatMap((product) => product.sizes);
+  const allColorsData = allSizesData.flatMap((size) => size.colors);
+  const allCollectionsData = allProducts.flatMap(
+    (product) => product.collections
+  );
+
+  const allSizes = getAllSizes({
+    allSizesData,
+  });
+
+  const availableSizes = getAvailableSizes({
+    color,
+    productsForAvailableSizes: products,
+  });
+
+  const allColors = getAllColors({
+    allColorsData,
+  });
+
+  const availableColors = getAvailableColors({
+    size,
+    availableProducts: products,
+  });
+
+  const allCollections = getAllCollections({
+    allCollectionsData,
+  });
+
+  const availableCollections = getAvailableCollections({
+    availableProducts: products,
+  });
+
+  // get expanded products based on selected size and color
+  const expandedProducts = expandProducts(products, size, color);
+  const resultsCount = expandedProducts.length;
 
   return (
     <main>
@@ -88,16 +165,50 @@ export default async function CategoryPage({
           </div>
         </div>
       </div>
-      {/* Products */}
       <section className="container max-w-screen-xl py-10">
-        {/* Products numbers / Sorting */}
-        <div className="flex items-center justify-between mb-5">
-          <span className="text-sm">{products.length} Products</span>
-          <ProductSorting />
+        <div className="grid grid-cols-2 mb-5 gap-4">
+          <div className="flex items-center gap-10 col-span-1">
+            <ProductsFilter
+              sizes={allSizes}
+              colors={allColors}
+              collections={allCollections}
+              availableSizes={availableSizes}
+              availableColors={availableColors}
+              availableCollections={availableCollections}
+              resultsCount={resultsCount}
+            />
+            {products.length > 0 && (
+              <span className="hidden md:inline-block text-sm ">
+                {resultsCount} Results
+              </span>
+            )}
+          </div>
+          <div className="col-span-1 flex justify-end md:order-1">
+            <ProductSorting />
+          </div>
+          {products.length > 0 && (
+            <span className="md:hidden text-sm text-center col-span-2">
+              {resultsCount} Results
+            </span>
+          )}
         </div>
-        <ProductList products={products} />
+        {products.length > 0 ? (
+          <ProductList
+            products={products}
+            selectedSize={size}
+            selectedColor={color}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-[250px]">
+            <h2 className="text-2xl md:text-3xl text-primary uppercase">
+              No products found
+            </h2>
+            <p className="text-sm text-gray-500">
+              Please try a different filter or check back later.
+            </p>
+          </div>
+        )}
       </section>
-      {/* Store Features */}
       <StoreFeatures />
     </main>
   );

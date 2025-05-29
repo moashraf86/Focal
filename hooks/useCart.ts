@@ -8,7 +8,12 @@ import { CartItem, Product } from "@/lib/definitions";
 import { useUser } from "@clerk/nextjs";
 import useSWR, { mutate } from "swr";
 import { toast } from "./use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  CART_KEY,
+  loadFromLocalStorage,
+  saveToLocalStorage,
+} from "@/lib/localStorage";
 
 const fetcher = (email: string | undefined) => fetchCartItems(email);
 
@@ -16,28 +21,81 @@ export const useCart = () => {
   const { user, isLoaded: userLoaded } = useUser();
   const email = user?.emailAddresses[0]?.emailAddress;
   const username = user?.fullName;
+
+  const isGuest = !email;
+
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [isUpdatingProduct, setIsUpdatingProduct] = useState(false);
   const [currentUpdatingProduct, setCurrentUpdatingProduct] = useState<
     string | null
   >(null);
+  const swrKey = !isGuest && userLoaded ? ["cart", email] : "guest-cart";
+
   const {
     data: cartItems = [],
     error,
     isLoading: swrLoading,
-  } = useSWR<CartItem[]>(userLoaded && email ? ["cart", email] : null, () =>
-    fetcher(email)
+  } = useSWR<CartItem[]>(
+    swrKey,
+    () => {
+      if (isGuest) {
+        return Promise.resolve(loadFromLocalStorage());
+      } else {
+        return fetcher(email);
+      }
+    },
+    {
+      fallbackData: isGuest ? loadFromLocalStorage() : [],
+      onSuccess: (data) => isGuest && saveToLocalStorage(data),
+      revalidateOnFocus: false,
+      dedupingInterval: 60000,
+    }
   );
+
   const isLoading = swrLoading || !userLoaded;
 
-  // 1. add product to cart
+  // 🟢 Add product to cart (guest and signed-in)
   const addProductToCart = async (
     product: Product,
     quantity: number,
     size: string,
-    color?: string | undefined
+    color?: string
   ) => {
     try {
+      if (isGuest) {
+        setIsAddingProduct(true);
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        // handle guest cart (localStorage)
+        const existingCart = loadFromLocalStorage();
+        const updatedCart = [...existingCart];
+        const existingIndex = updatedCart.findIndex(
+          (item) =>
+            item.product.id === product.id &&
+            item.size === size &&
+            item.color === color
+        );
+
+        if (existingIndex > -1) {
+          // update quantity
+          updatedCart[existingIndex].quantity += quantity;
+        } else {
+          // add new item
+          updatedCart.push({
+            id: product.id,
+            createdAt: product.createdAt,
+            documentId: crypto.randomUUID(), // or use a uuid lib
+            product,
+            quantity,
+            size,
+            color,
+          });
+        }
+        saveToLocalStorage(updatedCart);
+        mutate(swrKey, updatedCart, false);
+        return;
+      }
+
+      // logged-in user logic
       if (!email || !username) throw new Error("User email is missing");
       setIsAddingProduct(true);
       await apiAddProductToCart(
@@ -48,12 +106,8 @@ export const useCart = () => {
         product,
         color
       );
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast({
-        title: "Product added to cart",
-        description: "Item has been added to your cart",
-      });
-      mutate(["cart", email]);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      mutate(swrKey);
     } catch (error) {
       toast({
         title: "Error",
@@ -66,12 +120,20 @@ export const useCart = () => {
     }
   };
 
-  // 2. remove product from cart
+  // 🔴 Remove item (guest and signed-in)
   const removeCartItem = async (itemId: string) => {
     try {
-      if (!email) throw new Error("User email is missing");
-      await apiRemoveCartItem(itemId);
-      mutate(["cart", email]);
+      if (isGuest) {
+        const updatedCart = cartItems.filter(
+          (item) => item.documentId !== itemId
+        );
+        saveToLocalStorage(updatedCart);
+        mutate(swrKey, updatedCart, false);
+      } else {
+        if (!email) throw new Error("User email is missing");
+        await apiRemoveCartItem(itemId);
+        mutate(swrKey);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -82,19 +144,24 @@ export const useCart = () => {
     }
   };
 
-  // 3. update item quantity
+  // 🟡 Update quantity (guest and signed-in)
   const updateItemQuantity = async (itemId: string, quantity: number) => {
     try {
-      if (!email) throw new Error("User email is missing");
       setIsUpdatingProduct(true);
       setCurrentUpdatingProduct(itemId);
-      await apiUpdateItemQuantity(itemId, quantity);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      toast({
-        title: "Product quantity updated",
-        description: "Item quantity has been updated",
-      });
-      mutate(["cart", email]);
+      if (isGuest) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        const updatedCart = cartItems.map((item) =>
+          item.documentId === itemId ? { ...item, quantity } : item
+        );
+        saveToLocalStorage(updatedCart);
+        mutate(swrKey, updatedCart, false);
+      } else {
+        if (!email) throw new Error("User email is missing");
+        await apiUpdateItemQuantity(itemId, quantity);
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        mutate(swrKey);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -108,13 +175,18 @@ export const useCart = () => {
     }
   };
 
-  // 5. clear cart
+  // 🔁 clearCart: also check if guest
   const clearCart = async () => {
     try {
-      await Promise.all(
-        cartItems.map((item) => removeCartItem(item.documentId))
-      );
-      mutate(["cart", email]);
+      if (isGuest) {
+        localStorage.removeItem(CART_KEY);
+        mutate(swrKey, [], false);
+      } else {
+        await Promise.all(
+          cartItems.map((item) => apiRemoveCartItem(item.documentId))
+        );
+        mutate(["cart", email]);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -124,6 +196,15 @@ export const useCart = () => {
       console.error("Error clearing cart:", error);
     }
   };
+
+  // localStorage sync
+  useEffect(() => {
+    if (cartItems && cartItems.length > 0 && isGuest) {
+      saveToLocalStorage(cartItems);
+    } else {
+      localStorage.removeItem(CART_KEY);
+    }
+  }, [cartItems]);
 
   return {
     cartItems,

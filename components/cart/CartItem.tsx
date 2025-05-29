@@ -33,9 +33,11 @@ export default function CartItem({
   };
 
   // get product selected color image
-  const selectedColorImage = item.product?.sizes
-    .find((size) => size.value === item.size)
-    ?.colors.find((color) => color.name === item.color)?.images[0];
+  const selectedColorImage =
+    item.product?.sizes
+      ?.find((size) => size.value === item.size)
+      ?.colors?.find((color) => color.name === item.color)?.images?.[0] ??
+    item.product?.images?.[0];
 
   return (
     <tr className={cn("font-light", className)} style={style}>
@@ -50,13 +52,14 @@ export default function CartItem({
           />
           <div className="space-y-2 sm:space-y-2 font-light grow">
             <Link
-              href={`/products/${item.product.slug}?size=${item.size}&color=${item.color}`}
+              href={`/products/${item.product?.slug}?size=${item.size}&color=${item.color}`}
               className="text-base font-barlow leading-tight hover:underline underline-offset-2"
             >
               {item.product?.name}
             </Link>
             <p>
-              {item.size} / {item.color}
+              {item.size && <span>{item.size}</span>}{" "}
+              {item.color && <span> / {item.color}</span>}
             </p>
             <ProductPrice
               price={item.product?.price}

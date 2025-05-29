@@ -14,7 +14,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import SizeSelector from "./SizeSelector";
+import ProductSizeSelector from "./ProductSizeSelector";
 import ColorSelector from "./ColorSelector";
 import { useRouter, useSearchParams } from "next/navigation";
 import BuyWithProducts from "./BuyWithProducts";
@@ -35,26 +35,24 @@ export default function ProductDetails({
   const defaultColor = product.sizes?.[0].colors?.[0].name ?? "";
   const selectedColor = searchParams.get("color") || defaultColor;
 
-  const availableColors =
+  const allColors =
     product.sizes?.find((size) => size.value === selectedSize)?.colors || [];
 
-  const filteredColors = availableColors.map((color) => ({
-    id: crypto.randomUUID().slice(0, 3),
-    name: color.name,
-  }));
-
   const carouselImages =
-    availableColors.find((color) => color.name === selectedColor)?.images ?? [];
+    allColors.find((color) => color.name === selectedColor)?.images ?? [];
 
   const [resetCarousel, setResetCarousel] = useState(false);
 
   const [quantity, setQuantity] = useState<number>(initialQuantity);
 
-  // Handle Product Color Change
-  const handleColorChange = (value: string | string[]) => {
-    URL.push(`?size=${searchParams.get("size")}&color=${value}`, {
-      scroll: false,
-    });
+  // Handle size change
+  const handleSizeChange = (value: string) => {
+    URL.push(`?size=${value}&color=${defaultColor}`, { scroll: false });
+  };
+
+  // Handle color change
+  const handleColorChange = (value: string) => {
+    URL.push(`?size=${selectedSize}&color=${value}`, { scroll: false });
   };
 
   // Update carousel images when selected size or color changes
@@ -91,15 +89,18 @@ export default function ProductDetails({
             </div>
             <ProductRating rating={5} reviews={3} />
           </div>
-          <SizeSelector sizes={product.sizes} defaultColor={defaultColor} />
+          <ProductSizeSelector
+            sizes={product.sizes}
+            selectedSize={selectedSize}
+            onSizeChange={handleSizeChange}
+          />
           <div className="space-y-2">
             <span>Strap: {selectedColor}</span>
             <ColorSelector
-              colors={availableColors}
-              availableColors={filteredColors}
-              selectedColors={[selectedColor]}
-              onColorChange={handleColorChange}
               mode="single"
+              colors={allColors}
+              selectedColors={[selectedColor]}
+              onColorSelect={handleColorChange}
             />
           </div>
           <div className="space-y-1">
