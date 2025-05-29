@@ -9,7 +9,7 @@ export const checkoutSchema = z.object({
     .refine(
       (value) =>
         /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value) ||
-        /^(\+2)?01[0-2,5][0-9]{8}$/.test(value),
+        /^(\+2|002)?01[0-2,5][0-9]{8}$/.test(value),
       {
         message: "Please enter a valid email or Egyptian phone number",
       }
