@@ -266,6 +266,7 @@ export interface GuestOrder {
   };
   createdAt: string;
   order_number: string;
+  documentId: string;
   payment_method: {
     type: "cash";
   };

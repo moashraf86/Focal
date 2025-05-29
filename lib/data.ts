@@ -406,8 +406,38 @@ export async function fetchCartItems(email: string | undefined) {
 // Fetch order by id
 export const fetchOrderById = async (id: string) => {
   try {
+    const query = qs.stringify({
+      populate: {
+        order_items: {
+          populate: {
+            product: {
+              fields: ["name", "slug", "price"],
+              populate: {
+                images: {
+                  fields: ["url", "alternativeText", "formats"],
+                },
+                sizes: {
+                  fields: ["value"],
+                  populate: {
+                    colors: {
+                      fields: ["name"],
+                      populate: {
+                        images: {
+                          fields: ["url", "alternativeText", "formats"],
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/orders/${id}?populate[order_items][populate][product][populate]=*`,
+      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/orders/${id}?${query}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
@@ -452,6 +482,19 @@ export const fetchOrders = async (email: string | undefined) => {
             populate: {
               images: {
                 fields: ["url", "alternativeText", "formats"],
+              },
+              sizes: {
+                fields: ["value"],
+                populate: {
+                  colors: {
+                    fields: ["name"],
+                    populate: {
+                      images: {
+                        fields: ["url", "alternativeText", "formats"],
+                      },
+                    },
+                  },
+                },
               },
             },
           },

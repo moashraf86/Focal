@@ -4,15 +4,63 @@ import OrderItem from "@/components/order/OrderItem";
 import OrderSummary from "@/components/order/OrderSummary";
 import OrderTable from "@/components/order/OrderTable";
 import { Order } from "@/lib/definitions";
-import { use } from "react";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import { use, useEffect, useState } from "react";
 
 export default function Orders({ orders }: { orders: Promise<Order[]> }) {
+  const { user } = useUser();
+  const email = user?.emailAddresses[0]?.emailAddress;
+  const isGuest = !email;
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Ensure the component has mounted to avoid hydration issues
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (hasMounted && isGuest) {
+    // fetch orders from local storage or handle guest orders
+    const storedOrders = localStorage.getItem("orders");
+    if (storedOrders) {
+      const orders = JSON.parse(storedOrders);
+      console.log("Stored Orders:", orders);
+
+      return (
+        <section className="space-y-10">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-light uppercase text-center tracking-tight">
+              Orders
+            </h1>
+            <p className="text-center">
+              Check the status of recent orders, manage returns, and discover
+              similar products.
+            </p>
+          </div>
+          {orders?.map((order: Order) => (
+            <div
+              key={order.order_number}
+              className="border-b border-border last:border-0"
+            >
+              <OrderSummary order={order} />
+              <OrderTable>
+                {order.order_items.map((item) => (
+                  <OrderItem key={item.documentId} item={item} />
+                ))}
+              </OrderTable>
+            </div>
+          ))}
+        </section>
+      );
+    }
+  }
+
+  // fetch orders from the server
   const allOrders = use(orders);
 
   // reverse the order items to show the latest orders first
-  const sortedOrders = allOrders?.slice().reverse();
+  const sortedOrders = allOrders?.slice().reverse() || [];
 
   if (!sortedOrders || sortedOrders.length === 0) {
     return (

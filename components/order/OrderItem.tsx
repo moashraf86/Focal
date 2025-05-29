@@ -5,21 +5,34 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 
 export default function OrderItem({ item }: { item: OrderItemType }) {
+  // Find the selected image based on size and color
+  const selectedImage =
+    item.product?.sizes
+      ?.find((size) => size.value === item.size)
+      ?.colors?.find((color) => color.name === item.color)?.images?.[0] ??
+    item.product?.images?.[0];
+
   return (
     <>
       <tr>
         <td className="p-6 ps-0 text-start text-sm font-medium">
           <div className="flex items-center sm:items-start gap-4">
             <Image
-              src={item.product.images[0].formats.small.url}
-              alt={item.product.images[0].alternativeText}
+              src={
+                selectedImage?.formats?.small?.url || selectedImage?.url || ""
+              }
+              alt={
+                selectedImage?.alternativeText ||
+                item.product.name ||
+                "Product Image"
+              }
               width={96}
               height={96}
               className="sm:aspect-square object-cover object-center rounded"
               loading="lazy"
             />
             <div className="space-y-1 pt-2">
-              <h2 className="text-base font-barlow leading-tight hover:underline underline-offset-2 font-normal">
+              <h2 className="text-base font-barlow leading-tight font-medium">
                 {item.product.name}
               </h2>
               <p className="text-sm font-light">
@@ -53,7 +66,11 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
             size="sm"
             className="text-sky-700 px-0 hidden sm:inline-flex"
           >
-            <Link href={`/products/${item.product.slug}`}>View product</Link>
+            <Link
+              href={`/products/${item.product.slug}?size=${item.size}&color=${item.color}`}
+            >
+              View product
+            </Link>
           </Button>
         </td>
       </tr>

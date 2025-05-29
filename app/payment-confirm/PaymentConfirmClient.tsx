@@ -20,9 +20,10 @@ export default function PaymentConfirmClient({ orderId }: { orderId: string }) {
         if (storedOrders) {
           const orders = JSON.parse(storedOrders);
           const order = orders.find(
-            (order: GuestOrder) => order.order_number === orderId
+            (order: GuestOrder) => order.documentId === orderId
           );
           if (order) {
+            await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate delay for loading state
             setOrder(order);
             return;
           }
@@ -72,6 +73,7 @@ export default function PaymentConfirmClient({ orderId }: { orderId: string }) {
         </div>
         <ul className="space-y-4 divide-y divide-border w-full">
           {order.order_items.map((item: OrderItem) => {
+            // Find the selected image based on size and color
             const selectedImage =
               item.product?.sizes
                 ?.find((size) => size.value === item.size)
@@ -96,9 +98,12 @@ export default function PaymentConfirmClient({ orderId }: { orderId: string }) {
                     </span>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-sm font-semibold font-barlow tracking-wide">
+                    <Link
+                      href={`/products/${item.product.slug}?size=${item.size}&color=${item.color}`}
+                      className="block text-sm font-semibold font-barlow leading-tight hover:underline underline-offset-2"
+                    >
                       {item.product.name}
-                    </h3>
+                    </Link>
                     <span className="text-xs text-muted-foreground">
                       {item.size} {item.color ? `/ ${item.color}` : ""}
                     </span>{" "}
