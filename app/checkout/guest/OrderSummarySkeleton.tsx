@@ -8,8 +8,8 @@ export default function OrderSummarySkeleton({
   cartItems: CartItem[];
 }) {
   return (
-    <section className="border-l border-border min-h-[calc(100vh-10rem)] p-10 space-y-6">
-      <h2 className="text-lg md:text-xl font-semibold font-barlow tracking-wide">
+    <section className="lg:border-l border-border lg:min-h-[calc(100vh-10rem)] px-6 py-8 lg:p-10 space-y-6 max-w-[40rem] mx-auto lg:mx-0">
+      <h2 className="text-lg lg:text-xl font-semibold font-barlow tracking-wide">
         Order Summary
       </h2>
       <div className="space-y-4 divide-y divide-border">
@@ -24,6 +24,7 @@ export default function OrderSummarySkeleton({
                 <div className="space-y-2">
                   <Skeleton className="w-40 h-3 mb-1" />
                   <Skeleton className="w-20 h-2" />
+                  <Skeleton className="w-12 h-2" />
                 </div>
               </div>
               <Skeleton className="w-16 h-3" />

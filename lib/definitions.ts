@@ -250,7 +250,23 @@ export interface Order {
   order_number: string;
   payment_id: string;
   payment_method: PaymentMethod;
-  publishedAt: string;
   shipping_address: Address;
-  updatedAt: string;
+}
+
+export interface GuestOrder {
+  amount: number;
+  order_items: OrderItem[];
+  shipping_address: {
+    line1: string;
+    line2: string;
+    city: string;
+    state: string;
+    country: string;
+    postal_code: string;
+  };
+  createdAt: string;
+  order_number: string;
+  payment_method: {
+    type: "cash";
+  };
 }

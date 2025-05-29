@@ -4,12 +4,13 @@ import { loadFromLocalStorage } from "@/lib/localStorage";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import OrderSummarySkeleton from "./OrderSummarySkeleton";
+import ProductPrice from "@/components/product/ProductPrice";
 
 export default function OrderSummary() {
   const cartItems = loadFromLocalStorage();
   const [isLoading, setIsLoading] = useState(true);
   const [hasMounted, setHasMounted] = useState(false);
-  const [totalPrice, setTotalPrice] = useState("0.00");
+  const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     setHasMounted(true);
@@ -21,9 +22,11 @@ export default function OrderSummary() {
   }, []);
 
   useEffect(() => {
-    const calculatedTotal = cartItems
-      .reduce((total, item) => total + item.product.price * item.quantity, 0)
-      .toFixed(2);
+    const calculatedTotal = cartItems.reduce(
+      (total, item) => total + item.product.price * item.quantity,
+      0
+    );
+    // Update the total price state
     setTotalPrice(calculatedTotal);
   }, [cartItems]);
 
@@ -34,8 +37,8 @@ export default function OrderSummary() {
   if (!hasMounted) return null;
 
   return (
-    <section className="border-l border-border min-h-[calc(100vh-10rem)] p-10 space-y-6">
-      <h2 className="text-lg md:text-xl font-semibold font-barlow tracking-wide">
+    <section className="lg:border-l border-border h-full px-6 py-8 lg:p-10 space-y-6 max-w-[40rem] mx-auto lg:mx-0">
+      <h2 className="text-lg lg:text-xl font-semibold font-barlow tracking-wide">
         Order Summary
       </h2>
       {hasMounted && cartItems.length > 0 && (
@@ -64,17 +67,24 @@ export default function OrderSummary() {
                       {item.quantity}
                     </span>
                   </div>
-                  <div>
+                  <div className="space-y-1">
                     <h3 className="text-sm font-semibold font-barlow tracking-wide">
                       {item.product.name}
                     </h3>
                     <span className="text-xs text-muted-foreground">
                       {item.size} {item.color ? `/ ${item.color}` : ""}
-                    </span>
+                    </span>{" "}
+                    <ProductPrice
+                      className="text-xs text-muted-foreground font-sans"
+                      price={item.product.price}
+                    />
                   </div>
                 </div>
                 <span className="text-sm font-semibold">
-                  ${(item.product.price * item.quantity).toFixed(2)}
+                  <ProductPrice
+                    className="text-sm font-semibold font-sans"
+                    price={item.product.price * item.quantity}
+                  />
                 </span>
               </div>
             );
@@ -82,9 +92,13 @@ export default function OrderSummary() {
           <div className="border-t border-border pt-4">
             <div className="flex justify-between">
               <span className="text-sm font-semibold">
-                Subtotal · {cartItems.length} items
+                Subtotal ·{" "}
+                {cartItems.reduce((acc, item) => acc + item.quantity, 0)} items
               </span>
-              <span className="text-sm font-semibold">${totalPrice}</span>
+              <ProductPrice
+                className="text-sm font-semibold font-sans"
+                price={totalPrice}
+              />
             </div>
             <div className="flex justify-between mt-2">
               <span className="text-sm font-semibold">Shipping</span>
@@ -92,7 +106,10 @@ export default function OrderSummary() {
             </div>
             <div className="flex justify-between mt-4">
               <span className="text-xl font-semibold">Total</span>
-              <span className="text-xl font-semibold">${totalPrice}</span>
+              <ProductPrice
+                className="text-xl font-semibold"
+                price={totalPrice}
+              />
             </div>
           </div>
         </div>

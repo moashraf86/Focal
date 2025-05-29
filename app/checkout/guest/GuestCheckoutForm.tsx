@@ -23,75 +23,15 @@ import {
 import { loadFromLocalStorage } from "@/lib/localStorage";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
-
-// create form schema
-const formSchema = z.object({
-  contact: z
-    .string()
-    .trim()
-    .refine(
-      (value) =>
-        /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value) ||
-        /^(\+2)?01[0-2,5][0-9]{8}$/.test(value),
-      {
-        message: "Please enter a valid email or Egyptian phone number",
-      }
-    ),
-  firstName: z
-    .string()
-    .min(1, {
-      message: "First name is required",
-    })
-    .max(50, {
-      message: "First name must be less than 50 characters",
-    }),
-  lastName: z
-    .string()
-    .min(1, {
-      message: "Last name is required",
-    })
-    .max(50, {
-      message: "Last name must be less than 50 characters",
-    }),
-  address: z
-    .string()
-    .min(1, {
-      message: "Address is required",
-    })
-    .max(100, {
-      message: "Address must be less than 100 characters",
-    }),
-  apartment: z
-    .string()
-    .max(50, {
-      message: "Apartment, suite, etc. must be less than 50 characters",
-    })
-    .or(z.literal("")),
-  city: z
-    .string()
-    .min(1, {
-      message: "City is required",
-    })
-    .max(50, {
-      message: "City must be less than 50 characters",
-    }),
-  state: z.enum([...egyptStates] as [string, ...string[]], {
-    required_error: "State is required",
-  }),
-  postal_code: z
-    .string()
-    .optional()
-    .refine((val) => !val || /^\d{5}$/.test(val), {
-      message: "postal_code code must be exactly 5 digits",
-    }),
-});
+import { CartItem, GuestOrder } from "@/lib/definitions";
+import { checkoutSchema } from "@/lib/schema";
 
 export default function GuestCheckoutForm() {
   const router = useRouter();
 
   // 1. Initialize form with useForm hook
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof checkoutSchema>>({
+    resolver: zodResolver(checkoutSchema),
     defaultValues: {
       contact: "",
       firstName: "",
@@ -104,12 +44,12 @@ export default function GuestCheckoutForm() {
     },
   });
   // 2. Handle form submission
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = (data: z.infer<typeof checkoutSchema>) => {
     // 1. Load cart items from local storage
     const cartItems = loadFromLocalStorage();
     // 2. create new order object
     const newOrder = {
-      orderItems: cartItems,
+      order_items: cartItems,
       shipping_address: {
         line1: data.address,
         line2: data.apartment,
@@ -119,25 +59,49 @@ export default function GuestCheckoutForm() {
         postal_code: data.postal_code,
       },
       createdAt: new Date().toISOString(),
-      orderId: crypto.randomUUID().slice(0, 8),
+      order_number: crypto.randomUUID().slice(0, 8),
+      amount: cartItems
+        .reduce((acc: number, item: CartItem) => {
+          return acc + item.product.price * item.quantity;
+        }, 0)
+        .toFixed(2),
+      payment_method: {
+        type: "cash",
+      },
     };
     // 3. get existing orders from local storage, if any
     const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
-    // 4. check if order with same orderId already exists, if so, merge the new order with the existing one
-    const updatedOrders = [...existingOrders, newOrder];
+    // 4. check if order with same orderId already exists, overwrite it if it does
+    const orderIndex = existingOrders.findIndex(
+      (order: GuestOrder) => order.order_number === newOrder.order_number
+    );
+
+    if (orderIndex !== -1) {
+      // if order exists, merge the new order with the existing one
+      existingOrders[orderIndex] = {
+        ...existingOrders[orderIndex],
+        ...newOrder,
+      };
+    } else {
+      // if order does not exist, push the new order
+      existingOrders.push(newOrder);
+    }
     // 5. store the new order in local storage
-    localStorage.setItem("orders", JSON.stringify(updatedOrders));
+    localStorage.setItem("orders", JSON.stringify(existingOrders));
     // 6. clear cart items from local storage
     localStorage.removeItem("cart_items");
     // 7. clear cart items from SWR cache
     mutate("guest-cart", [], false);
     // 8. redirect to payment confirmation page with orderId
-    router.push("/payment-confirm?orderId=" + newOrder.orderId);
+    router.push("/payment-confirm?orderId=" + newOrder.order_number);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-10">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6 px-6 py-8 lg:p-10 max-w-[40rem] mx-auto lg:ms-auto"
+      >
         <section className="space-y-3">
           <h2 className="text-lg md:text-xl font-semibold font-barlow tracking-wide">
             Contact
@@ -244,7 +208,7 @@ export default function GuestCheckoutForm() {
                         <SelectValue placeholder="Select a state" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="rounded-md">
                       {egyptStates.map((state) => (
                         <SelectItem key={state} value={state}>
                           {state}
