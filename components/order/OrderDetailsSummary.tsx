@@ -24,11 +24,17 @@ export default function OrderDetailsSummary({
         <div className="flex sm:flex-col justify-between sm:justify-start gap-1 col-span-1 border-b sm:border-b-0 border-border pb-4 sm:pb-0">
           <span className="text-sm font-medium">Payment info</span>
           <div className="text-sm space-y-1 text-end sm:text-start text-gray-500">
-            <p>Ending with {order?.payment_method?.card?.last4}</p>
-            <p>
-              Expires {order?.payment_method?.card?.exp_month}/
-              {order?.payment_method?.card?.exp_year.toString().slice(-2)}
-            </p>
+            {order?.payment_method.type === "card" ? (
+              <>
+                <p>Ending with {order?.payment_method?.card?.last4}</p>
+                <p>
+                  Expires {order?.payment_method?.card?.exp_month}/
+                  {order?.payment_method?.card?.exp_year.toString().slice(-2)}
+                </p>
+              </>
+            ) : (
+              <p>Cash on delivery</p>
+            )}
           </div>
         </div>
         <div className="flex sm:flex-col justify-between sm:justify-start gap-1 col-span-1 border-b sm:border-b-0 border-border pb-4 sm:pb-0">
