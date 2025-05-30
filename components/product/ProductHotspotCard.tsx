@@ -22,6 +22,9 @@ export default function ProductHotspotCard({
   const { width } = useWindowSize();
   const isMobile = width && width < 768;
 
+  const chosenSize = product.sizes?.[0];
+  const chosenColor = product.sizes?.[0]?.colors?.[0];
+
   // Handle add to cart logic here
   const handleAddToCart = (product: Product) => {
     addProductToCart(
@@ -34,7 +37,7 @@ export default function ProductHotspotCard({
 
   // Handle Quick View logic here
   const handleQuickView = (product: Product) => {
-    openQuickView(product);
+    openQuickView(product, chosenSize, chosenColor);
   };
 
   return (
