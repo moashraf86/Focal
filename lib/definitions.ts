@@ -187,6 +187,10 @@ export interface Address {
    * State/County/Province/Region.
    */
   state: string | null;
+  /**
+   * Contact info
+   */
+  contact?: string | null;
 }
 
 interface PaymentCard {
@@ -256,14 +260,7 @@ export interface Order {
 export interface GuestOrder {
   amount: number;
   order_items: OrderItem[];
-  shipping_address: {
-    line1: string;
-    line2: string;
-    city: string;
-    state: string;
-    country: string;
-    postal_code: string;
-  };
+  shipping_address: Address;
   createdAt: string;
   order_number: string;
   documentId: string;

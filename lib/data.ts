@@ -452,9 +452,6 @@ export const fetchOrderById = async (id: string) => {
       );
     }
 
-    // simulate delay for testing
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
     const response = await res.json();
     const order = response.data;
     return order;

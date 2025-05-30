@@ -18,6 +18,12 @@ export default function OrderDetailsSummary({
               {order?.shipping_address?.city}, {order?.shipping_address?.state},{" "}
               {order?.shipping_address?.postal_code},{" "}
               {order?.shipping_address?.country}
+              {order?.shipping_address?.contact && (
+                <>
+                  <br />
+                  {order?.shipping_address?.contact}
+                </>
+              )}
             </p>
           </div>
         </div>

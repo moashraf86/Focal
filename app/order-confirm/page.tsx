@@ -1,11 +1,11 @@
-import PaymentConfirmClient from "./PaymentConfirmClient";
+import OrderConfirmClient from "../../components/order-confirm/OrderConfirmClient";
 
 export const metadata = {
   title: "Payment Confirmation",
   description: "Your payment has been successfully processed.",
 };
 
-export default async function PaymentConfirm({
+export default async function OrderConfirm({
   searchParams,
 }: {
   searchParams: { orderId: string };
@@ -14,5 +14,5 @@ export default async function PaymentConfirm({
 
   const { orderId } = params;
 
-  return <PaymentConfirmClient orderId={orderId} />;
+  return <OrderConfirmClient orderId={orderId} />;
 }
