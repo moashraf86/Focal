@@ -1,9 +1,10 @@
+"use client";
 import OrderSkeleton from "@/components/order/OrderSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <main className="container max-w-screen-lg mx-auto py-10">
+    <main className="container max-w-screen-lg mx-auto pt-10 pb-20">
       <section className="space-y-10">
         <div className="space-y-2">
           <h1 className="text-4xl font-light uppercase text-center tracking-tight">

@@ -456,7 +456,8 @@ export const fetchOrderById = async (id: string) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     const response = await res.json();
-    return response;
+    const order = response.data;
+    return order;
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Error in fetchOrderById:", error.message);
