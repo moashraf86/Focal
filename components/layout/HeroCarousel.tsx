@@ -63,7 +63,7 @@ export default function HeroCarousel() {
   }, [activeIndex]);
 
   return (
-    <section className="relative h-[90dvh]">
+    <section className="relative h-[calc(100vh-6rem)]">
       <div className="absolute inset-0 bg-black/20 z-[1]"></div>
       {/* slide images */}
       {carouselData.map((_, index) => (
@@ -76,7 +76,8 @@ export default function HeroCarousel() {
               activeIndex === index ? "opacity-100" : "opacity-0"
             )}
             fill
-            priority={index === 0} // Preload first image for faster initial render
+            priority={index === 0}
+            loading={index === 0 ? "eager" : "lazy"}
           />
         </div>
       ))}

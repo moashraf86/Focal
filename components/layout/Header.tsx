@@ -40,7 +40,7 @@ export default function Header() {
           "sticky top-0 bg-background text-foreground border-border"
       )}
     >
-      <div className="mx-auto flex h-16 max-w-screen-xl items-center px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-screen-xl items-center px-4 lg:px-8 py-5 md:py-6">
         {/* Navigation */}
         <nav aria-label="Global" className="flex-1">
           <ul className="hidden lg:flex items-center gap-6 text-sm">
