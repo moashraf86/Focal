@@ -1,5 +1,5 @@
 "use client";
-import Carousel from "@/components/layout/Carousel";
+import Carousel from "@/components/layout/HeroCarousel";
 import Categories from "@/components/layout/Categories";
 import BestsellingProducts from "../components/product/BestsellingProducts";
 import FeaturedProductsSlider from "@/components/product/FeaturedProductsSlider";

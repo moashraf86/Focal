@@ -5,24 +5,12 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
-export default function Carousel() {
+export default function HeroCarousel() {
   // carousel data
   const carouselData = [
     {
-      title: "Limited Edition Frederique Constant",
-      slogan: "1988 Moonphase",
-      image: "/hero-1.webp",
-      links: [
-        {
-          text: "Shop The Watch",
-          href: "/shop",
-        },
-      ],
-      align: "start",
-    },
-    {
-      title: "Clean & Classic Design",
-      slogan: "1988 Slimline",
+      title: "The First Waterproof Wristwatch",
+      slogan: "1926 At'Sea",
       image: "/hero-2.webp",
       links: [
         {
@@ -34,7 +22,19 @@ export default function Carousel() {
           href: "/about",
         },
       ],
-      align: "center",
+      align: "start",
+    },
+    {
+      title: "Limited Edition Frederique Constant",
+      slogan: "1988 Moonphase",
+      image: "/hero-1.webp",
+      links: [
+        {
+          text: "Shop The Watch",
+          href: "/shop",
+        },
+      ],
+      align: "start",
     },
     {
       title: "Women's Collection",
@@ -72,15 +72,16 @@ export default function Carousel() {
             src={carouselData[index].image}
             alt={carouselData[index].title}
             className={cn(
-              "absolute inset-0 object-cover transition-opacity duration-300",
+              "absolute inset-0 object-cover transition-opacity duration-700 ease-in-out",
               activeIndex === index ? "opacity-100" : "opacity-0"
             )}
             fill
+            priority={index === 0} // Preload first image for faster initial render
           />
         </div>
       ))}
-      {/* slide content */}
-      <div className="container mx-auto h-full max-w-5xl p-5 relative z-[2]">
+      {/* Slide Content */}
+      <div className="container mx-auto h-full max-w-5xl px-4 lg:px-8 relative z-[2]">
         <div
           className={cn(
             "flex items-center h-full",
@@ -89,25 +90,26 @@ export default function Carousel() {
         >
           <div
             className={cn(
-              "flex flex-col gap-8 text-start",
-              activeSlide.align === "center" ? "items-center" : "items-start"
+              "flex flex-col gap-8",
+              activeSlide.align === "center"
+                ? "items-center text-center"
+                : "items-start text-start"
             )}
           >
-            <span className="text-primary-foreground">
+            <span className="text-sm font-semibold text-primary-foreground">
               {activeSlide.slogan}
             </span>
-            <h1
-              className={cn(
-                "text-5xl font-light uppercase text-primary-foreground max-w-[15ch] ",
-
-                activeSlide.align === "center" ? "text-center" : "text-start"
-              )}
-            >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-light uppercase text-primary-foreground max-w-[20ch]">
               {activeSlide.title}
             </h1>
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
               {activeSlide.links.map((link, index) => (
-                <Button key={index} size="lg" asChild>
+                <Button
+                  key={activeIndex + link.text + index}
+                  size="lg"
+                  asChild
+                  className="animate-in fade-in duration-200 ease-in-out"
+                >
                   <Link href={link.href}>{link.text}</Link>
                 </Button>
               ))}
@@ -122,10 +124,16 @@ export default function Carousel() {
             key={index}
             onClick={() => setActiveIndex(index)}
             className={cn(
-              "relative w-10 h-1 rounded-full bg-primary-foreground/50",
-              activeIndex === index && "bg-primary-foreground"
+              "relative w-16 h-0.5 rounded-full bg-primary-foreground/50 overflow-hidden",
+              activeIndex === index && "bg-primary-foreground/50"
             )}
           >
+            {activeIndex === index && (
+              <span
+                key={activeIndex} // Force re-render to reset animation
+                className="absolute inset-0 bg-primary-foreground animate-progress"
+              />
+            )}
             <span className="sr-only">Slide {index + 1}</span>
           </button>
         ))}
