@@ -95,7 +95,7 @@ export default function WhyChooseUs() {
           >
             {WhyChooseUs.map((item) => (
               <figure
-                className="space-y-4 snap-center snap-always bg-gray-100"
+                className="space-y-4 snap-center snap-always"
                 key={item.id}
               >
                 {hasBeenVisible && (

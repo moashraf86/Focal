@@ -9,6 +9,7 @@ import { useCart } from "@/hooks/useCart";
 import { useMeasure, useWindowScroll } from "@uidotdev/usehooks";
 import Logo from "../shared/Logo";
 import { useEffect, useState } from "react";
+import { useSearchDrawer } from "@/hooks/useSearchDrawer";
 
 export default function Header() {
   const [hasMounted, setHasMounted] = useState(false);
@@ -19,6 +20,7 @@ export default function Header() {
   const [{ y: scrollY }] = useWindowScroll();
   const [ref, { height }] = useMeasure();
   const isHomePage = pathname === "/";
+  const { open } = useSearchDrawer();
 
   useEffect(() => {
     // Ensure the component has mounted before applying styles
@@ -94,12 +96,13 @@ export default function Header() {
         {/* Actions */}
         <div className="flex items-center gap-4 flex-1 justify-end">
           <div className="flex gap-5">
-            <Link
-              href="/search"
-              className="flex justify-center items-center size-7 text-inherit"
+            <Button
+              variant="ghost"
+              className="flex justify-center items-center size-7 text-inherit hover:bg-transparent"
+              onClick={() => open()}
             >
               <Search className="block size-5 text-inherit" />
-            </Link>
+            </Button>
 
             <Link
               href="/cart"

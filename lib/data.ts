@@ -338,6 +338,56 @@ export async function fetchProductBySlug(
   return { product };
 }
 
+export async function searchProducts(queryText: string): Promise<Product[]> {
+  const query = qs.stringify({
+    filters: {
+      $or: [
+        {
+          name: {
+            $contains: queryText,
+          },
+        },
+      ],
+    },
+    populate: {
+      images: {
+        fields: ["url", "alternativeText", "formats"],
+      },
+      collections: {
+        fields: ["name", "slug"],
+      },
+      categories: {
+        fields: ["name", "slug"],
+      },
+      sizes: {
+        fields: ["value"],
+        populate: {
+          colors: {
+            fields: ["name"],
+          },
+        },
+      },
+    },
+  });
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/products?${query}`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
+      },
+      next: { revalidate: 60 },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch search results");
+  }
+
+  const data: StrapiResponse<Product> = await res.json();
+  return data.data;
+}
+
 // Fetch cart products from strapi
 export async function fetchCartItems(email: string | undefined) {
   const query = qs.stringify({
