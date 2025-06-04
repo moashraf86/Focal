@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchDrawerController } from "@/hooks/useSearchDrawer";
 import { searchProducts } from "@/lib/data";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-import { ArrowRight, Loader2, Search } from "lucide-react";
+import { Loader2, MoveRight, Search } from "lucide-react";
 import { Input } from "../ui/input";
 import { useDebounce, useWindowSize } from "@uidotdev/usehooks";
 import Link from "next/link";
@@ -71,7 +71,7 @@ export default function SearchDrawer() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
         side={isMobile ? "left" : "right"}
-        className="sm:max-w-[500px] overflow-y-auto overflow-x-hidden"
+        className="sm:max-w-[500px]"
       >
         <SheetHeader className="sticky top-0 z-50 bg-background border-b border-border">
           <SheetTitle className="tracking-normal">
@@ -92,7 +92,7 @@ export default function SearchDrawer() {
           </SheetTitle>
         </SheetHeader>
 
-        <div className="p-4 space-y-2">
+        <div className="p-4 space-y-2 overflow-y-auto overflow-x-hidden">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center space-x-2">
               <Loader2 className="animate-spin text-gray-500" />
@@ -132,8 +132,8 @@ export default function SearchDrawer() {
                     className="text-primary"
                   />
                 </div>
-                <span className="inline-flex ml-auto relative opacity-0 transition-transform duration-300 ease-in-out group-hover:translate-x-0 group-hover:opacity-100 group-hover:-rotate-45">
-                  <ArrowRight className="text-gray-600" />
+                <span className="inline-flex ml-auto relative opacity-0 duration-300 ease-in-out translate-x-5 group-hover:translate-x-0 group-hover:opacity-100 transition-all">
+                  <MoveRight />
                 </span>
               </Link>
             ))}

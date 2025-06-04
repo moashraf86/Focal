@@ -112,6 +112,10 @@
   input[type="number"] {
     -moz-appearance: textfield;
   }
+
+  svg {
+    stroke-width: 1.5 !important;
+  }
 }
 
 @layer utilities {
