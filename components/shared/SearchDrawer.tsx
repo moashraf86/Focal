@@ -69,14 +69,14 @@ export default function SearchDrawer() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
         side="right"
-        className="sm:max-w-md overflow-y-auto overflow-x-hidden"
+        className="sm:max-w-[500px] overflow-y-auto overflow-x-hidden"
       >
         <SheetHeader className="sticky top-0 z-50 bg-background border-b border-border">
           <SheetTitle className="tracking-normal">
             <div className="flex items-center gap-2 grow mr-4">
               <Search className="inline-block mr-2" />
               <Input
-                className="border-0 focus:ring-0 focus-visible:ring-transparent focus-visible:ring-0 focus:border-0 bg-transparent shadow-none font-barlow text-sm"
+                className="border-0 focus:ring-0 focus-visible:ring-transparent focus-visible:ring-0 focus:border-0 bg-transparent shadow-none font-barlow text-sm h-6 md:h-8"
                 type="text"
                 placeholder="What are you looking for?"
                 value={query}
