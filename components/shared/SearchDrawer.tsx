@@ -6,7 +6,7 @@ import { searchProducts } from "@/lib/data";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { ArrowRight, Loader2, Search } from "lucide-react";
 import { Input } from "../ui/input";
-import { useDebounce } from "@uidotdev/usehooks";
+import { useDebounce, useWindowSize } from "@uidotdev/usehooks";
 import Link from "next/link";
 import { Product } from "@/lib/definitions";
 import Image from "next/image";
@@ -18,6 +18,8 @@ export default function SearchDrawer() {
   const debouncedQuery = useDebounce(query, 400);
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const { width } = useWindowSize();
+  const isMobile = width && width < 1024;
 
   // Function to fetch search results based on the debounced query
   const fetchResults = async () => {
@@ -68,7 +70,7 @@ export default function SearchDrawer() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
-        side="right"
+        side={isMobile ? "left" : "right"}
         className="sm:max-w-[500px] overflow-y-auto overflow-x-hidden"
       >
         <SheetHeader className="sticky top-0 z-50 bg-background border-b border-border">
