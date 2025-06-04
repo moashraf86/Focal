@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Search, ShoppingBag, UserRound } from "lucide-react";
+import { Menu, Search, ShoppingBag, UserRound } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
@@ -64,27 +64,25 @@ export default function Header() {
             </li>
           </ul>
           {/* Menu Toggler */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-inherit lg:hidden"
-          >
-            <span className="sr-only">Toggle menu</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="!size-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
+          <div className="flex items-center gap-2 lg:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-inherit hover:bg-transparent"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </Button>
+              <span className="sr-only">Toggle menu</span>
+              <Menu />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-inherit hover:bg-transparent"
+              onClick={() => open()}
+            >
+              <span className="sr-only">Open Search Drawer</span>
+              <Search />
+            </Button>
+          </div>
         </nav>
         {/* Logo */}
         <Logo
@@ -94,40 +92,62 @@ export default function Header() {
           )}
         />
         {/* Actions */}
-        <div className="flex items-center gap-4 flex-1 justify-end">
-          <div className="flex gap-5">
+        <div className="flex items-center flex-1 justify-end">
+          <div className="flex gap-4">
             <Button
               variant="ghost"
-              className="flex justify-center items-center size-7 text-inherit hover:bg-transparent"
+              size="icon"
+              className="text-inherit hover:bg-transparent hidden lg:flex"
               onClick={() => open()}
             >
-              <Search className="block size-5 text-inherit" />
+              <span className="sr-only">Open Search Drawer</span>
+              <Search />
             </Button>
 
-            <Link
-              href="/cart"
-              className="relative flex justify-center items-center size-7 text-inherit"
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="relative text-inherit hover:bg-transparent transition-none"
             >
-              <ShoppingBag className="block size-5 text-inherit" />
-              <span>
+              <Link href="/cart">
+                <span className="sr-only">View Cart</span>
+                <ShoppingBag />
                 {cartItems?.length > 0 && hasMounted && (
-                  <span className="absolute top-0 -right-1 flex items-center justify-center min-w-4 min-h-4 ps-1 pe-1 text-[9px] font-medium text-white bg-primary rounded-full">
-                    {getTotalItems()}
-                  </span>
+                  <div className="absolute top-0 -right-1 flex items-center justify-center min-w-4 min-h-4 px-1 font-medium text-white bg-primary rounded-full">
+                    <span className="inline text-[9px] leading-[.75rem] indent-0.5">
+                      {getTotalItems()}
+                    </span>
+                  </div>
                 )}
-              </span>
-            </Link>
+              </Link>
+            </Button>
             {isSignedIn && hasMounted && (
-              <UserButton afterSwitchSessionUrl="/sign-in" />
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="relative text-inherit hover:bg-transparent transition-none"
+              >
+                <div>
+                  <span className="sr-only">User Menu</span>
+                  <UserButton afterSwitchSessionUrl="/sign-in" />
+                </div>
+              </Button>
             )}
 
             {!isSignedIn && hasMounted && (
-              <Link
-                href="/sign-in"
-                className="flex justify-center items-center size-7 text-inherit"
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="text-inherit hover:bg-transparent transition-none"
               >
-                <UserRound className="block size-5" />
-              </Link>
+                <Link href="/sign-in">
+                  <span className="sr-only">Sign In</span>
+                  <UserRound />
+                </Link>
+              </Button>
             )}
           </div>
         </div>
