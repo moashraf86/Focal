@@ -43,9 +43,10 @@ export default function Orders({
 
   // reverse the order items to show the latest orders first
   const sortedOrders = allOrders?.slice().reverse() || [];
+  console.log("Sorted Orders:", sortedOrders);
 
   // If the user has mounted and there are no orders, show a message
-  if (hasMounted && !sortedOrders) {
+  if ((hasMounted && !sortedOrders) || sortedOrders.length === 0) {
     return (
       <section className="h-[50vh] flex items-center justify-center">
         <div className="space-y-6 max-w-md mx-auto text-center">
