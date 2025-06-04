@@ -50,7 +50,7 @@ export default async function CategoryPage({
       fetchCategories(),
       fetchProductsByCategory({
         slug,
-        sort_by,
+        sort: sort_by,
         size,
         color,
         price_min,
