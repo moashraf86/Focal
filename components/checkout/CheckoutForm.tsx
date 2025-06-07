@@ -79,8 +79,8 @@ export default function CheckoutForm({
         paymentMethod
       );
       await clearCart();
-      // Redirect to success page
-      router.push("/payment-confirm?orderId=" + order.data.documentId);
+      // Redirect to order confirmation page
+      router.push("/order-confirm?orderId=" + order.data.documentId);
       router.refresh();
     }
     setLoading(false);

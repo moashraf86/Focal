@@ -7,8 +7,9 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import OrderConfirmSkeleton from "./OrderConfirmSkeleton";
 
-export default function PaymentConfirmClient({ orderId }: { orderId: string }) {
+export default function OrderConfirmClient({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | GuestOrder | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,15 +21,16 @@ export default function PaymentConfirmClient({ orderId }: { orderId: string }) {
         if (storedOrders) {
           const orders = JSON.parse(storedOrders);
           const order = orders.find(
-            (order: GuestOrder) => order.order_number === orderId
+            (order: GuestOrder) => order.documentId === orderId
           );
           if (order) {
+            await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate delay for loading state
             setOrder(order);
             return;
           }
         }
         // if not found in local storage, fetch from API
-        const { data: orderData } = await fetchOrderById(orderId);
+        const orderData = await fetchOrderById(orderId);
         setOrder(orderData);
       } catch (err) {
         console.error("Error fetching order:", err);
@@ -39,8 +41,7 @@ export default function PaymentConfirmClient({ orderId }: { orderId: string }) {
   }, [orderId]);
 
   if (!order) {
-    // skeleton loading component to be added later
-    return <div className="container max-w-xl mx-auto py-10">Loading...</div>;
+    return <OrderConfirmSkeleton />;
   }
 
   if (error) {
@@ -72,6 +73,7 @@ export default function PaymentConfirmClient({ orderId }: { orderId: string }) {
         </div>
         <ul className="space-y-4 divide-y divide-border w-full">
           {order.order_items.map((item: OrderItem) => {
+            // Find the selected image based on size and color
             const selectedImage =
               item.product?.sizes
                 ?.find((size) => size.value === item.size)
@@ -96,9 +98,12 @@ export default function PaymentConfirmClient({ orderId }: { orderId: string }) {
                     </span>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-sm font-semibold font-barlow tracking-wide">
+                    <Link
+                      href={`/products/${item.product.slug}?size=${item.size}&color=${item.color}`}
+                      className="block text-sm font-semibold font-barlow leading-tight hover:underline underline-offset-2"
+                    >
                       {item.product.name}
-                    </h3>
+                    </Link>
                     <span className="text-xs text-muted-foreground">
                       {item.size} {item.color ? `/ ${item.color}` : ""}
                     </span>{" "}
@@ -152,6 +157,12 @@ export default function PaymentConfirmClient({ orderId }: { orderId: string }) {
               {order.shipping_address.city}, {order.shipping_address.state},{" "}
               {order.shipping_address.postal_code},{" "}
               {order.shipping_address.country}
+              {order.shipping_address.contact && (
+                <>
+                  <br />
+                  {order.shipping_address.contact}
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -178,7 +189,7 @@ export default function PaymentConfirmClient({ orderId }: { orderId: string }) {
           className="flex items-center gap-2 text-sky-600 hover:text-sky-500 self-end font-medium"
         >
           Continue Shopping
-          <ArrowRight size={16} />
+          <ArrowRight className="mt-1" size={16} />
         </Link>
       </div>
     </div>

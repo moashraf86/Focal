@@ -57,9 +57,11 @@ export default function GuestCheckoutForm() {
         state: data.state,
         country: "Egypt",
         postal_code: data.postal_code,
+        contact: data.contact,
       },
       createdAt: new Date().toISOString(),
       order_number: crypto.randomUUID().slice(0, 8),
+      documentId: crypto.randomUUID().replace(/-/g, "").slice(0, 12),
       amount: cartItems
         .reduce((acc: number, item: CartItem) => {
           return acc + item.product.price * item.quantity;
@@ -92,8 +94,8 @@ export default function GuestCheckoutForm() {
     localStorage.removeItem("cart_items");
     // 7. clear cart items from SWR cache
     mutate("guest-cart", [], false);
-    // 8. redirect to payment confirmation page with orderId
-    router.push("/payment-confirm?orderId=" + newOrder.order_number);
+    // 8. redirect to order confirmation page with orderId
+    router.push("/order-confirm?orderId=" + newOrder.documentId);
   };
 
   return (

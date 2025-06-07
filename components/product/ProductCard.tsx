@@ -8,6 +8,8 @@ import { useCart } from "@/hooks/useCart";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "../ui/toast";
+import { useIntersectionObserver } from "@uidotdev/usehooks";
+import { useEffect, useState } from "react";
 
 export default function ProductCard({
   product,
@@ -20,6 +22,12 @@ export default function ProductCard({
 }) {
   const { addProductToCart, isAdding } = useCart();
   const { openQuickView } = useQuickView();
+  const [ref, entry] = useIntersectionObserver({
+    threshold: 0.2,
+    root: null,
+    rootMargin: "0px",
+  });
+  const [hasBeenVisible, setHasBeenVisible] = useState(false);
 
   // check if the params are arrays or undefined
   const size = Array.isArray(selectedSize) ? selectedSize[0] : selectedSize;
@@ -123,27 +131,39 @@ export default function ProductCard({
     openQuickView(product, chosenSize, chosenColor);
   };
 
+  // If the component has been visible, set hasBeenVisible to true
+  useEffect(() => {
+    if (entry?.isIntersecting && !hasBeenVisible) {
+      setHasBeenVisible(true);
+    }
+  }, [entry, hasBeenVisible]);
+
   return (
     <div className="space-y-4">
       <div className="relative group grid gap-4 overflow-hidden">
         <Link
+          ref={ref}
           href={`/products/${product.slug}?size=${chosenSize?.value}&color=${chosenColor?.name}`}
           className="group aspect-[3/4] relative overflow-hidden bg-gray-100 block"
         >
-          <Image
-            className="group-hover:opacity-0 object-cover transition-opacity duration-300"
-            src={imageUrl}
-            alt={imageAlt || "product image"}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
-          <Image
-            className="opacity-0 group-hover:opacity-100 object-cover transition-opacity duration-300"
-            src={hoverImageUrl}
-            alt={hoverImageUrl || "product image Hover"}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
+          {hasBeenVisible && (
+            <>
+              <Image
+                className="group-hover:opacity-0 object-cover transition-opacity duration-300"
+                src={imageUrl}
+                alt={imageAlt || "product image"}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              />
+              <Image
+                className="opacity-0 group-hover:opacity-100 object-cover transition-opacity duration-300"
+                src={hoverImageUrl}
+                alt={hoverImageUrl || "product image Hover"}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              />
+            </>
+          )}
           {/* Product Labels */}
           <div className="absolute top-2 left-2 flex flex-col items-center justify-center gap-1 z-10">
             {isLimitedEdition && (

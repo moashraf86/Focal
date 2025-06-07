@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import CartItem from "@/components/cart/CartItem";
 import CartTable from "@/components/cart/CartTable";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import ItemsCount from "./ItemsCount";
 import { Button } from "../ui/button";
@@ -36,16 +36,18 @@ export default function Cart() {
   };
 
   // Update visible items when cart items change
+  // Update visibleItems only when cartItems or isLoading changes
   useEffect(() => {
-    if (cartItems.length > 0) {
-      setVisibleItems(cartItems);
-    } else {
-      setVisibleItems([]);
+    if (!isLoading) {
+      setVisibleItems(cartItems || []);
     }
-  }, [cartItems]);
+  }, [cartItems, isLoading]);
 
-  // reverse the order to show the last added items first
-  const sortedCartItems = [...visibleItems].reverse();
+  // Reverse the order to show the last added items first
+  const sortedCartItems = useMemo(
+    () => [...visibleItems].reverse(),
+    [visibleItems]
+  );
 
   const isCartEmpty = visibleItems.length === 0 && !isLoading;
 

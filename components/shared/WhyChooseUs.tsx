@@ -1,8 +1,8 @@
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { useIntersectionObserver } from "@uidotdev/usehooks";
 
 export default function WhyChooseUs() {
-  // why choose us section
   const WhyChooseUs = [
     {
       id: 1,
@@ -42,7 +42,20 @@ export default function WhyChooseUs() {
   const [scrollWidth, setScrollWidth] = useState(0);
   const [scrollPercentage, setScrollPercentage] = useState(0);
 
-  // Set the scroll width and scroll x distance
+  const [sectionRef, entry] = useIntersectionObserver({
+    threshold: 0.2,
+    root: null,
+    rootMargin: "0px",
+  });
+
+  const [hasBeenVisible, setHasBeenVisible] = useState(false);
+
+  useEffect(() => {
+    if (entry?.isIntersecting && !hasBeenVisible) {
+      setHasBeenVisible(true);
+    }
+  }, [entry, hasBeenVisible]);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollLeft = e.currentTarget.scrollLeft;
     setScrollWidth(e.currentTarget.scrollWidth);
@@ -52,7 +65,7 @@ export default function WhyChooseUs() {
   };
 
   return (
-    <section>
+    <section ref={sectionRef}>
       <div className="relative container py-9 md:py-12 mb-10">
         <div className="space-y-6  max-w-xl lg:max-w-2xl mx-auto text-center mb-9 md:mb-12">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-jost font-light text-center uppercase tracking-tight">
@@ -70,6 +83,7 @@ export default function WhyChooseUs() {
             going for.
           </p>
         </div>
+
         <div className="space-y-9 md:space-y-12 text-center">
           <h3 className="text-xs font-semibold font-barlow tracking-[1px] uppercase">
             Cutting-edge watches
@@ -84,13 +98,15 @@ export default function WhyChooseUs() {
                 className="space-y-4 snap-center snap-always"
                 key={item.id}
               >
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  width={500}
-                  height={500}
-                  className="w-full h-auto object-cover"
-                />
+                {hasBeenVisible && (
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    width={500}
+                    height={500}
+                    className="w-full h-auto object-cover"
+                  />
+                )}
                 <figcaption>
                   <p className="text-sm text-start">
                     <strong>{item.title}</strong>
@@ -102,6 +118,7 @@ export default function WhyChooseUs() {
             ))}
           </div>
         </div>
+
         {/* Custom scrollbar */}
         <div className="absolute bottom-0 left-5 right-5 lg:left-10 lg:right-10 h-0.5 bg-gray-200 flex items-center">
           <div

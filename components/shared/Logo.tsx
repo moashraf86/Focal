@@ -5,7 +5,10 @@ import React from "react";
 
 export default function Logo({ className }: { className?: string }) {
   return (
-    <Link className="block" href="/">
+    <Link
+      className={cn("block transition-all duration-300", className)}
+      href="/"
+    >
       <span className="sr-only">Home</span>
       <Image
         alt="Logo"
@@ -13,10 +16,7 @@ export default function Logo({ className }: { className?: string }) {
         width={96}
         height={20}
         quality={100}
-        className={cn(
-          "object-scale-down object-center transition-all duration-300",
-          className
-        )}
+        className={cn("object-scale-down object-center")}
       />
     </Link>
   );

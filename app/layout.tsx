@@ -7,6 +7,7 @@ import StoreFeatures from "@/components/shared/StoreFeatures";
 import QuickView from "@/components/shared/QuickView";
 import Header from "@/components/layout/Header";
 import { barlow } from "@/lib/fonts";
+import SearchDrawer from "@/components/shared/SearchDrawer";
 
 export const metadata: Metadata = {
   title: {
@@ -41,6 +42,7 @@ export default function RootLayout({
           <Footer />
           <QuickView />
           <Toaster />
+          <SearchDrawer />
         </body>
       </html>
     </ClerkProvider>
