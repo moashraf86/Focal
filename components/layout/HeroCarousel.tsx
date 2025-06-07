@@ -130,10 +130,7 @@ export default function HeroCarousel() {
             )}
           >
             {activeIndex === index && (
-              <span
-                key={activeIndex} // Force re-render to reset animation
-                className="absolute inset-0 bg-primary-foreground animate-progress"
-              />
+              <span className="absolute inset-0 bg-primary-foreground animate-progress" />
             )}
             <span className="sr-only">Slide {index + 1}</span>
           </button>
