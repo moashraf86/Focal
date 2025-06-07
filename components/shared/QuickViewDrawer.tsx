@@ -28,11 +28,11 @@ export default function QuickViewDrawer({
 
   const defaultSize = useMemo(
     () => selectedSize ?? getInitialSize(product),
-    [product]
+    [product, selectedSize]
   );
   const defaultColor = useMemo(
     () => selectedColor ?? getInitialColor(product),
-    [product]
+    [product, selectedColor]
   );
 
   const allColors = useMemo(
@@ -67,8 +67,6 @@ export default function QuickViewDrawer({
 
   // Set initial values when product changes
   useEffect(() => {
-    console.log(selectedColor, selectedSize, product?.id);
-
     if (product) {
       updateState({
         selectedSize: defaultSize,
@@ -76,6 +74,7 @@ export default function QuickViewDrawer({
         quantity: 1,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
   if (!product) return null;

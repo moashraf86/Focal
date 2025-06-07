@@ -130,6 +130,7 @@ export default function ProductsFilter({
       }
     }, 100);
     return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   return (

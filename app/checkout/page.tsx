@@ -54,6 +54,7 @@ export default function Checkout() {
 
     // Fetch the client secret when the component mounts
     fetchClientSecret();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [amount, email, name]);
 
   if (!clientSecret) {

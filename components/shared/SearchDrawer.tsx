@@ -51,6 +51,7 @@ export default function SearchDrawer() {
   useEffect(() => {
     // Fetch results whenever the debounced query changes
     fetchResults();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQuery]);
 
   // Function to highlight matching text in search results
