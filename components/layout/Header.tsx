@@ -10,6 +10,15 @@ import { useMeasure, useWindowScroll } from "@uidotdev/usehooks";
 import Logo from "../shared/Logo";
 import { useEffect, useState } from "react";
 import { useSearchDrawer } from "@/hooks/useSearchDrawer";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "../ui/navigation-menu";
+import { NavigationMenuLink } from "@radix-ui/react-navigation-menu";
 
 export default function Header() {
   const [hasMounted, setHasMounted] = useState(false);
@@ -44,49 +53,99 @@ export default function Header() {
     >
       <div className="mx-auto flex max-w-screen-xl items-center px-4 lg:px-8 py-5 md:py-6">
         {/* Navigation */}
-        <nav aria-label="Global" className="flex-1">
-          <ul className="hidden lg:flex items-center gap-6 text-sm">
-            <li>
-              <Link className="text-inherit text-[15px]" href="/categories">
+        <NavigationMenu viewport={false} className="hidden lg:flex">
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent">
                 Shop
-              </Link>
-            </li>
-
-            <li>
-              <Link className="text-inherit text-[15px]" href="#">
-                Collections
-              </Link>
-            </li>
-            <li>
-              <Link className="text-inherit text-[15px]" href="/orders">
-                My Orders
-              </Link>
-            </li>
-          </ul>
-          {/* Menu Toggler */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-inherit hover:bg-transparent"
-            >
-              <span className="sr-only">Toggle menu</span>
-              <Menu />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-inherit hover:bg-transparent"
-              onClick={() => open()}
-            >
-              <span className="sr-only">Open Search Drawer</span>
-              <Search />
-            </Button>
-          </div>
-        </nav>
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[200px]">
+                  <li className="w-full py-1.5 px-3 hover:bg-accent">
+                    <NavigationMenuLink
+                      href="/categories/men"
+                      className="block w-full"
+                    >
+                      Men
+                    </NavigationMenuLink>
+                  </li>
+                  <li className="w-full py-1.5 px-3 hover:bg-accent">
+                    <NavigationMenuLink
+                      className="block w-full"
+                      href="/categories/women"
+                    >
+                      Women
+                    </NavigationMenuLink>
+                  </li>
+                  <li className="w-full py-1.5 px-3 hover:bg-accent">
+                    <NavigationMenuLink
+                      className="block w-full"
+                      href="/categories/straps-bands"
+                    >
+                      Straps & Bands
+                    </NavigationMenuLink>
+                  </li>
+                  <li className="w-full py-1.5 px-3 hover:bg-accent">
+                    <NavigationMenuLink
+                      className="block w-full"
+                      href="/categories/gifts-pouches"
+                    >
+                      Gift & Pouches
+                    </NavigationMenuLink>
+                  </li>
+                  <li className="w-full py-1.5 px-3 hover:bg-accent">
+                    <NavigationMenuLink
+                      className="block w-full"
+                      href="/categories"
+                    >
+                      Shop All
+                    </NavigationMenuLink>
+                  </li>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                asChild
+                className={cn("bg-transparent", navigationMenuTriggerStyle())}
+              >
+                <Link href="/faces">Faces</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>{" "}
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                asChild
+                className={cn("bg-transparent", navigationMenuTriggerStyle())}
+              >
+                <Link href="/orders">My Orders</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+        {/* Menu Toggler */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-inherit hover:bg-transparent"
+          >
+            <span className="sr-only">Toggle menu</span>
+            <Menu />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-inherit hover:bg-transparent"
+            onClick={() => open()}
+          >
+            <span className="sr-only">Open Search Drawer</span>
+            <Search />
+          </Button>
+        </div>
         {/* Logo */}
         <Logo
           className={cn(
+            "absolute left-1/2 transform -translate-x-1/2",
             (scrollY && scrollY > 20) || !isHomePage ? "invert" : "",
             isHomePage ? "group-hover:invert" : ""
           )}
