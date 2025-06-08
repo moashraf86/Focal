@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { fetchCategories, fetchProductsByCategory } from "@/lib/data";
 import ProductList from "../../../components/product/ProductList";
 import Link from "next/link";
@@ -16,13 +17,15 @@ import StoreFeatures from "@/components/shared/StoreFeatures";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
 // Generate dynamic metadata for the category page
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const { slug } = params;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // Extract slug from params and format it for the title
+  const { slug } = await params;
   const slugWithoutHyphens = slug.replace(/-/g, " ");
   const capitalizedSlug = slugWithoutHyphens
     .split(" ")
@@ -35,16 +38,10 @@ export async function generateMetadata({
   };
 }
 
-export default async function CategoryPage({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
-  const { slug } = params;
+export default async function CategoryPage({ params, searchParams }: Props) {
+  const { slug } = await params;
   const { sort_by, size, color, price_min, price_max, collection } =
-    searchParams || {};
+    await searchParams;
   const [{ categories }, { products }, { products: allProducts }] =
     await Promise.all([
       fetchCategories(),
