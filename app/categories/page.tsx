@@ -23,10 +23,10 @@ export const metadata = {
 export default async function Categories({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { sort_by, size, color, price_min, price_max, collection } =
-    searchParams;
+    await searchParams;
 
   const [
     { categories },

@@ -8,7 +8,7 @@ export const metadata = {
 export default async function OrderConfirm({
   searchParams,
 }: {
-  searchParams: { orderId: string };
+  searchParams: Promise<{ orderId: string }>;
 }) {
   const params = await searchParams;
 

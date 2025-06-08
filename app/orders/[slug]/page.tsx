@@ -10,8 +10,12 @@ export const metadata = {
   description: "View details of your order.",
 };
 
-export default async function Order({ params }: { params: { slug: string } }) {
-  const { slug: orderId } = params;
+export default async function Order({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug: orderId } = await params;
   const user = await currentUser();
   const email = user?.emailAddresses[0]?.emailAddress;
   const isGuest = !email;
