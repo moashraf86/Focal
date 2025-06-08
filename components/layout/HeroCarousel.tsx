@@ -60,6 +60,7 @@ export default function HeroCarousel() {
       nextSlide();
     }, 4000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeIndex]);
 
   return (

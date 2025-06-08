@@ -1,10 +1,18 @@
 import { Product } from "@/lib/definitions";
 
+// Type for text nodes within a block
 type childrenType = { type: string; text: string; bold?: boolean };
 
-type blockType = {
+// Type for list items (used in list blocks)
+type ListItemType = {
   type: string;
   children: childrenType[];
+};
+
+// Type for blocks (paragraph or list)
+type blockType = {
+  type: string;
+  children: childrenType[] | ListItemType[];
   format?: string;
 };
 
@@ -13,7 +21,7 @@ export default function ProductDescription({
 }: {
   description: Product["description"];
 }) {
-  const renderChildren = (children: { text: string; bold?: boolean }[]) => {
+  const renderChildren = (children: childrenType[]) => {
     return children.map((child, i) => (
       <span key={i} style={{ fontWeight: child.bold ? "bold" : "normal" }}>
         {child.text}
@@ -23,7 +31,9 @@ export default function ProductDescription({
 
   const renderBlock = (block: blockType, index: number) => {
     if (block.type === "paragraph") {
-      return <p key={index}>{renderChildren(block.children)}</p>;
+      return (
+        <p key={index}>{renderChildren(block.children as childrenType[])}</p>
+      );
     }
 
     if (block.type === "list") {
@@ -33,7 +43,7 @@ export default function ProductDescription({
           key={index}
           className="pl-5 space-y-1 list-disc marker:text-gray-500"
         >
-          {block.children.map((item: any, i: number) => (
+          {(block.children as ListItemType[]).map((item, i) => (
             <li key={i}>{renderChildren(item.children)}</li>
           ))}
         </ListTag>

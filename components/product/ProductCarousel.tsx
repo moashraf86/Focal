@@ -60,7 +60,7 @@ export default function ProductCarousel({
     // reset the carousel to the first image when the selected color/size changes
     setCurrent(0);
     api?.scrollTo(0);
-  }, [resetCarousel]);
+  }, [resetCarousel, api]);
 
   return (
     <Carousel

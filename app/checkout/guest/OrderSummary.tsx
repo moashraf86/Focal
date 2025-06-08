@@ -18,7 +18,6 @@ export default function OrderSummary() {
       // Simulate a delay for loading state
       setIsLoading(false);
     }, 1000);
-    console.log(cartItems);
   }, []);
 
   useEffect(() => {

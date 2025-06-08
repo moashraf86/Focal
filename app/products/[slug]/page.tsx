@@ -15,7 +15,7 @@ import FAQ from "@/components/shared/FAQ";
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
   const slugWithoutHyphens = slug.replace(/-/g, " ");
@@ -33,7 +33,7 @@ export async function generateMetadata({
 export default async function Product({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
   // Fetch product by Slug

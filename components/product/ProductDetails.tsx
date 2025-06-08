@@ -63,6 +63,7 @@ export default function ProductDetails({
   // Set default URL params on first render
   useEffect(() => {
     URL.push(`?size=${selectedSize}&color=${selectedColor}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
