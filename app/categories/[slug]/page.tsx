@@ -40,11 +40,11 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const { slug } = params;
   const { sort_by, size, color, price_min, price_max, collection } =
-    searchParams;
+    searchParams || {};
   const [{ categories }, { products }, { products: allProducts }] =
     await Promise.all([
       fetchCategories(),

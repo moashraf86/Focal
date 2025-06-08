@@ -26,7 +26,7 @@ export default async function Categories({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const { sort_by, size, color, price_min, price_max, collection } =
-    await searchParams;
+    searchParams;
 
   const [
     { categories },
