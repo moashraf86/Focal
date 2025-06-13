@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Menu, Search, ShoppingBag, UserRound } from "lucide-react";
+import { Search, ShoppingBag, UserRound } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
@@ -20,73 +20,8 @@ import {
 } from "../ui/navigation-menu";
 import { NavigationMenuLink } from "@radix-ui/react-navigation-menu";
 import Image from "next/image";
-
-const categories = [
-  {
-    id: 0,
-    name: "Men",
-    href: "/categories/men",
-  },
-  {
-    id: 1,
-    name: "Women",
-    href: "/categories/women",
-  },
-  {
-    id: 2,
-    name: "Straps & Bands",
-    href: "/categories/straps-bands",
-  },
-  {
-    id: 3,
-    name: "Gifts & Pouches",
-    href: "/categories/gifts-pouches",
-  },
-  {
-    id: 4,
-    name: "All",
-    href: "/categories",
-  },
-];
-
-const faces = [
-  {
-    id: 0,
-    name: "1815",
-    icon: "https://res.cloudinary.com/daswys0i8/image/upload/v1749831232/1815_560x.jpg_v_1633095899_acgika.jpg",
-    href: "/faces/1815",
-  },
-  {
-    id: 1,
-    name: "1820",
-    icon: "https://res.cloudinary.com/daswys0i8/image/upload/v1749831233/1820_560x.jpg_v_1633095906_tjgx5r.jpg",
-    href: "/faces/1820",
-  },
-  {
-    id: 2,
-    name: "1844",
-    icon: "https://res.cloudinary.com/daswys0i8/image/upload/v1749831232/1844_560x.jpg_v_1633095912_jgoddv.jpg",
-    href: "/faces/1844",
-  },
-  {
-    id: 3,
-    name: "1926",
-    icon: "https://res.cloudinary.com/daswys0i8/image/upload/v1749831233/1926_560x.jpg_v_1633095918_orhpyn.jpg",
-    href: "/faces/1926",
-  },
-  {
-    id: 4,
-    name: "1969",
-    icon: "https://res.cloudinary.com/daswys0i8/image/upload/v1749831232/1969_560x.jpg_v_1633095923_clfhkc.jpg",
-    href: "/faces/1969",
-  },
-  {
-    id: 5,
-    name: "1971",
-    icon: "https://res.cloudinary.com/daswys0i8/image/upload/v1749831233/1971_560x.jpg_v_1633095928_axlyot.jpg",
-    href: "/faces/1971",
-  },
-];
+import MobileMenu from "../shared/MobileMenu";
+import { categories, faces } from "@/lib/constants";
 
 export default function Header() {
   const [hasMounted, setHasMounted] = useState(false);
@@ -173,7 +108,7 @@ export default function Header() {
                   ))}
                   <li className="w-full py-1.5 px-3 hover:bg-accent">
                     <NavigationMenuLink className="block w-full" href="/faces">
-                      All Faces
+                      Shop All Faces
                     </NavigationMenuLink>
                   </li>
                 </ul>
@@ -191,14 +126,15 @@ export default function Header() {
         </NavigationMenu>
         {/* Menu Toggler */}
         <div className="flex items-center gap-2 lg:hidden">
-          <Button
+          <MobileMenu />
+          {/* <Button
             variant="ghost"
             size="icon"
             className="text-inherit hover:bg-transparent"
           >
             <span className="sr-only">Toggle menu</span>
             <Menu />
-          </Button>
+          </Button> */}
           <Button
             variant="ghost"
             size="icon"
