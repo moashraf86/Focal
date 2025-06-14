@@ -34,10 +34,6 @@ export default function MobileMenu() {
   React.useEffect(() => {
     // Close the menu when the pathname changes
     setOpen(false);
-    // If on mobile, close the menu when the pathname changes
-    if (!isMobile) {
-      setOpen(false);
-    }
   }, [pathname, isMobile]);
 
   return (
