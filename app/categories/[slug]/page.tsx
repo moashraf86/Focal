@@ -13,7 +13,6 @@ import {
   getAvailableColors,
   getAvailableSizes,
 } from "@/lib/helper";
-import StoreFeatures from "@/components/shared/StoreFeatures";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 
@@ -206,7 +205,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           </div>
         )}
       </section>
-      <StoreFeatures />
     </main>
   );
 }

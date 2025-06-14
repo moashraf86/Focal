@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Menu, Search, ShoppingBag, UserRound } from "lucide-react";
+import { Search, ShoppingBag, UserRound } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
@@ -19,6 +19,9 @@ import {
   navigationMenuTriggerStyle,
 } from "../ui/navigation-menu";
 import { NavigationMenuLink } from "@radix-ui/react-navigation-menu";
+import Image from "next/image";
+import MobileMenu from "../shared/MobileMenu";
+import { categories, faces } from "@/lib/constants";
 
 export default function Header() {
   const [hasMounted, setHasMounted] = useState(false);
@@ -61,57 +64,56 @@ export default function Header() {
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid w-[200px]">
-                  <li className="w-full py-1.5 px-3 hover:bg-accent">
-                    <NavigationMenuLink
-                      href="/categories/men"
-                      className="block w-full"
+                  {categories.map((category) => (
+                    <li
+                      key={category.id}
+                      className="w-full py-1.5 px-3 hover:bg-accent"
                     >
-                      Men
-                    </NavigationMenuLink>
-                  </li>
-                  <li className="w-full py-1.5 px-3 hover:bg-accent">
-                    <NavigationMenuLink
-                      className="block w-full"
-                      href="/categories/women"
+                      <NavigationMenuLink
+                        className="block w-full"
+                        href={category.href}
+                      >
+                        {category.name}
+                      </NavigationMenuLink>
+                    </li>
+                  ))}
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent">
+                Faces
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[200px] gap-1">
+                  {faces.map((face) => (
+                    <li
+                      key={face.id}
+                      className="w-full py-1.5 px-3 hover:bg-accent pl-0"
                     >
-                      Women
-                    </NavigationMenuLink>
-                  </li>
+                      <NavigationMenuLink
+                        className="block w-full"
+                        href={face.href}
+                      >
+                        <Image
+                          src={face.icon}
+                          alt={`${face.name} icon`}
+                          width={64}
+                          height={64}
+                          className="inline-block mr-2 mix-blend-multiply"
+                        />
+                        {face.name}
+                      </NavigationMenuLink>
+                    </li>
+                  ))}
                   <li className="w-full py-1.5 px-3 hover:bg-accent">
-                    <NavigationMenuLink
-                      className="block w-full"
-                      href="/categories/straps-bands"
-                    >
-                      Straps & Bands
-                    </NavigationMenuLink>
-                  </li>
-                  <li className="w-full py-1.5 px-3 hover:bg-accent">
-                    <NavigationMenuLink
-                      className="block w-full"
-                      href="/categories/gifts-pouches"
-                    >
-                      Gift & Pouches
-                    </NavigationMenuLink>
-                  </li>
-                  <li className="w-full py-1.5 px-3 hover:bg-accent">
-                    <NavigationMenuLink
-                      className="block w-full"
-                      href="/categories"
-                    >
-                      Shop All
+                    <NavigationMenuLink className="block w-full" href="/faces">
+                      Shop All Faces
                     </NavigationMenuLink>
                   </li>
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                asChild
-                className={cn("bg-transparent", navigationMenuTriggerStyle())}
-              >
-                <Link href="/faces">Faces</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>{" "}
             <NavigationMenuItem>
               <NavigationMenuLink
                 asChild
@@ -124,14 +126,7 @@ export default function Header() {
         </NavigationMenu>
         {/* Menu Toggler */}
         <div className="flex items-center gap-2 lg:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-inherit hover:bg-transparent"
-          >
-            <span className="sr-only">Toggle menu</span>
-            <Menu />
-          </Button>
+          <MobileMenu />
           <Button
             variant="ghost"
             size="icon"
