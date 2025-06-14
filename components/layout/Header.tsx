@@ -127,14 +127,6 @@ export default function Header() {
         {/* Menu Toggler */}
         <div className="flex items-center gap-2 lg:hidden">
           <MobileMenu />
-          {/* <Button
-            variant="ghost"
-            size="icon"
-            className="text-inherit hover:bg-transparent"
-          >
-            <span className="sr-only">Toggle menu</span>
-            <Menu />
-          </Button> */}
           <Button
             variant="ghost"
             size="icon"
