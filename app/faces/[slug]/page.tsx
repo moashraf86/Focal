@@ -59,14 +59,18 @@ export default async function FacePage({ params, searchParams }: Props) {
   // Get current Face
   const face = faces.find((face) => face.slug === slug);
 
+  // If no matching face is found, render a 404 page
+  if (!face) {
+    notFound();
+  }
+
   // Get face banner and description
-  const faceBanner = face?.banner || {
+  const faceBanner = face.banner || {
     url: "/categories/all.webp",
     alternativeText: "Face Banner",
   };
   const faceDescription =
-    face?.description[0]?.children[0]?.text ||
-    faces[0]?.description[0]?.children[0]?.text;
+    face.description[0]?.children[0]?.text;
 
   // Flattened arrays of sizes and colors from all products
   const allSizesData = allProducts.flatMap((product) => product.sizes);
