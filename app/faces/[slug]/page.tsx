@@ -15,6 +15,7 @@ import {
 } from "@/lib/helper";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
+import { notFound } from "next/navigation";
 
 type Props = {
   params: Promise<{ slug: string }>;
