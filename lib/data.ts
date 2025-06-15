@@ -657,9 +657,7 @@ export async function fetchFaces(): Promise<{ faces: Face[] }> {
 
 // Fetch by face
 export async function fetchProductsByFace(
-  { slug, sort, size, color, price_min, price_max, collection }: filterType = {
-    sort: "createdAt:desc",
-  }
+  { slug, sort = "createdAt:desc", size, color, price_min, price_max, collection }: filterType = {}
 ): Promise<{ products: Product[] }> {
   const query = qs.stringify({
     filters: {
