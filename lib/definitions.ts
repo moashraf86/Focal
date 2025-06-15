@@ -10,9 +10,9 @@ export interface Product {
   bannerBgColor: string;
   featuredBannerImg: StrapiImage;
   buyWith: Product[];
-  categories: Array<{ slug: string; name: string }>;
+  categories: Category[];
   collections: Array<{ slug: string; name: string }>;
-  faces: Array<{ slug: string; name: string; description: StrapiRichText[] }>;
+  faces: Face[];
   cart_items: Array<CartItem>;
   price: number;
   createdAt: string;
@@ -152,6 +152,17 @@ export interface Category {
   documentId: string;
   name: string;
   slug: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+export interface Face {
+  banner: StrapiImage;
+  id: number;
+  documentId: string;
+  name: string;
+  slug: string;
+  description: StrapiRichText[];
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
