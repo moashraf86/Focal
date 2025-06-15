@@ -6,6 +6,7 @@ type filterType = {
 
 import {
   Category,
+  Face,
   Product,
   SingleStrapiResponse,
   StrapiResponse,
@@ -617,5 +618,133 @@ export async function fetchCategories(): Promise<{ categories: Category[] }> {
 
   return {
     categories,
+  };
+}
+
+// Fetch all faces
+export async function fetchFaces(): Promise<{ faces: Face[] }> {
+  // build deep query string to fetch product by slug with all related data
+  const query = qs.stringify({
+    populate: {
+      fields: ["name", "slug", "description"],
+      banner: {
+        fields: ["url", "alternativeText"],
+      },
+    },
+  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/faces?${query}&sort=createdAt:asc`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
+      },
+      next: { revalidate: 60 },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch faces");
+  }
+
+  const response: StrapiResponse<Face> = await res.json();
+
+  const faces = response.data;
+
+  return {
+    faces,
+  };
+}
+
+// Fetch by face
+export async function fetchProductsByFace(
+  { slug, sort = "createdAt:desc", size, color, price_min, price_max, collection }: filterType = {}
+): Promise<{ products: Product[] }> {
+  const query = qs.stringify({
+    filters: {
+      faces: {
+        slug: {
+          $eq: slug,
+        },
+      },
+      ...((size || color) && {
+        sizes: {
+          value: Array.isArray(size) ? { $in: size } : { $eq: size },
+          colors: {
+            name: Array.isArray(color) ? { $in: color } : { $eq: color },
+          },
+        },
+      }),
+      ...(price_min !== undefined || price_max !== undefined
+        ? {
+            price: {
+              ...(price_min !== undefined && { $gte: price_min }),
+              ...(price_max !== undefined && { $lte: price_max }),
+            },
+          }
+        : {}),
+      ...(collection && {
+        collections: {
+          slug: {
+            $eq: collection,
+          },
+        },
+      }),
+    },
+    sort: [sort],
+    populate: {
+      collections: {
+        fields: ["name", "slug"],
+      },
+      categories: {
+        fields: ["name", "slug"],
+        populate: {
+          banner: {
+            fields: ["url", "alternativeText"],
+          },
+        },
+      },
+      images: {
+        fields: ["url", "alternativeText", "formats"],
+      },
+      sizes: {
+        fields: ["value"],
+        populate: {
+          colors: {
+            fields: ["name"],
+            populate: {
+              images: {
+                fields: ["url", "alternativeText", "formats"],
+              },
+              pattern: {
+                fields: ["url", "alternativeText"],
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/products?${query}`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
+      },
+      next: { revalidate: 60, tags: ["products", `face:${slug}`] },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch products");
+  }
+
+  const response: StrapiResponse<Product> = await res.json();
+
+  console.log("fetchProductsByFace", response);
+
+  const products = response.data;
+
+  return {
+    products,
   };
 }
