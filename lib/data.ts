@@ -345,7 +345,7 @@ export async function searchProducts(queryText: string): Promise<Product[]> {
       $or: [
         {
           name: {
-            $contains: queryText,
+            $containsi: queryText,
           },
         },
       ],
@@ -656,9 +656,15 @@ export async function fetchFaces(): Promise<{ faces: Face[] }> {
 }
 
 // Fetch by face
-export async function fetchProductsByFace(
-  { slug, sort = "createdAt:desc", size, color, price_min, price_max, collection }: filterType = {}
-): Promise<{ products: Product[] }> {
+export async function fetchProductsByFace({
+  slug,
+  sort = "createdAt:desc",
+  size,
+  color,
+  price_min,
+  price_max,
+  collection,
+}: filterType = {}): Promise<{ products: Product[] }> {
   const query = qs.stringify({
     filters: {
       faces: {
