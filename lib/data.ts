@@ -17,6 +17,28 @@ export async function fetchAllProducts(
     sort: "createdAt:desc",
   }
 ): Promise<{ products: Product[] }> {
+  // Create a cache key based on filter parameters
+  const cacheKey = JSON.stringify({
+    size,
+    color,
+    price_min,
+    price_max,
+    collection,
+    sort,
+  });
+
+  // Generate a short hash for the cache key
+  const hashKey = await crypto.subtle
+    .digest("SHA-256", new TextEncoder().encode(cacheKey))
+    .then((hash) => {
+      return Array.from(new Uint8Array(hash))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("")
+        .slice(0, 32); // Take first 32 characters of hash
+    });
+
+  console.log("hashKey", hashKey);
+
   // build deep query string to fetch product by slug with all related data
   const query = qs.stringify({
     filters: {
@@ -71,13 +93,23 @@ export async function fetchAllProducts(
       },
     },
   });
+
+  console.log("Fetching products at", new Date().toISOString());
+
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/products?${query}`,
     {
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60 },
+      cache: "force-cache",
+      next: {
+        tags: [
+          "products", // Global products tag
+          `products-${hashKey}`, // Specific query tag
+        ],
+        revalidate: 3600,
+      },
     }
   );
 
@@ -345,7 +377,7 @@ export async function searchProducts(queryText: string): Promise<Product[]> {
       $or: [
         {
           name: {
-            $contains: queryText,
+            $containsi: queryText,
           },
         },
       ],
@@ -656,9 +688,15 @@ export async function fetchFaces(): Promise<{ faces: Face[] }> {
 }
 
 // Fetch by face
-export async function fetchProductsByFace(
-  { slug, sort = "createdAt:desc", size, color, price_min, price_max, collection }: filterType = {}
-): Promise<{ products: Product[] }> {
+export async function fetchProductsByFace({
+  slug,
+  sort = "createdAt:desc",
+  size,
+  color,
+  price_min,
+  price_max,
+  collection,
+}: filterType = {}): Promise<{ products: Product[] }> {
   const query = qs.stringify({
     filters: {
       faces: {

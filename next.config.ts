@@ -6,9 +6,6 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["res.cloudinary.com"],
   },
-  experimental: {
-    scrollRestoration: true,
-  },
 };
 
 export default nextConfig;
