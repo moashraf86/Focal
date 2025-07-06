@@ -37,8 +37,6 @@ export async function fetchAllProducts(
         .slice(0, 32); // Take first 32 characters of hash
     });
 
-  console.log("hashKey", hashKey);
-
   // build deep query string to fetch product by slug with all related data
   const query = qs.stringify({
     filters: {
@@ -94,20 +92,14 @@ export async function fetchAllProducts(
     },
   });
 
-  console.log("Fetching products at", new Date().toISOString());
-
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/products?${query}`,
     {
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      cache: "force-cache",
       next: {
-        tags: [
-          "products", // Global products tag
-          `products-${hashKey}`, // Specific query tag
-        ],
+        tags: ["products", `products-${hashKey}`],
         revalidate: 3600,
       },
     }
