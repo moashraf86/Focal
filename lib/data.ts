@@ -12,11 +12,14 @@ import {
   StrapiResponse,
 } from "./definitions";
 // Fetch all products
-export async function fetchAllProducts(
-  { sort, size, color, price_min, price_max, collection }: filterType = {
-    sort: "createdAt:desc",
-  }
-): Promise<{ products: Product[] }> {
+export async function fetchAllProducts({
+  sort = "createdAt:desc",
+  size,
+  color,
+  price_min,
+  price_max,
+  collection,
+}: filterType = {}): Promise<{ products: Product[] }> {
   // Create a cache key based on filter parameters
   const cacheKey = JSON.stringify({
     size,
@@ -36,8 +39,6 @@ export async function fetchAllProducts(
         .join("")
         .slice(0, 32); // Take first 32 characters of hash
     });
-
-  console.log("hashKey", hashKey);
 
   // build deep query string to fetch product by slug with all related data
   const query = qs.stringify({
@@ -94,20 +95,14 @@ export async function fetchAllProducts(
     },
   });
 
-  console.log("Fetching products at", new Date().toISOString());
-
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/products?${query}`,
     {
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      cache: "force-cache",
       next: {
-        tags: [
-          "products", // Global products tag
-          `products-${hashKey}`, // Specific query tag
-        ],
+        tags: ["products", `products-${hashKey}`],
         revalidate: 3600,
       },
     }

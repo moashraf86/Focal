@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useCart } from "@/hooks/useCart";
-import { useMeasure, useWindowScroll } from "@uidotdev/usehooks";
+import { useWindowScroll } from "@uidotdev/usehooks";
 import Logo from "../shared/Logo";
 import { useEffect, useState } from "react";
 import { useSearchDrawer } from "@/hooks/useSearchDrawer";
@@ -30,7 +30,6 @@ export default function Header() {
   const { cartItems, getTotalItems } = useCart();
   const isSignedIn = !!user;
   const [{ y: scrollY }] = useWindowScroll();
-  const [ref, { height }] = useMeasure();
   const isHomePage = pathname === "/";
   const { open } = useSearchDrawer();
 
@@ -41,20 +40,17 @@ export default function Header() {
 
   return (
     <header
-      ref={ref}
-      style={
-        isHomePage && hasMounted ? { marginBottom: `-${height}px` } : undefined
-      }
       className={cn(
-        "bg-transparent text-primary-foreground sticky top-0 left-0 right-0 z-50 hover:bg-background hover:text-foreground border-b border-transparent group transition-colors duration-300 ease-in-out",
+        "bg-transparent text-primary-foreground sticky top-0 left-0 right-0 z-50 hover:bg-background hover:text-foreground border-b border-transparent group transition-colors duration-300 ease-in-out h-20 content-center",
         scrollY &&
           scrollY > 20 &&
           "bg-background text-foreground border-border",
+        isHomePage ? "-mt-20" : "",
         !isHomePage &&
           "sticky top-0 bg-background text-foreground border-border"
       )}
     >
-      <div className="mx-auto flex max-w-screen-xl items-center px-4 lg:px-8 py-5 md:py-6">
+      <div className="mx-auto flex max-w-screen-xl items-center px-4 lg:px-8">
         {/* Navigation */}
         <NavigationMenu viewport={false} className="hidden lg:flex">
           <NavigationMenuList>
