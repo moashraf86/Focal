@@ -1,3 +1,4 @@
+"use client";
 import { useIntersectionObserver } from "@uidotdev/usehooks";
 import Image from "next/image";
 import Link from "next/link";
