@@ -12,11 +12,14 @@ import {
   StrapiResponse,
 } from "./definitions";
 // Fetch all products
-export async function fetchAllProducts(
-  { sort, size, color, price_min, price_max, collection }: filterType = {
-    sort: "createdAt:desc",
-  }
-): Promise<{ products: Product[] }> {
+export async function fetchAllProducts({
+  sort = "createdAt:desc",
+  size,
+  color,
+  price_min,
+  price_max,
+  collection,
+}: filterType = {}): Promise<{ products: Product[] }> {
   // Create a cache key based on filter parameters
   const cacheKey = JSON.stringify({
     size,
