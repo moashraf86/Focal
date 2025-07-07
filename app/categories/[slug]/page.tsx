@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
-import { fetchCategories, fetchProductsByCategory } from "@/lib/data";
+import {
+  fetchCategories,
+  fetchProductsByCategory,
+  fetchProductsByCategoryBase,
+} from "@/lib/data";
 import ProductList from "../../../components/product/ProductList";
 import Link from "next/link";
 import Image from "next/image";
@@ -41,10 +45,20 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const { sort_by, size, color, price_min, price_max, collection } =
     await searchParams;
-  const [{ categories }, { products }, { products: allProducts }] =
-    await Promise.all([
-      fetchCategories(),
-      fetchProductsByCategory({
+
+  // Check if any filters are applied
+  const hasFilters = Boolean(
+    size || color || price_min || price_max || collection || sort_by
+  );
+
+  const [{ categories }, { products: allProducts }] = await Promise.all([
+    fetchCategories(),
+    fetchProductsByCategoryBase(slug),
+  ]);
+
+  // Apply filters to get filtered products
+  const filteredProductsPromise = hasFilters
+    ? await fetchProductsByCategory({
         slug,
         sort: sort_by,
         size,
@@ -52,9 +66,12 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         price_min,
         price_max,
         collection,
-      }),
-      fetchProductsByCategory({ slug }),
-    ]);
+      })
+    : Promise.resolve({ products: allProducts });
+
+  const { products: filteredProducts } = await filteredProductsPromise;
+
+  const products = filteredProducts;
 
   // Get current category
   const category = categories.find((category) => category.slug === slug);
