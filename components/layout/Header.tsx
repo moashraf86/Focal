@@ -65,12 +65,9 @@ export default function Header() {
                       key={category.id}
                       className="w-full py-1.5 px-3 hover:bg-accent"
                     >
-                      <NavigationMenuLink
-                        className="block w-full"
-                        href={category.href}
-                      >
+                      <Link className="block w-full" href={category.href}>
                         {category.name}
-                      </NavigationMenuLink>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -87,10 +84,7 @@ export default function Header() {
                       key={face.id}
                       className="w-full py-1.5 px-3 hover:bg-accent pl-0"
                     >
-                      <NavigationMenuLink
-                        className="block w-full"
-                        href={face.href}
-                      >
+                      <Link className="block w-full" href={face.href}>
                         <Image
                           src={face.icon}
                           alt={`${face.name} icon`}
@@ -99,14 +93,9 @@ export default function Header() {
                           className="inline-block mr-2 mix-blend-multiply"
                         />
                         {face.name}
-                      </NavigationMenuLink>
+                      </Link>
                     </li>
                   ))}
-                  <li className="w-full py-1.5 px-3 hover:bg-accent">
-                    <NavigationMenuLink className="block w-full" href="/faces">
-                      Shop All Faces
-                    </NavigationMenuLink>
-                  </li>
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>

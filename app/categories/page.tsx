@@ -1,4 +1,8 @@
-import { fetchAllProducts, fetchCategories } from "@/lib/data";
+import {
+  fetchAllProducts,
+  fetchAllProductsBase,
+  fetchCategories,
+} from "@/lib/data";
 import { cn } from "@/lib/utils";
 import {
   expandProducts,
@@ -28,30 +32,53 @@ export default async function Categories({
   const { sort_by, size, color, price_min, price_max, collection } =
     await searchParams;
 
+  // Check if any filters are applied
+  const hasFilters = Boolean(
+    size ||
+      color ||
+      price_min ||
+      price_max ||
+      collection ||
+      (sort_by && sort_by !== "createdAt:desc")
+  );
+
+  // Always fetch categories and base products (these are heavily cached)
+  const [{ categories }, { products: allProducts }] = await Promise.all([
+    fetchCategories(),
+    fetchAllProductsBase(), // This is always cached
+  ]);
+
+  // Only fetch filtered products if filters are applied
+  const filteredProductsPromise = hasFilters
+    ? fetchAllProducts({
+        sort: sort_by,
+        size,
+        color,
+        price_min,
+        price_max,
+        collection,
+      })
+    : Promise.resolve({ products: allProducts });
+
   const [
-    { categories },
-    { products },
-    { products: allProducts },
+    { products: filteredProducts },
     { products: productsForAvailableSizes },
   ] = await Promise.all([
-    fetchCategories(),
-    fetchAllProducts({
-      sort: sort_by,
-      size,
-      color,
-      price_min,
-      price_max,
-      collection,
-    }),
-    fetchAllProducts(),
-    fetchAllProducts({
-      sort: sort_by,
-      color,
-      price_min,
-      price_max,
-      collection,
-    }),
+    filteredProductsPromise,
+    // For available sizes, we need to fetch with current filters (excluding size)
+    hasFilters && (color || price_min || price_max || collection)
+      ? fetchAllProducts({
+          sort: sort_by,
+          color,
+          price_min,
+          price_max,
+          collection,
+        })
+      : Promise.resolve({ products: allProducts }),
   ]);
+
+  // Use the appropriate products for display
+  const products = filteredProducts;
 
   // Flattened arrays of sizes and colors from all products
   const allSizesData = allProducts.flatMap((product) =>
