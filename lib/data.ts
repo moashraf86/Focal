@@ -168,7 +168,7 @@ export async function fetchRelatedProducts(
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: ["products", `related:${cat}`] },
     }
   );
 
@@ -262,7 +262,7 @@ export async function fetchProductsByCategory(
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60, tags: ["products", `category:${slug}`] },
+      next: { revalidate: 3600, tags: ["products", `category:${slug}`] },
     }
   );
 
@@ -352,7 +352,7 @@ export async function fetchProductBySlug(
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60, tags: [slug] },
+      next: { revalidate: 3600, tags: ["product", slug] },
     }
   );
 
@@ -404,7 +404,7 @@ export async function searchProducts(queryText: string): Promise<Product[]> {
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: ["search", `search:${queryText}`] },
     }
   );
 
@@ -463,7 +463,7 @@ export async function fetchCartItems(email: string | undefined) {
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: ["cart", `cart:${email}`] },
     }
   );
 
@@ -520,6 +520,7 @@ export const fetchOrderById = async (id: string) => {
         headers: {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
         },
+        next: { tags: ["order", `order:${id}`] },
       }
     );
 
@@ -588,7 +589,7 @@ export const fetchOrders = async (email: string | undefined) => {
         headers: {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
         },
-        next: { tags: ["orders"] },
+        next: { tags: ["orders", `orders:${email}`] },
       }
     );
 
@@ -631,7 +632,7 @@ export async function fetchCategories(): Promise<{ categories: Category[] }> {
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: ["categories"] },
     }
   );
 
@@ -665,7 +666,7 @@ export async function fetchFaces(): Promise<{ faces: Face[] }> {
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: ["faces"] },
     }
   );
 
@@ -763,7 +764,7 @@ export async function fetchProductsByFace({
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
       },
-      next: { revalidate: 60, tags: ["products", `face:${slug}`] },
+      next: { revalidate: 3600, tags: ["products", `face:${slug}`] },
     }
   );
 
