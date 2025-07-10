@@ -646,23 +646,3 @@ export async function fetchProductsByFace(
 
   return { products: response.data };
 }
-
-// Utility function to clear cache (useful for admin operations)
-export const clearCache = (pattern?: string): void => {
-  if (pattern) {
-    const keysToDelete = Array.from(cache.keys()).filter((key) =>
-      key.includes(pattern)
-    );
-    keysToDelete.forEach((key) => cache.delete(key));
-  } else {
-    cache.clear();
-  }
-};
-
-// Utility function to get cache statistics
-export const getCacheStats = () => {
-  return {
-    size: cache.size,
-    keys: Array.from(cache.keys()),
-  };
-};
