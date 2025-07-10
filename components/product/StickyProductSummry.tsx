@@ -76,7 +76,9 @@ const StickyProductSummary: React.FC<StickyProductSummaryProps> = ({
           id="sticky-product-summary"
           className={cn(
             "fixed bottom-0 lg:top-20 lg:bottom-auto left-0 right-0 z-10 bg-background shadow-sm items-center py-4 gap-4 border-b border-border transition-[transform,opacity] duration-300",
-            show ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-10"
+            show
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 -translate-y-20 pointer-events-none"
           )}
         >
           <div className="container max-w-screen-xl">
