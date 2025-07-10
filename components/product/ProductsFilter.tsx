@@ -168,28 +168,35 @@ export default function ProductsFilter({
               <ActiveFilters activeFilters={activeFilters} />
             )}
             <Accordion type="multiple" className="px-6 md:px-10">
-              <AccordionItem value="size">
-                <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
-                  Watch Size
-                </AccordionTrigger>
-                <AccordionContent>
-                  <SizeFilter sizes={sizes} availableSizes={availableSizes} />
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="color">
-                <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
-                  Strap Color
-                </AccordionTrigger>
-                <AccordionContent>
-                  <ColorSelector
-                    mode="multiple"
-                    colors={colors}
-                    availableColors={availableColors}
-                    selectedColors={selectedColorsState}
-                    onColorSelect={handleColorSelect}
-                  />
-                </AccordionContent>
-              </AccordionItem>
+              {/* Size Filter */}
+              {availableSizes.length > 1 && (
+                <AccordionItem value="size">
+                  <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
+                    Watch Size
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <SizeFilter sizes={sizes} availableSizes={availableSizes} />
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+              {/* Color Filter */}
+              {availableColors.length > 1 && (
+                <AccordionItem value="color">
+                  <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
+                    Strap Color
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ColorSelector
+                      mode="multiple"
+                      colors={colors}
+                      availableColors={availableColors}
+                      selectedColors={selectedColorsState}
+                      onColorSelect={handleColorSelect}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+              {/* Price Filter */}
               <AccordionItem value="price">
                 <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
                   <div className="flex items-center justify-between w-full">
@@ -203,17 +210,20 @@ export default function ProductsFilter({
                   <PriceFilter />
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="type">
-                <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
-                  Product Type
-                </AccordionTrigger>
-                <AccordionContent>
-                  <CollectionFilter
-                    collections={collections}
-                    availableCollections={availableCollections}
-                  />
-                </AccordionContent>
-              </AccordionItem>
+              {/* Collection Filter */}
+              {availableCollections.length > 1 && (
+                <AccordionItem value="type">
+                  <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
+                    Product Type
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <CollectionFilter
+                      collections={collections}
+                      availableCollections={availableCollections}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              )}
             </Accordion>
           </div>
           <SheetFooter className="bg-[white] sticky bottom-0 z-10 px-6 md:px-10 before:absolute before:content-[''] before:w-full before:left-0 before:bottom-full before:h-6 before:bg-gradient-to-t before:from-[#FFF] before:to-transparent before:z-[1] before:pointer-events-none">
