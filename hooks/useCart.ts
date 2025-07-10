@@ -64,7 +64,7 @@ export const useCart = () => {
     try {
       if (isGuest) {
         setIsAddingProduct(true);
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 800));
         // handle guest cart (localStorage)
         const existingCart = loadFromLocalStorage();
         const updatedCart = [...existingCart];
@@ -106,7 +106,7 @@ export const useCart = () => {
         product,
         color
       );
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 800));
       mutate(swrKey);
     } catch (error) {
       toast({
