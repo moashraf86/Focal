@@ -18,6 +18,7 @@ import ProductSizeSelector from "./ProductSizeSelector";
 import ColorSelector from "./ColorSelector";
 import { useRouter, useSearchParams } from "next/navigation";
 import BuyWithProducts from "./BuyWithProducts";
+import { useProductVisibilityObserver } from "@/hooks/useProductVisibility";
 
 export default function ProductDetails({
   product,
@@ -45,6 +46,7 @@ export default function ProductDetails({
 
   const [quantity, setQuantity] = useState<number>(initialQuantity);
 
+  const intersectionRef = useProductVisibilityObserver();
   // Handle size change
   const handleSizeChange = (value: string) => {
     URL.push(`?size=${value}&color=${defaultColor}`, { scroll: false });
@@ -67,7 +69,7 @@ export default function ProductDetails({
   }, []);
 
   return (
-    <section className="container max-w-screen-xl">
+    <section className="container max-w-screen-xl" ref={intersectionRef}>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mb-20">
         {/* Product Carousel */}
         <div className="lg:sticky lg:top-20 lg:col-span-7">
@@ -115,8 +117,8 @@ export default function ProductDetails({
           <ProductActions
             product={product}
             quantity={quantity}
-            selectedSize={searchParams.get("size") || defaultSize}
-            color={searchParams.get("color") || defaultColor}
+            selectedSize={selectedSize}
+            color={selectedColor}
           />
           <Accordion type="single" collapsible>
             <AccordionItem value="description">

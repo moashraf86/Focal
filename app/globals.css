@@ -81,6 +81,10 @@
   body {
     @apply bg-background text-foreground font-barlow antialiased;
   }
+  body[data-scroll-locked] #sticky-product-summary {
+    @apply !mr-[var(--removed-body-scroll-bar-size)];
+  }
+
   h1,
   h2,
   h3,
