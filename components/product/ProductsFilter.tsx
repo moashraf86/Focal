@@ -169,7 +169,7 @@ export default function ProductsFilter({
             )}
             <Accordion type="multiple" className="px-6 md:px-10">
               {/* Size Filter */}
-              {availableSizes.length > 1 && (
+              {availableSizes.length > 0 && (
                 <AccordionItem value="size">
                   <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
                     Watch Size
