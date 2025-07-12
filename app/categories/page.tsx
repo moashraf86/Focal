@@ -18,10 +18,31 @@ import Link from "next/link";
 import ProductList from "../../components/product/ProductList";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
+import { cache } from "react";
+import { Product } from "@/lib/definitions";
 
 export const metadata = {
   title: "All Products",
   description: "Browse all products available in the Focal Store.",
+};
+
+// Cache data fetching functions
+const getCachedCategories = cache(fetchCategories);
+const getCachedAllProducts = cache(fetchAllProductsBase);
+
+// Precompute filter options
+const computeFilterOptions = (products: Product[]) => {
+  const allSizesData = products.flatMap((product) =>
+    product.type === "watch" ? product.sizes : []
+  );
+  const allColorsData = allSizesData.flatMap((size) => size.colors);
+  const allCollectionsData = products.flatMap((product) => product.collections);
+
+  return {
+    allSizes: getAllSizes({ allSizesData }),
+    allColors: getAllColors({ allColorsData }),
+    allCollections: getAllCollections({ allCollectionsData }),
+  };
 };
 
 export default async function Categories({
@@ -31,6 +52,16 @@ export default async function Categories({
 }) {
   const { sort_by, size, color, price_min, price_max, collection } =
     await searchParams;
+
+  // Fetch base data (heavily cached)
+  const [{ categories }, { products: allProducts }] = await Promise.all([
+    getCachedCategories(),
+    getCachedAllProducts(),
+  ]);
+
+  // Precompute filter options from base products
+  const { allSizes, allColors, allCollections } =
+    computeFilterOptions(allProducts);
 
   // Check if any filters are applied
   const hasFilters = Boolean(
@@ -42,73 +73,29 @@ export default async function Categories({
       (sort_by && sort_by !== "createdAt:desc")
   );
 
-  // Always fetch categories and base products (these are heavily cached)
-  const [{ categories }, { products: allProducts }] = await Promise.all([
-    fetchCategories(),
-    fetchAllProductsBase(), // This is always cached
-  ]);
+  // Fetch filtered products only when needed
+  let products = allProducts;
+  if (hasFilters) {
+    const { products: filtered } = await fetchAllProducts({
+      sort: sort_by,
+      size,
+      color,
+      price_min,
+      price_max,
+      collection,
+    });
+    products = filtered;
+  }
 
-  // Only fetch filtered products if filters are applied
-  const filteredProductsPromise = hasFilters
-    ? fetchAllProducts({
-        sort: sort_by,
-        size,
-        color,
-        price_min,
-        price_max,
-        collection,
-      })
-    : Promise.resolve({ products: allProducts });
-
-  const [
-    { products: filteredProducts },
-    { products: productsForAvailableSizes },
-  ] = await Promise.all([
-    filteredProductsPromise,
-    // For available sizes, we need to fetch with current filters (excluding size)
-    hasFilters && (color || price_min || price_max || collection)
-      ? fetchAllProducts({
-          sort: sort_by,
-          color,
-          price_min,
-          price_max,
-          collection,
-        })
-      : Promise.resolve({ products: allProducts }),
-  ]);
-
-  // Use the appropriate products for display
-  const products = filteredProducts;
-
-  // Flattened arrays of sizes and colors from all products
-  const allSizesData = allProducts.flatMap((product) =>
-    product.type === "watch" ? product.sizes : []
-  );
-  const allColorsData = allSizesData.flatMap((size) => size.colors);
-  const allCollectionsData = allProducts.flatMap(
-    (product) => product.collections
-  );
-
-  const allSizes = getAllSizes({
-    allSizesData,
-  });
-
+  // Compute available filters based on current results
   const availableSizes = getAvailableSizes({
     color,
-    productsForAvailableSizes,
-  });
-
-  const allColors = getAllColors({
-    allColorsData,
+    productsForAvailableSizes: products,
   });
 
   const availableColors = getAvailableColors({
     size,
     availableProducts: products,
-  });
-
-  const allCollections = getAllCollections({
-    allCollectionsData,
   });
 
   const availableCollections = getAvailableCollections({
