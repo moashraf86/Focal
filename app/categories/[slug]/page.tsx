@@ -1,3 +1,4 @@
+// categories/[slug]/page.tsx
 import type { Metadata } from "next";
 import {
   fetchCategories,
@@ -19,6 +20,25 @@ import {
 } from "@/lib/helper";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
+import { cache } from "react";
+import { Product } from "@/lib/definitions";
+
+// Cache data fetching functions
+const getCachedCategories = cache(fetchCategories);
+const getCachedProductsByCategoryBase = cache(fetchProductsByCategoryBase);
+
+// Precompute filter options
+const computeFilterOptions = (products: Product[]) => {
+  const allSizesData = products.flatMap((product) => product.sizes);
+  const allColorsData = allSizesData.flatMap((size) => size.colors);
+  const allCollectionsData = products.flatMap((product) => product.collections);
+
+  return {
+    allSizes: getAllSizes({ allSizesData }),
+    allColors: getAllColors({ allColorsData }),
+    allCollections: getAllCollections({ allCollectionsData }),
+  };
+};
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -46,32 +66,40 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const { sort_by, size, color, price_min, price_max, collection } =
     await searchParams;
 
-  // Check if any filters are applied
-  const hasFilters = Boolean(
-    size || color || price_min || price_max || collection || sort_by
-  );
-
+  // Fetch base data (heavily cached)
   const [{ categories }, { products: allProducts }] = await Promise.all([
-    fetchCategories(),
-    fetchProductsByCategoryBase(slug),
+    getCachedCategories(),
+    getCachedProductsByCategoryBase(slug),
   ]);
 
-  // Apply filters to get filtered products
-  const filteredProductsPromise = hasFilters
-    ? await fetchProductsByCategory({
-        slug,
-        sort: sort_by,
-        size,
-        color,
-        price_min,
-        price_max,
-        collection,
-      })
-    : Promise.resolve({ products: allProducts });
+  // Precompute filter options from base products
+  const { allSizes, allColors, allCollections } =
+    computeFilterOptions(allProducts);
 
-  const { products: filteredProducts } = await filteredProductsPromise;
+  // Check if any filters are applied
+  const hasFilters = Boolean(
+    size ||
+      color ||
+      price_min ||
+      price_max ||
+      collection ||
+      (sort_by && sort_by !== "createdAt:desc")
+  );
 
-  const products = filteredProducts;
+  // Fetch filtered products only when needed
+  let products = allProducts;
+  if (hasFilters) {
+    const { products: filtered } = await fetchProductsByCategory({
+      slug,
+      sort: sort_by,
+      size,
+      color,
+      price_min,
+      price_max,
+      collection,
+    });
+    products = filtered;
+  }
 
   // Get current category
   const category = categories.find((category) => category.slug === slug);
@@ -80,24 +108,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     alternativeText: "Category Banner",
   };
 
-  // Flattened arrays of sizes and colors from all products
-  const allSizesData = allProducts.flatMap((product) => product.sizes);
-  const allColorsData = allSizesData.flatMap((size) => size.colors);
-  const allCollectionsData = allProducts.flatMap(
-    (product) => product.collections
-  );
-
-  const allSizes = getAllSizes({
-    allSizesData,
-  });
-
+  // Compute available filters based on current results
   const availableSizes = getAvailableSizes({
     color,
     productsForAvailableSizes: products,
-  });
-
-  const allColors = getAllColors({
-    allColorsData,
   });
 
   const availableColors = getAvailableColors({
@@ -105,15 +119,11 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     availableProducts: products,
   });
 
-  const allCollections = getAllCollections({
-    allCollectionsData,
-  });
-
   const availableCollections = getAvailableCollections({
     availableProducts: products,
   });
 
-  // get expanded products based on selected size and color
+  // Get expanded products based on selected size and color
   const expandedProducts = expandProducts(products, size, color);
   const resultsCount = expandedProducts.length;
 
