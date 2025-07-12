@@ -41,5 +41,5 @@ yarn-error.log*
 next-env.d.ts
 
 # revalidate
-app/api/revalidate/
-components/layout/RevalidateButton.tsx
+# app/api/revalidate/
+# components/layout/RevalidateButton.tsx
