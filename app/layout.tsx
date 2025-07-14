@@ -8,7 +8,6 @@ import QuickView from "@/components/shared/QuickView";
 import Header from "@/components/layout/Header";
 import { barlow } from "@/lib/fonts";
 import SearchDrawer from "@/components/shared/SearchDrawer";
-import RevalidateButton from "@/components/layout/RevalidateButton";
 
 export const metadata: Metadata = {
   title: {
@@ -39,7 +38,6 @@ export default function RootLayout({
         <body className={`${barlow.className} antialiased`}>
           <Header />
           {children}
-          <RevalidateButton />
           <StoreFeatures />
           <Footer />
           <QuickView />
