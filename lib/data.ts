@@ -413,10 +413,7 @@ export async function searchProducts(queryText: string): Promise<Product[]> {
 
   const query = {
     filters: {
-      $or: [
-        { name: { $containsi: queryText } },
-        { description: { $containsi: queryText } }, // Enhanced search
-      ],
+      $or: [{ name: { $containsi: queryText } }],
     },
     populate: {
       ...POPULATE_CONFIGS.basic,
@@ -636,6 +633,9 @@ export async function fetchProductsByFace(
       },
     },
   };
+
+  // simulate 2s delay
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
   const response: StrapiResponse<Product> = await apiRequest(
     "/products",

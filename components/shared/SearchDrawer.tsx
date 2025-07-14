@@ -31,7 +31,6 @@ export default function SearchDrawer() {
     setLoading(true);
     try {
       const data = await searchProducts(debouncedQuery);
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
       setResults(data);
     } catch (err) {
       console.error("Search error:", err);
