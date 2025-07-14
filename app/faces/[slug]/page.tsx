@@ -70,8 +70,7 @@ export default async function FacePage({ params, searchParams }: Props) {
     url: "/categories/all.webp",
     alternativeText: "Face Banner",
   };
-  const faceDescription =
-    face.description[0]?.children[0]?.text;
+  const faceDescription = face.description[0]?.children[0]?.text;
 
   // Flattened arrays of sizes and colors from all products
   const allSizesData = allProducts.flatMap((product) => product.sizes);
@@ -145,6 +144,7 @@ export default async function FacePage({ params, searchParams }: Props) {
                 {faces.map((face) => (
                   <li key={face.documentId} className="py-5">
                     <Link
+                      prefetch={true}
                       href={`/faces/${face.slug}`}
                       className={cn(
                         "relative inline-block after:absolute after:w-full after:left-0 after:h-px after:bottom-0 after:content-[''] after:bg-black after:transition-transform after:duration-200 after:ease-in-out after:scale-x-0 hover:after:scale-x-100 after:origin-right hover:after:origin-left",
