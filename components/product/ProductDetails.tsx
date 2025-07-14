@@ -19,6 +19,7 @@ import ColorSelector from "./ColorSelector";
 import { useRouter, useSearchParams } from "next/navigation";
 import BuyWithProducts from "./BuyWithProducts";
 import { useProductVisibilityObserver } from "@/hooks/useProductVisibility";
+import useScrollToTop from "@/hooks/useScrollToTop";
 
 export default function ProductDetails({
   product,
@@ -47,6 +48,7 @@ export default function ProductDetails({
   const [quantity, setQuantity] = useState<number>(initialQuantity);
 
   const intersectionRef = useProductVisibilityObserver();
+  useScrollToTop();
   // Handle size change
   const handleSizeChange = (value: string) => {
     URL.push(`?size=${value}&color=${defaultColor}`, { scroll: false });
@@ -69,7 +71,11 @@ export default function ProductDetails({
   }, []);
 
   return (
-    <section className="container max-w-screen-xl" ref={intersectionRef}>
+    <section
+      className="container max-w-screen-xl"
+      ref={intersectionRef}
+      id="product-details"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mb-20">
         {/* Product Carousel */}
         <div className="lg:sticky lg:top-20 lg:col-span-7">
