@@ -1,6 +1,34 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
+const categories = [
+  {
+    name: "All",
+    slug: "all",
+  },
+  {
+    name: "Men",
+    slug: "men",
+  },
+  {
+    name: "Women",
+    slug: "women",
+  },
+  {
+    name: "Straps & Bands",
+    slug: "straps-bands",
+  },
+  {
+    name: "Gifts & Pouches",
+    slug: "gifts-pouches",
+  },
+  {
+    name: "Limited Edition",
+    slug: "limited-edition",
+  },
+];
+
 export default function Loading() {
+  // load categories as static props
   return (
     <main>
       {/* Banner Skeleton */}
@@ -19,13 +47,13 @@ export default function Loading() {
         <div className="container">
           <div className="flex items-center justify-center gap-10">
             <span className="sticky left-0 text-sm text-gray-500 uppercase font-semibold tracking-[1px]">
-              Shop by face
+              Shop
             </span>
             <nav className="max-w-full overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-proximity">
               <ul className="grid grid-flow-col gap-10 min-w-max font-barlow pe-10">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <li key={i} className="py-5">
-                    <Skeleton className="h-6 w-[30px]" />
+                {categories.map((category) => (
+                  <li key={category.slug} className="py-5">
+                    {category.name}
                   </li>
                 ))}
               </ul>

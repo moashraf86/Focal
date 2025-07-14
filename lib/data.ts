@@ -634,9 +634,6 @@ export async function fetchProductsByFace(
     },
   };
 
-  // simulate 2s delay
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
   const response: StrapiResponse<Product> = await apiRequest(
     "/products",
     query,

@@ -1,16 +1,25 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { fetchCategories } from "@/lib/data";
+import Image from "next/image";
 
-export default function Loading() {
+export default async function Loading() {
+  const { categories } = await fetchCategories();
   return (
     <main>
-      {/* Banner Skeleton */}
+      {/* Banner image */}
       <section className="relative w-full h-[400px]">
         <div className="flex items-center justify-center absolute top-0 left-0 right-0 h-[400px] after:absolute after:-inset-0 after:bg-black/20 after:content-[''] after:z-0">
-          <Skeleton className="w-full h-full absolute top-0 left-0 object-cover object-center z-0" />
-          <div className="max-w-2xl space-y-4 relative z-[1] text-center">
-            <Skeleton className="h-10 w-3/4 mx-auto" />
-            <Skeleton className="h-4 w-1/2 mx-auto" />
-          </div>
+          <Image
+            src="/categories/all.webp"
+            alt="Categories"
+            className="w-full absolute top-0 left-0 h-full object-cover object-center z-0"
+            loading="lazy"
+            width={1440}
+            height={600}
+          />
+          <h1 className="text-4xl md:text-5xl lg:text-6xl text-white text-center font-light uppercase leading-tight tracking-tight relative z-[1]">
+            All Products
+          </h1>
         </div>
       </section>
 
@@ -19,13 +28,14 @@ export default function Loading() {
         <div className="container">
           <div className="flex items-center justify-center gap-10">
             <span className="sticky left-0 text-sm text-gray-500 uppercase font-semibold tracking-[1px]">
-              Shop by face
+              Shop
             </span>
             <nav className="max-w-full overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-proximity">
               <ul className="grid grid-flow-col gap-10 min-w-max font-barlow pe-10">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <li key={i} className="py-5">
-                    <Skeleton className="h-6 w-[30px]" />
+                <li className="py-5">All</li>
+                {categories.map((category) => (
+                  <li key={category.documentId} className="py-5">
+                    {category.name}
                   </li>
                 ))}
               </ul>
