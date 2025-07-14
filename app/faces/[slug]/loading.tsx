@@ -1,5 +1,32 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
+const faces = [
+  {
+    name: "1815",
+    slug: "1815",
+  },
+  {
+    name: "1820",
+    slug: "1820",
+  },
+  {
+    name: "1844",
+    slug: "1844",
+  },
+  {
+    name: "1926",
+    slug: "1926",
+  },
+  {
+    name: "1969",
+    slug: "1969",
+  },
+  {
+    name: "1971",
+    slug: "1971",
+  },
+];
+
 export default function Loading() {
   return (
     <main>
@@ -23,9 +50,9 @@ export default function Loading() {
             </span>
             <nav className="max-w-full overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-proximity">
               <ul className="grid grid-flow-col gap-10 min-w-max font-barlow pe-10">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <li key={i} className="py-5">
-                    <Skeleton className="h-6 w-[30px]" />
+                {faces.map((face) => (
+                  <li key={face.slug} className="py-5">
+                    {face.name}
                   </li>
                 ))}
               </ul>
