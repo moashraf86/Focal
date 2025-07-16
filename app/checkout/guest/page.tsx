@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import GuestCheckoutForm from "./GuestCheckoutForm";
-import OrderSummary from "./OrderSummary";
+import GuestCheckoutForm from "@/components/checkout/guest/GuestCheckoutForm";
+import OrderSummary from "@/components/checkout/OrderSummary";
 import { loadFromLocalStorage } from "@/lib/localStorage";
 import { notFound } from "next/navigation";
 

@@ -1,46 +1,23 @@
 "use client";
 import { CartItem } from "@/lib/definitions";
-import { loadFromLocalStorage } from "@/lib/localStorage";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import OrderSummarySkeleton from "./OrderSummarySkeleton";
 import ProductPrice from "@/components/product/ProductPrice";
+import { useCart } from "@/hooks/useCart";
 
 export default function OrderSummary() {
-  const cartItems = loadFromLocalStorage();
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasMounted, setHasMounted] = useState(false);
-  const [totalPrice, setTotalPrice] = useState(0);
+  const { cartItems, isLoading, getTotalPrice } = useCart();
 
-  useEffect(() => {
-    setHasMounted(true);
-    setTimeout(() => {
-      // Simulate a delay for loading state
-      setIsLoading(false);
-    }, 1000);
-  }, []);
-
-  useEffect(() => {
-    const calculatedTotal = cartItems.reduce(
-      (total, item) => total + item.product.price * item.quantity,
-      0
-    );
-    // Update the total price state
-    setTotalPrice(calculatedTotal);
-  }, [cartItems]);
-
-  if (isLoading && hasMounted) {
-    return <OrderSummarySkeleton cartItems={cartItems} />;
+  if (isLoading) {
+    return <OrderSummarySkeleton />;
   }
-
-  if (!hasMounted) return null;
 
   return (
     <section className="lg:border-l border-border h-full px-6 py-8 lg:p-10 space-y-6 max-w-[40rem] mx-auto lg:mx-0">
       <h2 className="text-lg lg:text-xl font-semibold font-barlow tracking-wide">
         Order Summary
       </h2>
-      {hasMounted && cartItems.length > 0 && (
+      {cartItems.length > 0 && (
         <div className="space-y-4 divide-y divide-border">
           {cartItems.map((item: CartItem) => {
             const selectedImage =
@@ -96,7 +73,7 @@ export default function OrderSummary() {
               </span>
               <ProductPrice
                 className="text-sm font-semibold font-sans"
-                price={totalPrice}
+                price={getTotalPrice()}
               />
             </div>
             <div className="flex justify-between mt-2">
@@ -107,7 +84,7 @@ export default function OrderSummary() {
               <span className="text-xl font-semibold">Total</span>
               <ProductPrice
                 className="text-xl font-semibold"
-                price={totalPrice}
+                price={getTotalPrice()}
               />
             </div>
           </div>

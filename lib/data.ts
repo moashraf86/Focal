@@ -440,8 +440,6 @@ export async function searchProducts(queryText: string): Promise<Product[]> {
 export async function fetchCartItems(email: string | undefined) {
   if (!email) return [];
 
-  const cacheKey = getCacheKey("cart", { email });
-
   const query = {
     filters: { email: { $eq: email } },
     populate: {
@@ -460,11 +458,12 @@ export async function fetchCartItems(email: string | undefined) {
     },
   };
 
+  // no cache for cart items
   const response: StrapiResponse<Product> = await apiRequest(
     "/carts",
     query,
-    cacheKey,
-    60000 // 1 minute for cart data
+    undefined,
+    60 // 1 minute
   );
 
   return response.data[0]?.cart_items || [];

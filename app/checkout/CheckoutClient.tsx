@@ -4,6 +4,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { useEffect, useRef, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { useSearchParams } from "next/navigation";
+import CheckoutFormSkeleton from "@/components/checkout/CheckoutFormSkeleton";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
@@ -58,7 +59,7 @@ export default function CheckoutClient() {
   }, [amount, email, name]);
 
   if (!clientSecret) {
-    return <div>Loading...</div>;
+    return <CheckoutFormSkeleton />;
   }
   // Pass the client secret to the CheckoutForm component
   const options = {
