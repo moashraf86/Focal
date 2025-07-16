@@ -1,35 +1,29 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { CartItem } from "@/lib/definitions";
 import React from "react";
 
-export default function OrderSummarySkeleton({
-  cartItems,
-}: {
-  cartItems: CartItem[];
-}) {
+export default function OrderSummarySkeleton() {
   return (
     <section className="lg:border-l border-border lg:min-h-[calc(100vh-10rem)] px-6 py-8 lg:p-10 space-y-6 max-w-[40rem] mx-auto lg:mx-0">
       <h2 className="text-lg lg:text-xl font-semibold font-barlow tracking-wide">
         Order Summary
       </h2>
       <div className="space-y-4 divide-y divide-border">
-        {cartItems.length > 0 &&
-          cartItems.map((item) => (
-            <div
-              key={item.documentId}
-              className="flex justify-between items-center pt-4 first:pt-0"
-            >
-              <div className="flex items-center gap-4">
-                <Skeleton className="w-16 h-16 rounded-md" />
-                <div className="space-y-2">
-                  <Skeleton className="w-40 h-3 mb-1" />
-                  <Skeleton className="w-20 h-2" />
-                  <Skeleton className="w-12 h-2" />
-                </div>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div
+            key={index}
+            className="flex justify-between items-center pt-4 first:pt-0"
+          >
+            <div className="flex items-center gap-4">
+              <Skeleton className="w-16 h-16 rounded-md" />
+              <div className="space-y-2">
+                <Skeleton className="w-40 h-3 mb-1" />
+                <Skeleton className="w-20 h-2" />
+                <Skeleton className="w-12 h-2" />
               </div>
-              <Skeleton className="w-16 h-3" />
             </div>
-          ))}
+            <Skeleton className="w-16 h-3" />
+          </div>
+        ))}
       </div>
       <div className="border-t border-border pt-4">
         <div className="flex justify-between">

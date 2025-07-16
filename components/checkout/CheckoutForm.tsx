@@ -105,10 +105,14 @@ export default function CheckoutForm({
   };
 
   return (
-    <form id="checkout" onSubmit={handleSubmit} className="space-y-6 p-6">
+    <form
+      id="checkout"
+      onSubmit={handleSubmit}
+      className="space-y-6 px-6 py-8 lg:p-10 max-w-[40rem] mx-auto lg:ms-auto"
+    >
       {/* Shipping */}
       <section className="space-y-3">
-        <h2 className="text-xl  font-light uppercase tracking-tight">
+        <h2 className="text-xl font-light uppercase tracking-tight">
           Shipping
         </h2>
         <p className="text-sm">Delivery time: 3-5 business days</p>
@@ -134,7 +138,13 @@ export default function CheckoutForm({
         />
       </section>
 
-      <Button variant="emphasis" type="submit" disabled={!stripe || loading}>
+      <Button
+        variant="emphasis"
+        type="submit"
+        size="lg"
+        className="w-full rounded-md"
+        disabled={!stripe || loading}
+      >
         Pay
       </Button>
     </form>
