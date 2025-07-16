@@ -278,4 +278,6 @@ export interface GuestOrder {
   payment_method: {
     type: "cash";
   };
+  email?: string;
+  name?: string;
 }

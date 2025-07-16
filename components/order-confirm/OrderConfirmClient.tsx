@@ -40,6 +40,66 @@ export default function OrderConfirmClient({ orderId }: { orderId: string }) {
     fetchOrder();
   }, [orderId]);
 
+  // send confirmation email to customer
+  useEffect(() => {
+    if (!order) return;
+
+    const sentKey = `sentEmail:${order.documentId}`; // unique per order
+
+    const sendEmail = async () => {
+      try {
+        const name = order.name; // customer name
+        const email = order.email;
+        const total = order.amount || 0;
+        const orderNumber = order.order_number;
+        const orderId = order.documentId;
+
+        // Prepare order items data for the API
+        const orderItems = order.order_items.map((item: OrderItem) => {
+          return {
+            product: item.product,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color || null,
+            price: item.product.price,
+          };
+        });
+        const shippingAddress = order.shipping_address;
+        const paymentMethod = order.payment_method;
+
+        const response = await fetch("/api/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderNumber,
+            email,
+            name,
+            orderItems,
+            total,
+            orderId,
+            shippingAddress,
+            paymentMethod,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        localStorage.setItem(sentKey, "true");
+      } catch (error) {
+        console.error("Failed to send email:", error);
+      }
+    };
+
+    // Only send email if not sent before for this order
+    if (!localStorage.getItem(sentKey)) {
+      sendEmail();
+    }
+  }, [order]);
+
   if (!order) {
     return <OrderConfirmSkeleton />;
   }
