@@ -20,7 +20,6 @@ export function EmailTemplate({
   shippingAddress,
   paymentMethod,
 }: EmailTemplateProps) {
-  // Helper function to format price
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -28,52 +27,81 @@ export function EmailTemplate({
     }).format(price);
   };
 
-  // Calculate total items count
   const totalItems = orderItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <div
+      style={{
+        width: "100%",
+        maxWidth: "600px",
+        margin: "0 auto",
+      }}
       dangerouslySetInnerHTML={{
         __html: `
           <!DOCTYPE html>
           <html lang="en">
             <head>
-              <meta charset="utf-8" />
-              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-              <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <meta http-equiv="X-UA-Compatible" content="IE=edge">
               <title>Order Confirmation</title>
               <!--[if mso]>
-              <noscript>
-                <xml>
-                  <o:OfficeDocumentSettings>
-                    <o:PixelsPerInch>96</o:PixelsPerInch>
-                  </o:OfficeDocumentSettings>
-                </xml>
-              </noscript>
+              <style>
+                td, th, div, p, a, h1, h2, h3 {
+                  font-family: Arial, Helvetica, sans-serif !important;
+                }
+                .button-link {
+                  padding: 12px 24px !important;
+                }
+              </style>
               <![endif]-->
+              <style>
+                @media only screen and (max-width: 600px) {
+                  .responsive-table {
+                    width: 100% !important;
+                  }
+                  .responsive-padding {
+                    padding-left: 15px !important;
+                    padding-right: 15px !important;
+                  }
+                  .stack-columns {
+                    display: block !important;
+                    width: 100% !important;
+                  }
+                  .button-link {
+                  display: block !important;
+                  width: 100% !important;
+                  text-align: center !important;
+                  box-sizing: border-box !important;
+                }
+                }
+              </style>
             </head>
-            <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.4; color: #333333;">
-              <!-- Email Container -->
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f4f4f4;">
+            <body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.5; color: #333333; background-color: #f5f5f5;">
+              <!-- Outlook wrapper table -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#f5f5f5" style="background-color: #f5f5f5;">
                 <tr>
-                  <td align="center" style="padding: 20px 0;">
-                    <!-- Email Content -->
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-
+                  <td align="center" valign="top">
+                    <!--[if (gte mso 9)|(IE)]>
+                    <table border="0" cellspacing="0" cellpadding="0" width="600">
+                    <tr>
+                    <td align="center" valign="top" width="600">
+                    <![endif]-->
+                    <table class="responsive-table" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width: 600px; width: 100%; background-color: #ffffff; border-collapse: collapse;">
                       <!-- Header -->
                       <tr>
-                        <td style="padding: 40px 30px 20px 30px; background-color: #ffffff;">
-                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <td class="responsive-padding" style="padding: 30px 30px 15px 30px; background-color: #ffffff;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
                               <td>
-                                <div style="font-size: 12px; color: #0284c7; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">
+                                <div style="font-size: 12px; color: #0284c7; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">
                                   Payment Successful
                                 </div>
-                                <h1 style="font-size: 28px; font-weight: 300; text-transform: uppercase; letter-spacing: -0.025em; margin: 0 0 16px 0; color: #1f2937; line-height: 1.2;">
-                                  Thanks for ordering, ${firstName}!
+                                <h1 style="font-size: 24px; font-weight: 300; margin: 0 0 12px 0; color: #1f2937; line-height: 1.3;">
+                                  Thanks for your order, ${firstName}!
                                 </h1>
-                                <p style="font-size: 16px; color: #374151; line-height: 1.5; margin: 0;">
-                                  Your order <span style="font-weight: 400; color: #0284c7;">#${orderNumber}</span> has been confirmed. We&apos;re processing it and will ship it to you shortly.
+                                <p style="font-size: 16px; color: #374151; margin: 0;">
+                                  Your order <strong style="color: #0284c7;">#${orderNumber}</strong> has been confirmed. We're processing it and will ship it to you shortly.
                                 </p>
                               </td>
                             </tr>
@@ -83,11 +111,10 @@ export function EmailTemplate({
 
                       <!-- Order Items -->
                       <tr>
-                        <td style="padding: 0 30px;">
-                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <td class="responsive-padding" style="padding: 0 30px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             ${orderItems
                               .map((item, index) => {
-                                // Find the selected image based on size and color
                                 const selectedImage =
                                   item?.product?.sizes
                                     ?.find((size) => size.value === item.size)
@@ -99,44 +126,43 @@ export function EmailTemplate({
 
                                 return `
                                 <tr>
-                                  <td style="padding: ${index === 0 ? "0 0 16px 0" : "16px 0"}; border-top: ${index === 0 ? "none" : "1px solid #e5e7eb"};">
-                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                  <td style="padding: ${
+                                    index === 0 ? "15px 0" : "15px 0"
+                                  }; border-top: ${
+                                    index === 0 ? "none" : "1px solid #e5e7eb"
+                                  };">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                       <tr>
-                                        <td width="80" style="vertical-align: top; padding-right: 16px;">
+                                        <td width="64" style="vertical-align: top; padding-right: 15px;">
                                           ${
                                             selectedImage
-                                              ? `
-                                            <div style="position: relative; display: inline-block;">
-                                              <img
+                                              ? `<img
                                                 src="${selectedImage.formats.small.url}"
                                                 alt="${item.product.name}"
                                                 width="64"
                                                 height="64"
-                                                style="width: 64px; height: 64px; border: 1px solid #e5e7eb; border-radius: 6px; display: block;object-fit: cover;"
-                                              />
-                                              <div style="position: absolute; top: -8px; right: -8px; width: 20px; height: 20px; background-color: rgba(0, 0, 0, 0.7); color: white; border-radius: 50%; text-align: center; line-height: 20px; font-size: 11px; font-weight: 600;">
-                                                ${item.quantity}
-                                              </div>
-                                            </div>
-                                          `
-                                              : ""
+                                                style="display: block; width: 64px; height: 64px; border: 1px solid #e5e7eb; border-radius: 4px; object-fit: cover;"
+                                              />`
+                                              : `<div style="width:64px; height:64px; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:4px;"></div>`
                                           }
                                         </td>
-                                        <td style="vertical-align: top;">
-                                          <div style="font-size: 14px; font-weight: 600; color: #1f2937; line-height: 1.2; margin-bottom: 4px;">
+                                        <td style="vertical-align: top; padding-right: 10px;">
+                                          <div style="font-size: 14px; font-weight: 600; color: #1f2937; line-height: 1.3; margin-bottom: 4px;">
                                             ${item.product.name}
                                           </div>
                                           <div style="font-size: 12px; color: #6b7280; margin-bottom: 2px;">
-                                            ${item.size} ${item.color ? `/ ${item.color}` : ""}
+                                            ${item.size}${item.color ? ` / ${item.color}` : ""}
                                           </div>
                                           <div style="font-size: 12px; color: #6b7280;">
-                                            ${formatPrice(item.price)}
+                                            ${formatPrice(item.price)} × ${
+                                              item.quantity
+                                            }
                                           </div>
                                         </td>
-                                        <td width="80" style="vertical-align: top; text-align: right;">
-                                          <div style="font-size: 14px; font-weight: 600; color: #1f2937;">
-                                            ${formatPrice(item.price * item.quantity)}
-                                          </div>
+                                        <td width="80" style="vertical-align: top; text-align: right; font-size: 14px; font-weight: 600; color: #1f2937;">
+                                          ${formatPrice(
+                                            item.price * item.quantity
+                                          )}
                                         </td>
                                       </tr>
                                     </table>
@@ -151,44 +177,32 @@ export function EmailTemplate({
 
                       <!-- Order Summary -->
                       <tr>
-                        <td style="padding: 0 30px 20px 30px;">
-                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <td class="responsive-padding" style="padding: 0 30px 20px 30px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid #e5e7eb;">
                             <tr>
-                              <td style="padding: 16px 0; border-top: 1px solid #e5e7eb;">
-                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                              <td style="padding: 16px 0 8px 0;">
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                   <tr>
-                                    <td style="font-size: 14px; font-weight: 600; color: #1f2937;">
+                                    <td width="50%" style="font-size:14px;font-weight:600;color:#1f2937; padding-bottom: 8px;">
                                       Subtotal · ${totalItems} items
                                     </td>
-                                    <td style="text-align: right; font-size: 14px; font-weight: 600; color: #1f2937;">
+                                    <td width="50%" align="right" style="font-size:14px;font-weight:600;color:#1f2937; padding-bottom: 8px;">
                                       ${formatPrice(total)}
                                     </td>
                                   </tr>
-                                </table>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 8px 0;">
-                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                   <tr>
-                                    <td style="font-size: 14px; font-weight: 600; color: #1f2937;">
+                                    <td width="50%" style="font-size:14px;font-weight:600;color:#1f2937; padding-bottom: 8px;">
                                       Shipping fees
                                     </td>
-                                    <td style="text-align: right; font-size: 14px; font-weight: 600; color: #1f2937;">
+                                    <td width="50%" align="right" style="font-size:14px;font-weight:600;color:#1f2937; padding-bottom: 8px;">
                                       Free
                                     </td>
                                   </tr>
-                                </table>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 8px 0; border-top: 1px solid #e5e7eb;">
-                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                   <tr>
-                                    <td style="font-size: 18px; font-weight: 600; color: #1f2937;">
+                                    <td width="50%" style="font-size:18px;font-weight:600;color:#1f2937; padding-top: 8px;">
                                       Total
                                     </td>
-                                    <td style="text-align: right; font-size: 18px; font-weight: 600; color: #1f2937;">
+                                    <td width="50%" align="right" style="font-size:18px;font-weight:600;color:#0284c7; padding-top: 8px;">
                                       ${formatPrice(total)}
                                     </td>
                                   </tr>
@@ -204,24 +218,31 @@ export function EmailTemplate({
                           ? `
                         <!-- Shipping Address -->
                         <tr>
-                          <td style="padding: 0 30px 20px 30px; border-top: 1px solid #e5e7eb;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                          <td class="responsive-padding" style="padding: 0 30px 20px 30px; border-top: 1px solid #e5e7eb;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
                               <tr>
                                 <td style="padding: 16px 0;">
-                                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                     <tr>
-                                      <td width="140" style="vertical-align: top; font-weight: 500; color: #1f2937;">
+                                      <td class="stack-columns" width="50%" style="vertical-align: top; font-weight: 600; color: #1f2937; padding-bottom: 8px;">
                                         Shipping Address
                                       </td>
-                                      <td style="vertical-align: top; text-align: right; color: #374151;">
-                                        <div style="margin: 0; line-height: 1.4;">
-                                          <div style="margin: 4px 0;">${shippingAddress.line1}</div>
-                                          ${shippingAddress.line2 ? `<div style="margin: 4px 0;">${shippingAddress.line2}</div>` : ""}
-                                          <div style="margin: 4px 0;">
-                                            ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.postal_code}, ${shippingAddress.country}
-                                          </div>
-                                          ${shippingAddress.contact ? `<div style="margin: 4px 0;">${shippingAddress.contact}</div>` : ""}
-                                        </div>
+                                      <td class="stack-columns" width="50%" style="vertical-align: top; text-align: right; color: #374151; font-size: 14px; line-height: 1.4;">
+                                        <div>${shippingAddress.line1}</div>
+                                        ${
+                                          shippingAddress.line2
+                                            ? `<div>${shippingAddress.line2}</div>`
+                                            : ""
+                                        }
+                                        <div>${shippingAddress.city}, ${
+                                          shippingAddress.state
+                                        }, ${shippingAddress.postal_code}</div>
+                                        <div>${shippingAddress.country}</div>
+                                        ${
+                                          shippingAddress.contact
+                                            ? `<div>${shippingAddress.contact}</div>`
+                                            : ""
+                                        }
                                       </td>
                                     </tr>
                                   </table>
@@ -239,30 +260,30 @@ export function EmailTemplate({
                           ? `
                         <!-- Payment Method -->
                         <tr>
-                          <td style="padding: 0 30px 20px 30px;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                          <td class="responsive-padding" style="padding: 0 30px 20px 30px; border-top: ${
+                            shippingAddress ? "none" : "1px solid #e5e7eb"
+                          };">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
                               <tr>
                                 <td style="padding: 16px 0;">
-                                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                     <tr>
-                                      <td width="140" style="vertical-align: top; font-weight: 500; color: #1f2937;">
+                                      <td class="stack-columns" width="50%" style="vertical-align: top; font-weight: 600; color: #1f2937; padding-bottom: 8px;">
                                         Payment information
                                       </td>
-                                      <td style="vertical-align: top; text-align: right; color: #374151;">
+                                      <td class="stack-columns" width="50%" style="vertical-align: top; text-align: right; color: #374151; font-size: 14px; line-height: 1.4;">
                                         ${
                                           paymentMethod.type === "card" &&
                                           paymentMethod.card
                                             ? `
-                                          <div style="margin: 0; line-height: 1.4;">
-                                            <div style="margin: 4px 0;">${paymentMethod.card.brand}</div>
-                                            <div style="margin: 4px 0;">Ending with ${paymentMethod.card.last4}</div>
-                                            <div style="margin: 4px 0;">
-                                              Expires ${paymentMethod.card.exp_month}/${paymentMethod.card.exp_year.toString().slice(-2)}
-                                            </div>
-                                          </div>
+                                          <div>${paymentMethod.card.brand}</div>
+                                          <div>Ending with ${paymentMethod.card.last4}</div>
+                                          <div>Expires ${paymentMethod.card.exp_month}/${paymentMethod.card.exp_year
+                                            .toString()
+                                            .slice(-2)}</div>
                                         `
                                             : `
-                                          <div style="margin: 4px 0;">Cash on Delivery</div>
+                                          <div>Cash on Delivery</div>
                                         `
                                         }
                                       </td>
@@ -279,19 +300,18 @@ export function EmailTemplate({
 
                       <!-- Order Link -->
                       <tr>
-                        <td style="padding: 0 30px 40px 30px; border-top: 1px solid #e5e7eb;">
-                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <td class="responsive-padding" style="padding: 0 30px 30px 30px; border-top: 1px solid #e5e7eb;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
-                              <td style="padding: 20px 0 0 0;">
-                                <p style="font-size: 16px; color: #374151; line-height: 1.5; margin: 0 0 16px 0;text-align: center;">
-                                  You can view your complete order details at:
-                                  <a
-                                    href="${process.env.NEXT_PUBLIC_BASE_URL}/orders/${orderId}"
-                                    style="color: #0284c7; text-decoration: none; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500;"
-                                  >
-                                    View Order
-                                  </a>
-                                </p>
+                              <td align="center" style="padding: 20px 0 0 0;">
+                                <a
+                                  href="${process.env.NEXT_PUBLIC_BASE_URL}/orders/${orderId}"
+                                  class="button-link"
+                                  style="display: inline-block; padding: 12px 24px; background-color: #0284c7; color: #ffffff !important; text-decoration: none; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; border-radius: 4px; font-size: 14px;"
+                                  target="_blank"
+                                >
+                                  View Order
+                                </a>
                               </td>
                             </tr>
                           </table>
@@ -299,6 +319,11 @@ export function EmailTemplate({
                       </tr>
 
                     </table>
+                    <!--[if (gte mso 9)|(IE)]>
+                    </td>
+                    </tr>
+                    </table>
+                    <![endif]-->
                   </td>
                 </tr>
               </table>
