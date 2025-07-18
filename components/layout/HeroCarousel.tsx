@@ -15,11 +15,11 @@ export default function HeroCarousel() {
       links: [
         {
           text: "Shop The Watch",
-          href: "/shop",
+          href: "/products/1926-at-sea-steel-green-turtle-vintage?size=39mm&color=3-Link",
         },
         {
-          text: "Learn More",
-          href: "/about",
+          text: "Shop The Collection",
+          href: "/faces/1926",
         },
       ],
       align: "start",
@@ -31,19 +31,19 @@ export default function HeroCarousel() {
       links: [
         {
           text: "Shop The Watch",
-          href: "/shop",
+          href: "/products/1988-moonphase",
         },
       ],
       align: "start",
     },
     {
       title: "Women's Collection",
-      slogan: "1988 Moonphase",
+      slogan: "New In",
       image: "/hero-3.webp",
       links: [
         {
           text: "Shop The Watch",
-          href: "/shop",
+          href: "/products/1969-petite-rose-gold-blue-sunray?size=32mm&color=Mesh%20Rose%20Gold",
         },
       ],
       align: "start",
