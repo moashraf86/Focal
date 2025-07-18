@@ -59,8 +59,8 @@ export default function OrderConfirmClient({ orderId }: { orderId: string }) {
           return {
             product: item.product,
             quantity: item.quantity,
-            size: item.size,
-            color: item.color || null,
+            size: item.size ?? "",
+            color: item.color ?? "",
             price: item.product.price,
           };
         });
@@ -95,7 +95,7 @@ export default function OrderConfirmClient({ orderId }: { orderId: string }) {
     };
 
     // Only send email if not sent before for this order
-    if (!localStorage.getItem(sentKey)) {
+    if (!localStorage.getItem(sentKey) && order.email) {
       sendEmail();
     }
   }, [order]);
@@ -165,7 +165,10 @@ export default function OrderConfirmClient({ orderId }: { orderId: string }) {
                       {item.product.name}
                     </Link>
                     <span className="text-xs text-muted-foreground">
-                      {item.size} {item.color ? `/ ${item.color}` : ""}
+                      {item.size && item.size !== "free"
+                        ? `${item.size} / `
+                        : ""}
+                      {item.color ? `${item.color}` : ""}
                     </span>{" "}
                     <ProductPrice
                       className="text-xs text-muted-foreground font-sans"
