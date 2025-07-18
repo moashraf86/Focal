@@ -18,9 +18,11 @@ const colorVariants: ColorVariant = {
 };
 
 export default function WomenBanner({ product }: { product: Product }) {
-  const title = product.faces[0].name;
-  const description = product.faces[0].description[0].children[0].text;
-  const webBanner = product.bannerImage[0].url;
+  const title = product.faces[0]?.name || product.name;
+  const description =
+    product.faces[0]?.description[0]?.children[0]?.text ||
+    product.description[0]?.children[0]?.text;
+  const webBanner = product.bannerImage[0]?.url;
   const color = product.bannerBgColor;
 
   const [sectionRef, entry] = useIntersectionObserver({

@@ -58,7 +58,7 @@ export const useCart = () => {
   const addProductToCart = async (
     product: Product,
     quantity: number,
-    size: string,
+    size?: string,
     color?: string
   ) => {
     try {
@@ -102,9 +102,9 @@ export const useCart = () => {
         email,
         username,
         quantity,
-        size,
         product,
-        color
+        color,
+        size
       );
       await new Promise((resolve) => setTimeout(resolve, 800));
       mutate(swrKey);
@@ -117,6 +117,11 @@ export const useCart = () => {
       console.error("Error adding product to cart:", error);
     } finally {
       setIsAddingProduct(false);
+      toast({
+        title: "Product added to cart",
+        variant: "success",
+        duration: 1500,
+      });
     }
   };
 

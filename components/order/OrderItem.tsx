@@ -12,6 +12,14 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
       ?.colors?.find((color) => color.name === item.color)?.images?.[0] ??
     item.product?.images?.[0];
 
+  // view product link
+  const viewProductLink =
+    item.size && item.size !== "free"
+      ? `/products/${item.product.slug}?size=${item.size}&color=${item.color}`
+      : item.size === "free" && item.color
+        ? `/products/${item.product.slug}?color=${item.color}`
+        : `/products/${item.product.slug}`;
+
   return (
     <>
       <tr>
@@ -36,7 +44,8 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
                 {item.product.name}
               </h2>
               <p className="text-sm font-light">
-                {item.size} / {item.color}
+                {item.size && item.size !== "free" ? `${item.size} / ` : ""}
+                {item.color ? `${item.color}` : ""}
               </p>
               <ProductPrice price={item.product.price} className="sm:hidden" />
               <p className="font-light">Qty: {item.quantity}</p>
@@ -46,9 +55,7 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
                 size="sm"
                 className="sm:hidden text-sky-700 p-0"
               >
-                <Link href={`/products/${item.product.slug}`}>
-                  View product
-                </Link>
+                <Link href={viewProductLink}>View product</Link>
               </Button>
             </div>
           </div>
@@ -66,11 +73,7 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
             size="sm"
             className="text-sky-700 px-0 hidden sm:inline-flex"
           >
-            <Link
-              href={`/products/${item.product.slug}?size=${item.size}&color=${item.color}`}
-            >
-              View product
-            </Link>
+            <Link href={viewProductLink}>View product</Link>
           </Button>
         </td>
       </tr>

@@ -6,8 +6,6 @@ import { Button } from "../ui/button";
 import { useQuickView } from "@/hooks/useQuickView";
 import { useCart } from "@/hooks/useCart";
 import { Loader2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { ToastAction } from "../ui/toast";
 import { useIntersectionObserver } from "@uidotdev/usehooks";
 import { useEffect, useState } from "react";
 
@@ -98,26 +96,13 @@ export default function ProductCard({
     product.sizes?.length > 1;
 
   // Handle add to cart action
-  const handleAddToCart = async (product: Product) => {
-    if (!chosenSize || !chosenColor) {
-      console.error("Product must have a size and color selected.");
-      return;
-    }
-    addProductToCart(product, 1, chosenSize.value, chosenColor.name);
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    // Optionally, you can show a toast or notification here
-    toast({
-      title: "Product added to cart",
-      variant: "success",
-      duration: 1500,
-      action: (
-        <ToastAction altText="view-cart">
-          <Link href="/cart" className="text-inherit">
-            View Cart
-          </Link>
-        </ToastAction>
-      ),
-    });
+  const handleAddToCart = (product: Product) => {
+    addProductToCart(
+      product,
+      1,
+      chosenSize?.value ?? "",
+      chosenColor?.name ?? ""
+    );
   };
 
   // Handle quick view action
@@ -131,6 +116,16 @@ export default function ProductCard({
     openQuickView(product, chosenSize, chosenColor);
   };
 
+  // set href  for product card
+  const href =
+    chosenSize && chosenSize.value !== "free"
+      ? `/products/${product.slug}?size=${chosenSize?.value}&color=${chosenColor?.name}`
+      : chosenSize && chosenSize.value === "free"
+        ? `/products/${product.slug}?color=${chosenColor?.name}`
+        : `/products/${product.slug}`;
+
+  console.log(chosenSize, chosenColor);
+
   // If the component has been visible, set hasBeenVisible to true
   useEffect(() => {
     if (entry?.isIntersecting && !hasBeenVisible) {
@@ -143,7 +138,7 @@ export default function ProductCard({
       <div className="relative group grid gap-4 overflow-hidden">
         <Link
           ref={ref}
-          href={`/products/${product.slug}?size=${chosenSize?.value}&color=${chosenColor?.name}`}
+          href={href}
           className="group aspect-[3/4] relative overflow-hidden bg-gray-100 block"
         >
           {hasBeenVisible && (

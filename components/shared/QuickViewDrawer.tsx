@@ -88,6 +88,13 @@ export default function QuickViewDrawer({
     });
   };
 
+  // set href for quick view
+  const href =
+    selectedSize && selectedSize !== "free"
+      ? `/products/${product.slug}?size=${selectedSize}&color=${selectedColor}`
+      : selectedSize === "free" && selectedColor
+        ? `/products/${product.slug}?color=${selectedColor}`
+        : `/products/${product.slug}`;
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
@@ -153,11 +160,13 @@ export default function QuickViewDrawer({
           </div>
 
           <div className="px-6 md:px-10 space-y-4">
-            <ProductSizeSelector
-              sizes={product.sizes}
-              selectedSize={selectedSize}
-              onSizeChange={handleSizeChange}
-            />
+            {selectedSize !== "free" && (
+              <ProductSizeSelector
+                sizes={product.sizes}
+                selectedSize={selectedSize}
+                onSizeChange={handleSizeChange}
+              />
+            )}
 
             <div className="space-y-2">
               <ColorSelector
@@ -193,7 +202,7 @@ export default function QuickViewDrawer({
           {/* Desktop Details Link */}
           <div className="flex items-center justify-center">
             <Link
-              href={`/products/${product.slug}?size=${selectedSize}&color=${selectedColor}`}
+              href={href}
               className="capitalize font-barlow hidden md:inline-block font-light underline text-primary/70 hover:text-primary"
             >
               View details

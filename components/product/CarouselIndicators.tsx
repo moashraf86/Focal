@@ -39,7 +39,7 @@ export default function CarouselIndicators({
             onClick={() => handleScrollToImage(index)}
           >
             <Image
-              src={images[index].formats?.small?.url}
+              src={images[index].formats?.small?.url || images[index].url}
               alt={images[index].alternativeText || "Indicator image"}
               fill
               quality={100}

@@ -18,8 +18,10 @@ const colorVariants: ColorVariant = {
 };
 
 export default function MenBanner({ product }: { product: Product }) {
-  const title = product.faces[0].name;
-  const description = product.faces[0]?.description[0]?.children[0]?.text;
+  const title = product.faces[0]?.name || product.name;
+  const description =
+    product.faces[0]?.description[0]?.children[0]?.text ||
+    product.description[0]?.children[0]?.text;
   const webBanner = product.bannerImage[0].url;
   const mobileBanner = product.bannerImage[1]?.url;
   const color = product.bannerBgColor;

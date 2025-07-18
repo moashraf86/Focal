@@ -118,7 +118,7 @@ export interface CartItem {
   documentId: string;
   quantity: number;
   product: Product;
-  size: string;
+  size: string | undefined;
   color: string | undefined;
   createdAt: string;
 }

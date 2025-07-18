@@ -8,7 +8,7 @@ export default function ProductSizeSelector({
   onSizeChange,
 }: {
   sizes: Size[];
-  selectedSize: string;
+  selectedSize: string | undefined;
   onSizeChange: (value: string) => void;
 }) {
   return (

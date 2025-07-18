@@ -4,7 +4,7 @@ import ProductDescription from "./ProductDescription";
 import ProductPrice from "./ProductPrice";
 import QuantitySelector from "../shared/QuantitySelector";
 import ProductActions from "./ProductActions";
-import { Product } from "@/lib/definitions";
+import { Product, Color } from "@/lib/definitions";
 import { useEffect, useState } from "react";
 import ProductCarousel from "./ProductCarousel";
 import ProductRating from "./ProductRating";
@@ -31,44 +31,85 @@ export default function ProductDetails({
   const searchParams = useSearchParams();
   const URL = useRouter();
 
-  const defaultSize = product.sizes?.[0].value ?? "";
-  const selectedSize = searchParams.get("size") || defaultSize;
+  // --- Size logic ---
+  const hasSizes = Array.isArray(product.sizes) && product.sizes.length > 0;
+  const defaultSize = hasSizes ? product.sizes[0].value : undefined;
+  const selectedSize = hasSizes
+    ? searchParams.get("size") || defaultSize
+    : undefined;
 
-  const defaultColor = product.sizes?.[0].colors?.[0].name ?? "";
-  const selectedColor = searchParams.get("color") || defaultColor;
+  // --- Color logic ---
+  const sizeObj = hasSizes
+    ? product.sizes.find((size) => size.value === selectedSize)
+    : undefined;
+  let colors: Color[] = [];
+  if (sizeObj && Array.isArray(sizeObj.colors)) {
+    colors = sizeObj.colors;
+  }
+  const hasColors = colors.length > 0;
+  const defaultColor = hasColors ? colors[0].name : "";
+  const selectedColor = hasColors
+    ? searchParams.get("color") || defaultColor || ""
+    : undefined;
+  const allColors: Color[] = colors;
 
-  const allColors =
-    product.sizes?.find((size) => size.value === selectedSize)?.colors || [];
-
+  // --- Carousel images ---
   const carouselImages =
-    allColors.find((color) => color.name === selectedColor)?.images ?? [];
+    hasColors && selectedColor
+      ? (allColors.find((color) => color.name === selectedColor)?.images ?? [])
+      : (product.images ?? []);
 
   const [resetCarousel, setResetCarousel] = useState(false);
-
   const [quantity, setQuantity] = useState<number>(initialQuantity);
-
   const intersectionRef = useProductVisibilityObserver();
   useScrollToTop();
+
   // Handle size change
   const handleSizeChange = (value: string) => {
-    URL.push(`?size=${value}&color=${defaultColor}`, { scroll: false });
+    if (!hasSizes) return;
+    // If colors exist for new size, pick first color
+    const newSizeObj = product.sizes.find((size) => size.value === value);
+    const newColor =
+      newSizeObj && Array.isArray(newSizeObj.colors) && newSizeObj.colors.length
+        ? newSizeObj.colors[0].name
+        : undefined;
+    if (hasColors && newColor) {
+      URL.push(`?size=${value}&color=${newColor}`, { scroll: false });
+    } else {
+      URL.push(`?size=${value}`, { scroll: false });
+    }
   };
 
   // Handle color change
   const handleColorChange = (value: string) => {
+    if (!hasColors || !selectedSize) return;
+    if (selectedSize === "free") {
+      URL.push(`?color=${value}`, { scroll: false });
+      return;
+    }
     URL.push(`?size=${selectedSize}&color=${value}`, { scroll: false });
   };
 
   // Update carousel images when selected size or color changes
   useEffect(() => {
     setResetCarousel((prev) => !prev);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSize, selectedColor]);
 
-  // Set default URL params on first render
+  // Set default URL params on first render (only if sizes/colors exist)
   useEffect(() => {
-    URL.push(`?size=${selectedSize}&color=${selectedColor}`, { scroll: true });
+    if (hasSizes && selectedSize !== "free" && selectedColor) {
+      URL.push(`?size=${selectedSize}&color=${selectedColor}`, {
+        scroll: true,
+      });
+    } else if (hasSizes && selectedSize === "free" && selectedColor) {
+      URL.push(`?color=${selectedColor}`, { scroll: true });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const selectedColorSafe =
+    typeof selectedColor === "string" ? selectedColor : "";
 
   return (
     <section
@@ -98,20 +139,26 @@ export default function ProductDetails({
             </div>
             <ProductRating rating={5} reviews={3} />
           </div>
-          <ProductSizeSelector
-            sizes={product.sizes}
-            selectedSize={selectedSize}
-            onSizeChange={handleSizeChange}
-          />
-          <div className="space-y-2">
-            <span>Strap: {selectedColor}</span>
-            <ColorSelector
-              mode="single"
-              colors={allColors}
-              selectedColors={[selectedColor]}
-              onColorSelect={handleColorChange}
+          {/* Size Selector (only if sizes exist) */}
+          {hasSizes && selectedSize && selectedSize !== "free" && (
+            <ProductSizeSelector
+              sizes={product.sizes}
+              selectedSize={selectedSize}
+              onSizeChange={handleSizeChange}
             />
-          </div>
+          )}
+          {/* Color Selector (only if colors exist) */}
+          {hasColors && (
+            <div className="space-y-2">
+              <span>Strap: {selectedColorSafe}</span>
+              <ColorSelector
+                mode="single"
+                colors={allColors}
+                selectedColors={[selectedColorSafe]}
+                onColorSelect={handleColorChange}
+              />
+            </div>
+          )}
           <div className="space-y-1">
             <span>Quantity:</span>
             <QuantitySelector
@@ -123,8 +170,8 @@ export default function ProductDetails({
           <ProductActions
             product={product}
             quantity={quantity}
-            selectedSize={selectedSize}
-            color={selectedColor}
+            selectedSize={selectedSize ?? ""}
+            color={selectedColor ?? ""}
           />
           <Accordion type="single" collapsible>
             <AccordionItem value="description">

@@ -39,12 +39,24 @@ export default function CartItem({
       ?.colors?.find((color) => color.name === item.color)?.images?.[0] ??
     item.product?.images?.[0];
 
+  // set href for cart item
+  const href =
+    item.size && item.size !== "free"
+      ? `/products/${item.product?.slug}?size=${item.size}&color=${item.color}`
+      : item.size === "free" && item.color
+        ? `/products/${item.product?.slug}?color=${item.color}`
+        : `/products/${item.product?.slug}`;
+
   return (
     <tr className={cn("font-light", className)} style={style}>
       <td className="px-6 py-4 text-sm font-medium text-gray-800">
         <div className="flex items-center gap-4">
           <Image
-            src={selectedColorImage?.formats?.small?.url || ""}
+            src={
+              selectedColorImage?.formats?.small?.url ||
+              selectedColorImage?.url ||
+              ""
+            }
             alt={selectedColorImage?.alternativeText || "product image"}
             width={100}
             height={100}
@@ -52,14 +64,18 @@ export default function CartItem({
           />
           <div className="space-y-2 sm:space-y-2 font-light grow">
             <Link
-              href={`/products/${item.product?.slug}?size=${item.size}&color=${item.color}`}
+              href={href}
               className="text-base font-barlow leading-tight hover:underline underline-offset-2"
             >
               {item.product?.name}
             </Link>
             <p>
-              {item.size && <span>{item.size}</span>}{" "}
-              {item.color && <span> / {item.color}</span>}
+              {item.size && item.size !== "undefined" && (
+                <>
+                  {item.size !== "free" && <span>{item.size} / </span>}
+                  {item.color && <span>{item.color}</span>}
+                </>
+              )}
             </p>
             <ProductPrice
               price={item.product?.price}

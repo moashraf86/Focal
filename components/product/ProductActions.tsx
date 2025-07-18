@@ -1,11 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
 import { Product } from "@/lib/definitions";
 import { Loader2 } from "lucide-react";
-import { ToastAction } from "../ui/toast";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 export default function ProductActions({
   product,
@@ -15,28 +12,14 @@ export default function ProductActions({
 }: {
   product: Product;
   quantity: number;
-  selectedSize: string;
+  selectedSize?: string;
   color?: string;
 }) {
   const { addProductToCart, isAdding } = useCart();
 
   // Add product to cart
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
     addProductToCart(product, quantity, selectedSize, color);
-    // Simulate 250ms network delay before showing toast
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    toast({
-      title: "Product added to cart",
-      variant: "success",
-      duration: 1500,
-      action: (
-        <ToastAction altText="view-cart">
-          <Link href="/cart" className="text-inherit">
-            View Cart
-          </Link>
-        </ToastAction>
-      ),
-    });
   };
 
   return (
