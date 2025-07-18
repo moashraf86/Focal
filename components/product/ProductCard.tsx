@@ -124,8 +124,6 @@ export default function ProductCard({
         ? `/products/${product.slug}?color=${chosenColor?.name}`
         : `/products/${product.slug}`;
 
-  console.log(chosenSize, chosenColor);
-
   // If the component has been visible, set hasBeenVisible to true
   useEffect(() => {
     if (entry?.isIntersecting && !hasBeenVisible) {

@@ -58,9 +58,10 @@ export default function QuickViewDrawer({
   const selectedImage = useMemo(() => {
     if (!product) return null;
     const selectedColorObj = allColors.find((c) => c.name === selectedColor);
+
     return (
-      selectedColorObj?.images?.[0].formats?.small?.url ||
-      product.images?.[0]?.formats?.small?.url ||
+      selectedColorObj?.images?.[0]?.formats?.small ||
+      product.images?.[0]?.formats?.small ||
       "/fallback-image.jpg"
     );
   }, [allColors, selectedColor, product]);
@@ -74,6 +75,7 @@ export default function QuickViewDrawer({
         quantity: 1,
       });
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
@@ -95,6 +97,7 @@ export default function QuickViewDrawer({
       : selectedSize === "free" && selectedColor
         ? `/products/${product.slug}?color=${selectedColor}`
         : `/products/${product.slug}`;
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
@@ -106,8 +109,8 @@ export default function QuickViewDrawer({
             {/* Mobile Header */}
             <div className="flex md:hidden items-center gap-4">
               <Image
-                src={selectedImage || "/fallback-image.jpg"}
-                alt={product.images[0]?.alternativeText || "Product image"}
+                src={selectedImage?.url || "/fallback-image.jpg"}
+                alt={selectedImage?.hash || "Product image"}
                 width={65}
                 height={80}
                 quality={100}
@@ -140,10 +143,10 @@ export default function QuickViewDrawer({
           {/* Desktop Image Section */}
           <div className="hidden md:flex items-center gap-4 px-6 md:px-10">
             <Image
-              src={selectedImage || "/fallback-image.jpg"}
-              alt={product.images[0]?.alternativeText || "Product image"}
-              width={product.images[0]?.formats?.thumbnail?.width || 100}
-              height={product.images[0]?.formats?.thumbnail?.height || 100}
+              src={selectedImage?.url || "/fallback-image.jpg"}
+              alt={selectedImage?.hash || "Product image"}
+              width={120}
+              height={120}
               quality={100}
               className="object-cover object-center"
               priority

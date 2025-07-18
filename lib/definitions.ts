@@ -87,6 +87,8 @@ interface StrapiImageFormat {
   url: string;
   height: number;
   width: number;
+  name: string;
+  hash: string;
 }
 
 export interface SingleStrapiResponse<T> {

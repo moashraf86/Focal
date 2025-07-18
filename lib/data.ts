@@ -138,6 +138,7 @@ const POPULATE_CONFIGS = {
                 images: {
                   fields: ["name", "alternativeText", "url", "formats"],
                 },
+                pattern: { fields: ["url", "alternativeText"] },
               },
             },
           },
