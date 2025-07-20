@@ -42,8 +42,10 @@
     --midnight-foreground: 0 0% 98%;
     --green: 162 42% 24%;
     --green-foreground: 0 0% 98%;
-    --blue: 202 26% 32%;
-    --blue-foreground: 0 0% 98%;
+    --blue-sunray: 202 26% 32%;
+    --blue-sunray-foreground: 0 0% 98%;
+    --moonphase: 222 36% 28%;
+    --moonphase-foreground: 0 0% 98%;
   }
   .dark {
     --background: 0 0 5.1%;

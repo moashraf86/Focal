@@ -35,9 +35,13 @@ export default {
           DEFAULT: "hsl(var(--green))",
           foreground: "hsl(var(--green-foreground))",
         },
-        blue: {
-          DEFAULT: "hsl(var(--blue))",
-          foreground: "hsl(var(--blue-foreground))",
+        "blue-sunray": {
+          DEFAULT: "hsl(var(--blue-sunray))",
+          foreground: "hsl(var(--blue-sunray-foreground))",
+        },
+        moonphase: {
+          DEFAULT: "hsl(var(--moonphase))",
+          foreground: "hsl(var(--moonphase-foreground))",
         },
         card: {
           DEFAULT: "hsl(var(--card))",
