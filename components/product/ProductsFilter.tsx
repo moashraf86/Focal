@@ -37,6 +37,7 @@ type ProductsFilterProps = {
   availableColors: Color[];
   availableCollections: Collection[];
   resultsCount: number;
+  isStrapCategory: boolean;
 };
 
 export default function ProductsFilter({
@@ -47,6 +48,7 @@ export default function ProductsFilter({
   collections,
   availableCollections,
   resultsCount,
+  isStrapCategory,
 }: ProductsFilterProps) {
   const [activeFilters, setActiveFilters] = useState<Filter[]>([]);
   const [filtersCount, setFiltersCount] = useState(0);
@@ -172,7 +174,7 @@ export default function ProductsFilter({
               {availableSizes.length > 0 && (
                 <AccordionItem value="size">
                   <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
-                    Watch Size
+                    {isStrapCategory ? "Strap width" : "Watch size"}
                   </AccordionTrigger>
                   <AccordionContent>
                     <SizeFilter sizes={sizes} availableSizes={availableSizes} />
@@ -180,10 +182,10 @@ export default function ProductsFilter({
                 </AccordionItem>
               )}
               {/* Color Filter */}
-              {availableColors.length > 1 && (
+              {availableColors.length > 0 && (
                 <AccordionItem value="color">
                   <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
-                    Strap Color
+                    Strap
                   </AccordionTrigger>
                   <AccordionContent>
                     <ColorSelector
@@ -211,7 +213,7 @@ export default function ProductsFilter({
                 </AccordionContent>
               </AccordionItem>
               {/* Collection Filter */}
-              {availableCollections.length > 1 && (
+              {availableCollections.length > 0 && (
                 <AccordionItem value="type">
                   <AccordionTrigger className="text-sm font-barlow font-semibold tracking-[1px] hover:no-underline py-5">
                     Product Type

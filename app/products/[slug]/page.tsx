@@ -40,6 +40,9 @@ export default async function Product({
   // Fetch product by Slug
   const { product } = await fetchProductBySlug(slug);
 
+  // Get Categories slugs
+  const categoriesSlugs = product.categories.map((category) => category.slug);
+
   return (
     <main>
       <Breadcrumb className="container max-w-screen-xl">
@@ -57,7 +60,7 @@ export default async function Product({
       <StickyProductSummary product={product} />
       <ProductBanner product={product} />
       <RelatedProducts
-        category={product.categories[0]?.slug}
+        categories={categoriesSlugs}
         face={product.faces[0]?.slug}
         product={product}
       />

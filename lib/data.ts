@@ -112,6 +112,7 @@ const POPULATE_CONFIGS = {
     bannerImage: { fields: ["url", "alternativeText"] },
     images: { fields: ["url", "alternativeText"] },
     categories: { fields: ["name", "slug"] },
+    collections: { fields: ["name", "slug"] },
     faces: { fields: ["name", "slug", "description"] },
     sizes: {
       fields: ["value"],
@@ -374,34 +375,6 @@ export async function fetchProductBySlug(
   );
 
   return { product: response.data[0] };
-}
-
-// Fetch all related products (optimized)
-export async function fetchRelatedProducts(
-  cat: string,
-  face?: string
-): Promise<{ products: Product[] }> {
-  const cacheKey = getCacheKey("related", { cat, face });
-
-  const query = {
-    filters: {
-      categories: { slug: { $eq: cat } },
-      ...(face && { faces: { slug: { $eq: face } } }),
-    },
-    populate: {
-      ...POPULATE_CONFIGS.basic.images,
-      ...POPULATE_CONFIGS.withSizes,
-    },
-  };
-
-  const response: StrapiResponse<Product> = await apiRequest(
-    "/products",
-    query,
-    cacheKey,
-    3600000 // 1 hour
-  );
-
-  return { products: response.data };
 }
 
 // Search products (optimized with debouncing consideration)

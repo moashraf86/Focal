@@ -126,6 +126,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const expandedProducts = expandProducts(products, size, color);
   const resultsCount = expandedProducts.length;
 
+  // Determine if the category is a strap category
+  const isStrapCategory = category?.slug.includes("strap") || false;
+
   return (
     <main>
       {/* Banner image */}
@@ -198,6 +201,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
               availableColors={availableColors}
               availableCollections={availableCollections}
               resultsCount={resultsCount}
+              isStrapCategory={isStrapCategory}
             />
             {products.length > 0 && (
               <span className="hidden md:inline-block text-sm ">

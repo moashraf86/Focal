@@ -32,9 +32,14 @@ const getCachedAllProducts = cache(fetchAllProductsBase);
 
 // Precompute filter options
 const computeFilterOptions = (products: Product[]) => {
-  const allSizesData = products.flatMap((product) =>
-    product.type === "watch" ? product.sizes : []
-  );
+  const allSizesData = products.flatMap((product) => {
+    // Check if product collections contain slug "strap" or "gift-set"
+    const hasStrapOrGiftSetCollection = product.collections.some(
+      (collection) =>
+        collection.slug === "strap" || collection.slug === "gift-set"
+    );
+    return hasStrapOrGiftSetCollection ? [] : product.sizes;
+  });
   const allColorsData = allSizesData.flatMap((size) => size.colors);
   const allCollectionsData = products.flatMap((product) => product.collections);
 
@@ -172,6 +177,7 @@ export default async function Categories({
               availableColors={availableColors}
               availableCollections={availableCollections}
               resultsCount={resultsCount}
+              isStrapCategory={false}
             />
             {products.length > 0 && (
               <span className="hidden md:inline-block text-sm ">

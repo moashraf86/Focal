@@ -141,16 +141,33 @@ export default function ProductDetails({
           </div>
           {/* Size Selector (only if sizes exist) */}
           {hasSizes && selectedSize && selectedSize !== "free" && (
-            <ProductSizeSelector
-              sizes={product.sizes}
-              selectedSize={selectedSize}
-              onSizeChange={handleSizeChange}
-            />
+            <div className="space-y-2">
+              <span>
+                {product.collections?.some((collection) =>
+                  collection.slug.includes("strap")
+                )
+                  ? "Strap with"
+                  : "Watch size"}{" "}
+                : {selectedSize}
+              </span>
+              <ProductSizeSelector
+                sizes={product.sizes}
+                selectedSize={selectedSize}
+                onSizeChange={handleSizeChange}
+              />
+            </div>
           )}
           {/* Color Selector (only if colors exist) */}
           {hasColors && (
             <div className="space-y-2">
-              <span>Strap: {selectedColorSafe}</span>
+              <span>
+                {product.collections?.some((collection) =>
+                  collection.slug.includes("strap")
+                )
+                  ? "Fastener"
+                  : "Strap"}
+                : {selectedColorSafe}
+              </span>{" "}
               <ColorSelector
                 mode="single"
                 colors={allColors}

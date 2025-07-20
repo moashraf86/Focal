@@ -32,22 +32,39 @@ export function useRelatedProducts({
   cat,
   face = "",
 }: {
-  cat: string;
+  cat: string | string[];
   face?: string;
 }) {
-  const query = qs.stringify({
-    filters: {
-      categories: {
-        slug: {
-          $eq: cat,
-        },
-      },
-      faces: {
-        slug: {
-          $eq: face,
-        },
+  const filters: {
+    categories: {
+      slug: {
+        $in: string[];
+      };
+    };
+    faces?: {
+      slug: {
+        $eq: string;
+      };
+    };
+  } = {
+    categories: {
+      slug: {
+        $in: Array.isArray(cat) ? cat : [cat],
       },
     },
+  };
+
+  // Only add faces filter if face parameter exists and is not empty
+  if (face && face.trim() !== "") {
+    filters.faces = {
+      slug: {
+        $eq: face,
+      },
+    };
+  }
+
+  const query = qs.stringify({
+    filters,
     populate: {
       images: {
         fields: ["url", "alternativeText", "formats"],
@@ -73,7 +90,7 @@ export function useRelatedProducts({
   const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/products?${query}`;
   const { data, error, isLoading } = useSWR<Product[]>(url, fetcher, {
     revalidateOnFocus: false,
-    dedupingInterval: 60000,
+    dedupingInterval: 0,
   });
 
   return {

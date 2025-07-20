@@ -13,7 +13,6 @@ export default function ProductSizeSelector({
 }) {
   return (
     <div className="space-y-2">
-      <span>Watch size:</span>
       <div className="flex items-center gap-2">
         {sizes.map((size) => (
           <Button
