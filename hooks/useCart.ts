@@ -1,10 +1,9 @@
-import { fetchCartItems } from "@/lib/data";
 import {
   addProductToCart as apiAddProductToCart,
   removeCartItem as apiRemoveCartItem,
   updateItemQuantity as apiUpdateItemQuantity,
 } from "@/lib/actions";
-import { CartItem, Product } from "@/lib/definitions";
+import { CartItem, Product, StrapiResponse } from "@/lib/definitions";
 import { useUser } from "@clerk/nextjs";
 import useSWR, { mutate } from "swr";
 import { toast } from "./use-toast";
@@ -14,6 +13,58 @@ import {
   loadFromLocalStorage,
   saveToLocalStorage,
 } from "@/lib/localStorage";
+import qs from "qs";
+
+// Fetch cart items function moved from data.ts
+const fetchCartItems = async (email: string | undefined) => {
+  if (!email) return [];
+
+  const query = {
+    filters: { email: { $eq: email } },
+    populate: {
+      cart_items: {
+        fields: ["quantity", "size", "color", "createdAt"],
+        populate: {
+          product: {
+            fields: ["name", "slug", "price"],
+            populate: {
+              images: { fields: ["url", "alternativeText", "formats"] },
+              sizes: {
+                fields: ["value"],
+                populate: {
+                  colors: {
+                    fields: ["name"],
+                    populate: {
+                      images: { fields: ["url", "alternativeText", "formats"] },
+                      pattern: { fields: ["url", "alternativeText"] },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  const queryString = qs.stringify(query);
+  const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/carts?${queryString}`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch cart items");
+  }
+
+  const data: StrapiResponse<Product> = await response.json();
+  return data.data[0]?.cart_items || [];
+};
 
 const fetcher = (email: string | undefined) => fetchCartItems(email);
 

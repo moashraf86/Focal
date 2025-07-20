@@ -191,15 +191,24 @@ const apiRequest = async <T>(
   cacheKey?: string,
   cacheTtl = 3600000 // 1 hour default
 ): Promise<T> => {
+  const startTime = performance.now();
+
   // Check cache first
   if (cacheKey) {
     const cached = getFromCache<T>(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      const cacheTime = performance.now() - startTime;
+      console.log(
+        `[Server Timing] ${endpoint} - Cache hit: ${cacheTime.toFixed(2)}ms`
+      );
+      return cached;
+    }
   }
 
   const queryString = qs.stringify(query);
   const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${endpoint}?${queryString}`;
 
+  const fetchStartTime = performance.now();
   const response = await fetchWithRetry(url, {
     headers: {
       Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
@@ -210,13 +219,28 @@ const apiRequest = async <T>(
       revalidate: Math.floor(cacheTtl / 1000),
     },
   });
+  const fetchTime = performance.now() - fetchStartTime;
 
+  const parseStartTime = performance.now();
   const data = await response.json();
+  const parseTime = performance.now() - parseStartTime;
 
   // Cache the result
   if (cacheKey) {
     setCache(cacheKey, data, cacheTtl);
   }
+
+  const totalTime = performance.now() - startTime;
+
+  // Log server timing data
+  console.log(`[Server Timing] ${endpoint}:`, {
+    total: `${totalTime.toFixed(2)}ms`,
+    fetch: `${fetchTime.toFixed(2)}ms`,
+    parse: `${parseTime.toFixed(2)}ms`,
+    cacheKey: cacheKey || "none",
+    status: response.status,
+    url: url.split("?")[0], // Log endpoint without query params for cleaner output
+  });
 
   return data;
 };
@@ -408,39 +432,6 @@ export async function searchProducts(queryText: string): Promise<Product[]> {
   );
 
   return response.data;
-}
-
-// Fetch cart items (optimized)
-export async function fetchCartItems(email: string | undefined) {
-  if (!email) return [];
-
-  const query = {
-    filters: { email: { $eq: email } },
-    populate: {
-      cart_items: {
-        fields: ["quantity", "size", "color", "createdAt"],
-        populate: {
-          product: {
-            fields: ["name", "slug", "price"],
-            populate: {
-              images: { fields: ["url", "alternativeText", "formats"] },
-              ...POPULATE_CONFIGS.withSizes,
-            },
-          },
-        },
-      },
-    },
-  };
-
-  // no cache for cart items
-  const response: StrapiResponse<Product> = await apiRequest(
-    "/carts",
-    query,
-    undefined,
-    60 // 1 minute
-  );
-
-  return response.data[0]?.cart_items || [];
 }
 
 // Fetch order by id (optimized)
