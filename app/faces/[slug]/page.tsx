@@ -174,6 +174,7 @@ export default async function FacePage({ params, searchParams }: Props) {
               availableColors={availableColors}
               availableCollections={availableCollections}
               resultsCount={resultsCount}
+              isStrapCategory={false}
             />
             {products.length > 0 && (
               <span className="hidden md:inline-block text-sm ">
