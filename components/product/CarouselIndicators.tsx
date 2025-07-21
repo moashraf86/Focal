@@ -18,7 +18,7 @@ export default function CarouselIndicators({
   return (
     <div
       className={cn(
-        "lg:overflow-y-auto lg:min-w-fit scrollbar-hide",
+        "relative lg:overflow-y-auto lg:min-w-fit scrollbar-hide",
         className
       )}
       style={{

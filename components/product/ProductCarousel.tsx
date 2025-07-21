@@ -86,7 +86,7 @@ export default function ProductCarousel({
               alt={image.alternativeText || "Product image"}
               height={500}
               width={500}
-              className="object-cover object-center aspect-auto w-full cursor-grab"
+              className="object-cover object-center aspect-auto w-full cursor-grab h-full"
               quality={100}
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw"
               loading={index === 0 ? "eager" : "lazy"}

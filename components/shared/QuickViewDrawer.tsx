@@ -164,14 +164,32 @@ export default function QuickViewDrawer({
 
           <div className="px-6 md:px-10 space-y-4">
             {selectedSize !== "free" && (
-              <ProductSizeSelector
-                sizes={product.sizes}
-                selectedSize={selectedSize}
-                onSizeChange={handleSizeChange}
-              />
+              <div className="space-y-2">
+                <span>
+                  {product.collections?.some((collection) =>
+                    collection.slug.includes("strap")
+                  )
+                    ? "Strap width"
+                    : "Watch size"}
+                  : {selectedSize}
+                </span>{" "}
+                <ProductSizeSelector
+                  sizes={product.sizes}
+                  selectedSize={selectedSize}
+                  onSizeChange={handleSizeChange}
+                />
+              </div>
             )}
 
             <div className="space-y-2">
+              <span>
+                {product.collections?.some((collection) =>
+                  collection.slug.includes("strap")
+                )
+                  ? "Fastener"
+                  : "Strap"}
+                : {selectedColor}
+              </span>{" "}
               <ColorSelector
                 mode="single"
                 colors={allColors}

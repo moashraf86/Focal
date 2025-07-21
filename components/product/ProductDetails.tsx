@@ -146,10 +146,10 @@ export default function ProductDetails({
                 {product.collections?.some((collection) =>
                   collection.slug.includes("strap")
                 )
-                  ? "Strap with"
-                  : "Watch size"}{" "}
+                  ? "Strap width"
+                  : "Watch size"}
                 : {selectedSize}
-              </span>
+              </span>{" "}
               <ProductSizeSelector
                 sizes={product.sizes}
                 selectedSize={selectedSize}
