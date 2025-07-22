@@ -13,12 +13,20 @@ import ProductBanner from "@/components/product/ProductBanner";
 import FAQ from "@/components/shared/FAQ";
 import StickyProductSummary from "@/components/product/StickyProductSummry";
 
+// fetch product data
+async function getProductData(slug: string) {
+  const { product } = await fetchProductBySlug(slug);
+  return product;
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const product = await getProductData(slug);
+  const imageURL = product.images[0].url;
   const slugWithoutHyphens = slug.replace(/-/g, " ");
   const capitalizedSlug = slugWithoutHyphens
     .split(" ")
@@ -28,6 +36,12 @@ export async function generateMetadata({
   return {
     title: `${capitalizedSlug}`,
     description: `Explore our ${capitalizedSlug} collection. Find the perfect product that suits your style and needs.`,
+    openGraph: {
+      type: "website",
+      title: `${capitalizedSlug}`,
+      description: `Explore our ${capitalizedSlug} collection. Find the perfect product that suits your style and needs.`,
+      images: [{ url: imageURL }],
+    },
   };
 }
 
@@ -37,8 +51,7 @@ export default async function Product({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  // Fetch product by Slug
-  const { product } = await fetchProductBySlug(slug);
+  const product = await getProductData(slug);
 
   // Get Categories slugs
   const categoriesSlugs = product.categories.map((category) => category.slug);
