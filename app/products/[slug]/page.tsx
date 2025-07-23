@@ -12,6 +12,7 @@ import RelatedProducts from "@/components/product/RelatedProducts";
 import ProductBanner from "@/components/product/ProductBanner";
 import FAQ from "@/components/shared/FAQ";
 import StickyProductSummary from "@/components/product/StickyProductSummry";
+import { ProductInfo } from "@/components/product/ProductInfo";
 
 // fetch product data
 async function getProductData(slug: string) {
@@ -70,6 +71,7 @@ export default async function Product({
         </BreadcrumbList>
       </Breadcrumb>
       <ProductDetails product={product} />
+      <ProductInfo product={product} />
       <StickyProductSummary product={product} />
       <ProductBanner product={product} />
       <RelatedProducts
