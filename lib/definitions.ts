@@ -55,7 +55,7 @@ export interface Filter {
   value: string | undefined;
 }
 
-interface StrapiRichText {
+export interface StrapiRichText {
   children: Array<{
     text: string;
     type: string;
