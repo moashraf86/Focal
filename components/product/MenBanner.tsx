@@ -16,6 +16,7 @@ const colorVariants: ColorVariant = {
   green: "bg-green text-green-foreground",
   "blue-sunray": "bg-blue-sunray text-blue-sunray-foreground",
   moonphase: "bg-moonphase text-moonphase-foreground",
+  "steel-blue": "bg-steel-blue text-steel-blue-foreground",
 };
 
 export default function MenBanner({ product }: { product: Product }) {

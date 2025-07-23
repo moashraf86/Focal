@@ -43,6 +43,10 @@ export default {
           DEFAULT: "hsl(var(--moonphase))",
           foreground: "hsl(var(--moonphase-foreground))",
         },
+        "steel-blue": {
+          DEFAULT: "hsl(var(--steel-blue))",
+          foreground: "hsl(var(--steel-blue-foreground))",
+        },
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
