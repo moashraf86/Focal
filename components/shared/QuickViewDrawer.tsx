@@ -102,7 +102,7 @@ export default function QuickViewDrawer({
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
-        className="max-h-[75vh] md:max-h-full md:min-w-[500px] overflow-y-auto"
+        className="max-h-[75vh] md:max-h-full overflow-y-auto"
       >
         <SheetHeader>
           <SheetTitle className="tracking-normal">

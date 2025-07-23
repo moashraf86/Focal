@@ -27,9 +27,9 @@ export default function ProductCarousel({
 }) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState<number>(0);
-  const imageHeight = useRef<HTMLImageElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
   const [indicatorsMaxHeight, setIndicatorsMaxHeight] = useState<number>(
-    imageHeight.current?.clientHeight || 0
+    imageRef.current?.clientHeight || 0
   );
   const size = useWindowSize();
   const [fancyboxRef] = useFancybox({
@@ -95,8 +95,8 @@ export default function ProductCarousel({
 
   // Handle window resize
   useEffect(() => {
-    if (imageHeight.current) {
-      const height = imageHeight.current.clientHeight;
+    if (imageRef.current) {
+      const height = imageRef.current.clientHeight;
       setIndicatorsMaxHeight(height);
     }
   }, [size]);
@@ -128,14 +128,13 @@ export default function ProductCarousel({
       <div className="relative">
         <CarouselContent ref={fancyboxRef}>
           {images.map((image, index) => (
-            <CarouselItem key={index}>
+            <CarouselItem key={index} ref={imageRef}>
               <div
                 className="relative"
                 onClick={handleImageClick}
                 onMouseMove={handleMouseMove}
               >
                 <Image
-                  ref={imageHeight}
                   src={image.url}
                   alt={image.alternativeText || "Product image"}
                   height={500}

@@ -69,10 +69,7 @@ export default function SearchDrawer() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent
-        side={isMobile ? "left" : "right"}
-        className="sm:max-w-[500px]"
-      >
+      <SheetContent side={isMobile ? "left" : "right"}>
         <SheetHeader className="sticky top-0 z-50 bg-background border-b border-border">
           <SheetTitle className="tracking-normal">
             <div className="flex items-center gap-2 grow mr-4">

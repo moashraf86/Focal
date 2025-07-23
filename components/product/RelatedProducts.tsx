@@ -30,12 +30,12 @@ export default function RelatedProducts({
     return <RelatedProductsSkeleton />;
   }
 
-  if (!relatedProducts || relatedProducts.length === 0) return null;
-
   // filter out the product from the related products
   const filteredProducts = relatedProducts.filter(
     (relatedProduct) => relatedProduct.id !== product?.id
   );
+
+  if (!filteredProducts || filteredProducts.length === 0) return null;
 
   return (
     <section className="container max-w-screen-xl mb-20 space-y-10">

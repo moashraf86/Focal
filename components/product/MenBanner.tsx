@@ -44,7 +44,7 @@ export default function MenBanner({ product }: { product: Product }) {
 
   return (
     <section
-      className="relative flex items-center py-10 mb-20 bg-cover bg-center bg-no-repeat lg:min-h-[700px] bg-gray-100"
+      className="relative flex items-center mb-20 bg-cover bg-center bg-no-repeat lg:min-h-[700px] bg-gray-100"
       ref={sectionRef}
     >
       <div className="lg:container lg:flex items-center justify-start w-full">
