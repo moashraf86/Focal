@@ -66,6 +66,7 @@ export function useRelatedProducts({
   const query = qs.stringify({
     filters,
     populate: {
+      collections: { fields: ["name", "slug"] },
       images: {
         fields: ["url", "alternativeText", "formats"],
       },

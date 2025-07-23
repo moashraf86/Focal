@@ -125,7 +125,7 @@ export default function ProductCarousel({
         indicatorsMaxHeight={indicatorsMaxHeight}
         className="hidden md:block"
       />
-      <div className="relative">
+      <div className="relative w-full">
         <CarouselContent ref={fancyboxRef}>
           {images.map((image, index) => (
             <CarouselItem key={index} ref={imageRef}>

@@ -107,7 +107,7 @@ export default function ProductCard({
 
   // Handle quick view action
   const handleQuickView = (product: Product) => {
-    if (!chosenSize || !chosenColor) {
+    if (!chosenSize) {
       console.error(
         "Product must have a size and color selected for quick view."
       );
@@ -117,12 +117,18 @@ export default function ProductCard({
   };
 
   // set href  for product card
-  const href =
-    chosenSize && chosenSize.value !== "free"
-      ? `/products/${product.slug}?size=${chosenSize?.value}&color=${chosenColor?.name}`
-      : chosenSize && chosenSize.value === "free"
-        ? `/products/${product.slug}?color=${chosenColor?.name}`
-        : `/products/${product.slug}`;
+  const params = new URLSearchParams();
+
+  if (chosenSize?.value && chosenSize.value !== "free") {
+    params.append("size", chosenSize.value);
+  }
+
+  if (chosenColor?.name) {
+    params.append("color", chosenColor.name);
+  }
+
+  const queryString = params.toString();
+  const href = `/products/${product.slug}${queryString ? `?${queryString}` : ""}`;
 
   // If the component has been visible, set hasBeenVisible to true
   useEffect(() => {
@@ -142,19 +148,23 @@ export default function ProductCard({
           {hasBeenVisible && (
             <>
               <Image
-                className="group-hover:opacity-0 object-cover transition-opacity duration-300"
+                className={`${
+                  hoverImageUrl ? "group-hover:opacity-0" : "opacity-100"
+                } object-cover transition-opacity duration-300`}
                 src={imageUrl}
                 alt={imageAlt || "product image"}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               />
-              <Image
-                className="opacity-0 group-hover:opacity-100 object-cover transition-opacity duration-300"
-                src={hoverImageUrl}
-                alt={hoverImageUrl || "product image Hover"}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              />
+              {hoverImageUrl && (
+                <Image
+                  className="opacity-0 group-hover:opacity-100 object-cover transition-opacity duration-300"
+                  src={hoverImageUrl}
+                  alt={hoverImageUrl || "product image Hover"}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                />
+              )}
             </>
           )}
           {/* Product Labels */}

@@ -91,12 +91,18 @@ export default function QuickViewDrawer({
   };
 
   // set href for quick view
-  const href =
-    selectedSize && selectedSize !== "free"
-      ? `/products/${product.slug}?size=${selectedSize}&color=${selectedColor}`
-      : selectedSize === "free" && selectedColor
-        ? `/products/${product.slug}?color=${selectedColor}`
-        : `/products/${product.slug}`;
+  const params = new URLSearchParams();
+
+  if (selectedSize && selectedSize !== "free") {
+    params.append("size", selectedSize);
+  }
+
+  if (selectedColor) {
+    params.append("color", selectedColor);
+  }
+
+  const queryString = params.toString();
+  const href = `/products/${product.slug}${queryString ? `?${queryString}` : ""}`;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -181,24 +187,26 @@ export default function QuickViewDrawer({
               </div>
             )}
 
-            <div className="space-y-2">
-              <span>
-                {product.collections?.some((collection) =>
-                  collection.slug.includes("strap")
-                )
-                  ? "Fastener"
-                  : "Strap"}
-                : {selectedColor}
-              </span>{" "}
-              <ColorSelector
-                mode="single"
-                colors={allColors}
-                selectedColors={[selectedColor]}
-                onColorSelect={(colorName) =>
-                  updateState({ selectedColor: colorName })
-                }
-              />
-            </div>
+            {selectedColor && (
+              <div className="space-y-2">
+                <span>
+                  {product.collections?.some((collection) =>
+                    collection.slug.includes("strap")
+                  )
+                    ? "Fastener"
+                    : "Strap"}
+                  : {selectedColor}
+                </span>{" "}
+                <ColorSelector
+                  mode="single"
+                  colors={allColors}
+                  selectedColors={[selectedColor]}
+                  onColorSelect={(colorName) =>
+                    updateState({ selectedColor: colorName })
+                  }
+                />
+              </div>
+            )}
 
             <div className="space-y-1">
               <span>Quantity:</span>

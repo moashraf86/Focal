@@ -44,8 +44,13 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
                 {item.product.name}
               </h2>
               <p className="text-sm font-light">
-                {item.size && item.size !== "free" ? `${item.size} / ` : ""}
-                {item.color ? `${item.color}` : ""}
+                {item.size && item.size !== "undefined" && (
+                  <>
+                    {item.size !== "free" && <span>{item.size} </span>}
+                    {item.size !== "free" && item.color && <span>/ </span>}
+                    {item.color && <span>{item.color}</span>}
+                  </>
+                )}
               </p>
               <ProductPrice price={item.product.price} className="sm:hidden" />
               <p className="font-light">Qty: {item.quantity}</p>

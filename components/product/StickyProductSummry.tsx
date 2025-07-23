@@ -49,7 +49,10 @@ const StickyProductSummary: React.FC<StickyProductSummaryProps> = ({
   const defaultSize = hasSizes ? product.sizes[0].value : "";
   const selectedSize = searchParams.get("size") ?? defaultSize;
 
-  const defaultColor = hasSizes ? product.sizes[0].colors?.[0].name : "";
+  const defaultColor = hasSizes
+    ? product?.sizes?.[0]?.colors?.[0]?.name
+    : undefined;
+
   const selectedColor = searchParams.get("color") ?? defaultColor;
   const selectedImage =
     product.sizes
@@ -129,38 +132,40 @@ const StickyProductSummary: React.FC<StickyProductSummaryProps> = ({
                         </SelectContent>
                       </Select>
                     )}
-                    <Select
-                      defaultValue={defaultColor}
-                      onValueChange={handleColorChange}
-                      value={selectedColor}
-                    >
-                      <SelectTrigger className="h-12 min-w-40">
-                        <SelectValue
-                          placeholder={defaultColor}
-                          className="text-base"
-                        />
-                      </SelectTrigger>
-                      <SelectContent align="end" className="min-w-40">
-                        {product.sizes
-                          ?.find((size) => size.value === selectedSize)
-                          ?.colors?.map((color) => (
-                            <SelectItem key={color.name} value={color.name}>
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="w-5 h-5"
-                                  style={{
-                                    backgroundImage: `url(${color.pattern?.url})`,
-                                    backgroundSize: "cover",
-                                    backgroundPosition: "center",
-                                    backgroundRepeat: "no-repeat",
-                                  }}
-                                />
-                                {color.name}
-                              </div>
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
+                    {selectedColor && (
+                      <Select
+                        defaultValue={defaultColor}
+                        onValueChange={handleColorChange}
+                        value={selectedColor}
+                      >
+                        <SelectTrigger className="h-12 min-w-40">
+                          <SelectValue
+                            placeholder={defaultColor}
+                            className="text-base"
+                          />
+                        </SelectTrigger>
+                        <SelectContent align="end" className="min-w-40">
+                          {product.sizes
+                            ?.find((size) => size.value === selectedSize)
+                            ?.colors?.map((color) => (
+                              <SelectItem key={color.name} value={color.name}>
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className="w-5 h-5"
+                                    style={{
+                                      backgroundImage: `url(${color.pattern?.url})`,
+                                      backgroundSize: "cover",
+                                      backgroundPosition: "center",
+                                      backgroundRepeat: "no-repeat",
+                                    }}
+                                  />
+                                  {color.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </>
                 )}
                 <ProductActions

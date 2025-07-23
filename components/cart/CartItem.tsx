@@ -40,12 +40,18 @@ export default function CartItem({
     item.product?.images?.[0];
 
   // set href for cart item
-  const href =
-    item.size && item.size !== "free"
-      ? `/products/${item.product?.slug}?size=${item.size}&color=${item.color}`
-      : item.size === "free" && item.color
-        ? `/products/${item.product?.slug}?color=${item.color}`
-        : `/products/${item.product?.slug}`;
+  const params = new URLSearchParams();
+
+  if (item.size && item.size !== "free") {
+    params.append("size", item.size);
+  }
+
+  if (item.color) {
+    params.append("color", item.color);
+  }
+
+  const queryString = params.toString();
+  const href = `/products/${item.product?.slug}${queryString ? `?${queryString}` : ""}`;
 
   return (
     <tr className={cn("font-light", className)} style={style}>
@@ -72,7 +78,8 @@ export default function CartItem({
             <p>
               {item.size && item.size !== "undefined" && (
                 <>
-                  {item.size !== "free" && <span>{item.size} / </span>}
+                  {item.size !== "free" && <span>{item.size} </span>}
+                  {item.size !== "free" && item.color && <span>/ </span>}
                   {item.color && <span>{item.color}</span>}
                 </>
               )}
