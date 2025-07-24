@@ -13,6 +13,91 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useProductVisibilityObserver } from "@/hooks/useProductVisibility";
 import useScrollToTop from "@/hooks/useScrollToTop";
 
+// Helper functions to handle the Strapi structure intelligently
+function analyzeProductStructure(product: Product) {
+  const sizes = Array.isArray(product.sizes) ? product.sizes : [];
+
+  // Check if we have actual sizes (non-null, non-empty values)
+  const actualSizes = sizes.filter(
+    (size) =>
+      size.value !== null && size.value !== "" && size.value !== undefined
+  );
+  const hasActualSizes = actualSizes.length > 0;
+
+  // Get colors based on structure
+  let availableColors: Color[] = [];
+
+  if (hasActualSizes) {
+    // Product has real sizes, colors come from size selection
+    availableColors = actualSizes[0]?.colors || [];
+  } else if (
+    sizes.length > 0 &&
+    Array.isArray(sizes[0]?.colors) &&
+    sizes[0].colors.length > 0
+  ) {
+    // Product has no sizes but colors are stored in the first size entry (your current case)
+    availableColors = sizes[0].colors;
+  }
+
+  return {
+    hasActualSizes,
+    actualSizes,
+    availableColors,
+    hasColors: availableColors.length > 0,
+    // Debug info (remove in production)
+    debug: {
+      sizesLength: sizes.length,
+      firstSizeValue: sizes[0]?.value,
+      firstSizeColorsLength: sizes[0]?.colors?.length || 0,
+    },
+  };
+}
+
+function getColorsForSize(product: Product, sizeValue?: string) {
+  const { hasActualSizes, actualSizes, availableColors } =
+    analyzeProductStructure(product);
+
+  if (!hasActualSizes) {
+    // No actual sizes, return the available colors
+    return availableColors;
+  }
+
+  if (!sizeValue) {
+    return [];
+  }
+
+  const sizeObj = actualSizes.find((size) => size.value === sizeValue);
+  return Array.isArray(sizeObj?.colors) ? sizeObj.colors : [];
+}
+
+function getProductImages(
+  product: Product,
+  selectedSize?: string,
+  selectedColor?: string
+) {
+  const { hasActualSizes, availableColors } = analyzeProductStructure(product);
+
+  let colorsToSearch: Color[] = [];
+
+  if (hasActualSizes && selectedSize) {
+    colorsToSearch = getColorsForSize(product, selectedSize);
+  } else {
+    colorsToSearch = availableColors;
+  }
+
+  if (selectedColor && colorsToSearch.length > 0) {
+    const colorObj = colorsToSearch.find(
+      (color) => color.name === selectedColor
+    );
+    if (colorObj?.images && colorObj.images.length > 0) {
+      return colorObj.images;
+    }
+  }
+
+  // Fallback to product images
+  return product.images ?? [];
+}
+
 export default function ProductDetails({
   product,
   initialQuantity = 1,
@@ -21,87 +106,92 @@ export default function ProductDetails({
   initialQuantity?: number;
 }) {
   const searchParams = useSearchParams();
-  const URL = useRouter();
+  const router = useRouter();
 
-  // --- Size logic ---
-  const hasSizes = Array.isArray(product.sizes) && product.sizes.length > 0;
-  const defaultSize = hasSizes ? product.sizes[0].value : undefined;
-  const selectedSize = hasSizes
-    ? searchParams.get("size") || defaultSize
-    : undefined;
-
-  // --- Color logic ---
-  const sizeObj = hasSizes
-    ? product.sizes.find((size) => size.value === selectedSize)
-    : undefined;
-  let colors: Color[] = [];
-  if (sizeObj && Array.isArray(sizeObj.colors)) {
-    colors = sizeObj.colors;
-  }
-  const hasColors = colors.length > 0;
-  const defaultColor = hasColors ? colors[0].name : "";
-  const selectedColor = hasColors
-    ? searchParams.get("color") || defaultColor || ""
-    : undefined;
-  const allColors: Color[] = colors;
-
-  // --- Carousel images ---
-  const carouselImages =
-    hasColors && selectedColor
-      ? (allColors.find((color) => color.name === selectedColor)?.images ?? [])
-      : (product.images ?? []);
-
+  // State variables
   const [resetCarousel, setResetCarousel] = useState(false);
   const [quantity, setQuantity] = useState<number>(initialQuantity);
   const intersectionRef = useProductVisibilityObserver();
+
+  // Analyze product structure
+  const { hasActualSizes, actualSizes, hasColors } =
+    analyzeProductStructure(product);
+
+  // Get defaults
+  const defaultSize = hasActualSizes ? actualSizes[0].value : undefined;
+  const selectedSize = searchParams.get("size") || defaultSize;
+
+  // Get colors based on current selection
+  const availableColors = getColorsForSize(product, selectedSize);
+  const defaultColor =
+    availableColors.length > 0 ? availableColors[0].name : undefined;
+  const selectedColor = searchParams.get("color") || defaultColor;
+
+  // Get carousel images
+  const carouselImages = getProductImages(product, selectedSize, selectedColor);
+
+  // Scroll to top
   useScrollToTop();
 
   // Handle size change
-  const handleSizeChange = (value: string) => {
-    if (!hasSizes) return;
-    // If colors exist for new size, pick first color
-    const newSizeObj = product.sizes.find((size) => size.value === value);
-    const newColor =
-      newSizeObj && Array.isArray(newSizeObj.colors) && newSizeObj.colors.length
-        ? newSizeObj.colors[0].name
-        : undefined;
-    if (hasColors && newColor) {
-      URL.push(`?size=${value}&color=${newColor}`, { scroll: false });
-    } else {
-      URL.push(`?size=${value}`, { scroll: false });
+  const handleSizeChange = (newSize: string) => {
+    const newAvailableColors = getColorsForSize(product, newSize);
+    const newDefaultColor =
+      newAvailableColors.length > 0 ? newAvailableColors[0].name : undefined;
+
+    // Build new URL params
+    const params = new URLSearchParams();
+    params.set("size", newSize);
+    if (newDefaultColor) {
+      params.set("color", newDefaultColor);
     }
+
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   // Handle color change
-  const handleColorChange = (value: string) => {
-    if (!hasColors || !selectedSize) return;
-    if (selectedSize === "free") {
-      URL.push(`?color=${value}`, { scroll: false });
-      return;
+  const handleColorChange = (newColor: string) => {
+    const params = new URLSearchParams();
+    if (hasActualSizes && selectedSize) {
+      params.set("size", selectedSize);
     }
-    URL.push(`?size=${selectedSize}&color=${value}`, { scroll: false });
+    params.set("color", newColor);
+
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
-  // Update carousel images when selected size or color changes
+  // Update carousel when selection changes
   useEffect(() => {
     setResetCarousel((prev) => !prev);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSize, selectedColor]);
 
-  // Set default URL params on first render (only if sizes/colors exist)
+  // Set initial URL params if needed
   useEffect(() => {
-    if (hasSizes && selectedSize !== "free" && selectedColor) {
-      URL.push(`?size=${selectedSize}&color=${selectedColor}`, {
-        scroll: true,
-      });
-    } else if (hasSizes && selectedSize === "free" && selectedColor) {
-      URL.push(`?color=${selectedColor}`, { scroll: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const currentParams = new URLSearchParams(searchParams.toString());
+    const needsSizeParam = hasActualSizes && !currentParams.has("size");
+    const needsColorParam = hasColors && !currentParams.has("color");
 
-  const selectedColorSafe =
-    typeof selectedColor === "string" ? selectedColor : "";
+    if (needsSizeParam || needsColorParam) {
+      const params = new URLSearchParams(currentParams);
+
+      if (needsSizeParam && selectedSize) {
+        params.set("size", selectedSize);
+      }
+      if (needsColorParam && selectedColor) {
+        params.set("color", selectedColor);
+      }
+
+      const newUrl = `?${params.toString()}`;
+      // Only update if URL actually changes
+      if (newUrl !== `?${currentParams.toString()}`) {
+        router.replace(newUrl, { scroll: false });
+      }
+    }
+  }, []); // Only run on mount
+
+  // Safe values for rendering
+  const selectedSizeSafe = selectedSize || "";
+  const selectedColorSafe = selectedColor || "";
 
   return (
     <section
@@ -118,11 +208,12 @@ export default function ProductDetails({
             resetCarousel={resetCarousel}
           />
         </div>
+
         {/* Product details */}
         <div className="space-y-6 lg:col-span-5">
           <div className="space-y-6 border-b border-border pb-4">
             <ProductTitle title={product.name} />
-            <div className="flex items-center gap-1 text-lg lg:text-2xl  font-normal font-barlow">
+            <div className="flex items-center gap-1 text-lg lg:text-2xl font-normal font-barlow">
               <ProductPrice
                 price={product.price}
                 className="text-lg lg:text-2xl font-barlow font-normal"
@@ -131,8 +222,9 @@ export default function ProductDetails({
             </div>
             <ProductRating rating={5} reviews={3} />
           </div>
-          {/* Size Selector (only if sizes exist) */}
-          {hasSizes && selectedSize && selectedSize !== "free" && (
+
+          {/* Size Selector - Only show if product has actual sizes */}
+          {hasActualSizes && (
             <div className="space-y-2">
               <span>
                 {product.collections?.some((collection) =>
@@ -140,17 +232,18 @@ export default function ProductDetails({
                 )
                   ? "Strap width"
                   : "Watch size"}
-                : {selectedSize}
-              </span>{" "}
+                : {selectedSizeSafe}
+              </span>
               <ProductSizeSelector
-                sizes={product.sizes}
-                selectedSize={selectedSize}
+                sizes={actualSizes}
+                selectedSize={selectedSizeSafe}
                 onSizeChange={handleSizeChange}
               />
             </div>
           )}
-          {/* Color Selector (only if colors exist) */}
-          {hasColors && (
+
+          {/* Color Selector - Show if any colors are available */}
+          {hasColors && availableColors.length > 0 && (
             <div className="space-y-2">
               <span>
                 {product.collections?.some((collection) =>
@@ -159,15 +252,16 @@ export default function ProductDetails({
                   ? "Fastener"
                   : "Strap"}
                 : {selectedColorSafe}
-              </span>{" "}
+              </span>
               <ColorSelector
                 mode="single"
-                colors={allColors}
+                colors={availableColors}
                 selectedColors={[selectedColorSafe]}
                 onColorSelect={handleColorChange}
               />
             </div>
           )}
+
           <div className="space-y-1">
             <span>Quantity:</span>
             <QuantitySelector
@@ -176,11 +270,12 @@ export default function ProductDetails({
               mode="product"
             />
           </div>
+
           <ProductActions
             product={product}
             quantity={quantity}
-            selectedSize={selectedSize ?? ""}
-            color={selectedColor ?? ""}
+            selectedSize={selectedSizeSafe}
+            color={selectedColorSafe}
           />
         </div>
       </div>

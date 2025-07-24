@@ -80,6 +80,7 @@ export default async function Categories({
 
   // Fetch filtered products only when needed
   let products = allProducts;
+  let productsForSizes = allProducts;
   if (hasFilters) {
     const { products: filtered } = await fetchAllProducts({
       sort: sort_by,
@@ -90,12 +91,22 @@ export default async function Categories({
       collection,
     });
     products = filtered;
+
+    // Fetch separate product set WITHOUT Size filter
+    const { products: filteredWithoutSize } = await fetchAllProducts({
+      sort: sort_by,
+      color,
+      price_min,
+      price_max,
+      collection,
+    });
+    productsForSizes = filteredWithoutSize;
   }
 
   // Compute available filters based on current results
   const availableSizes = getAvailableSizes({
     color,
-    productsForAvailableSizes: products,
+    productsForAvailableSizes: productsForSizes,
   });
 
   const availableColors = getAvailableColors({
