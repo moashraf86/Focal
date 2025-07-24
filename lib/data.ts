@@ -607,3 +607,69 @@ export async function fetchProductsByFace(
 
   return { products: response.data };
 }
+
+/**
+ * Fetch bestselling products for a specific gender
+ * @param gender - The gender category (e.g., 'men', 'women')
+ * @returns Promise with bestselling products
+ */
+export async function fetchBestsellingProducts(
+  gender: string
+): Promise<{ products: Product[] }> {
+  const cacheKey = getCacheKey("bestselling", { gender });
+
+  const query = {
+    filters: {
+      collections: { slug: { $eq: "bestselling" } },
+      categories: { slug: { $eq: gender } },
+    },
+    populate: {
+      ...POPULATE_CONFIGS.basic,
+      ...POPULATE_CONFIGS.withSizes,
+    },
+    pagination: { limit: 8 },
+  };
+
+  const response: StrapiResponse<Product> = await apiRequest(
+    "/products",
+    query,
+    cacheKey,
+    3600000 // 1 hour cache for frequently changing products
+  );
+
+  return { products: response.data };
+}
+
+/**
+ * Fetch featured products
+ * @returns Promise with featured products
+ */
+export async function fetchFeaturedProducts(): Promise<{
+  products: Product[];
+}> {
+  const cacheKey = getCacheKey("featured", {});
+
+  const query = {
+    filters: {
+      featured: {
+        $eq: true,
+      },
+    },
+    populate: {
+      ...POPULATE_CONFIGS.basic,
+      ...POPULATE_CONFIGS.withSizes,
+      // ...POPULATE_CONFIGS.detailed,
+      featuredBannerImg: { fields: ["url", "alternativeText"] },
+    },
+    pagination: { limit: 4 },
+  };
+
+  const response: StrapiResponse<Product> = await apiRequest(
+    "/products",
+    query,
+    cacheKey,
+    3600000 // 1 hour cache
+  );
+
+  return { products: response.data };
+}

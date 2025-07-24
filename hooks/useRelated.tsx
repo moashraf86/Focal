@@ -2,6 +2,7 @@ import { Product, StrapiResponse } from "@/lib/definitions";
 import qs from "qs";
 import useSWR from "swr";
 
+// Lightweight fetcher with caching headers
 const fetcher = async (url: string) => {
   const res = await fetch(url, {
     method: "GET",
@@ -9,13 +10,12 @@ const fetcher = async (url: string) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
     },
+    next: { revalidate: 3600 }, // Cache for 1 hour
   });
 
   if (!res.ok) {
     throw new Error("Failed to fetch data");
   }
-  // simulate a delay for testing purposes
-  await new Promise((resolve) => setTimeout(resolve, 500));
 
   const response: StrapiResponse<Product> = await res.json();
 
@@ -23,9 +23,7 @@ const fetcher = async (url: string) => {
     throw new Error("No data found");
   }
 
-  const products = response.data;
-
-  return products;
+  return response.data;
 };
 
 export function useRelatedProducts({
@@ -54,7 +52,6 @@ export function useRelatedProducts({
     },
   };
 
-  // Only add faces filter if face parameter exists and is not empty
   if (face && face.trim() !== "") {
     filters.faces = {
       slug: {
@@ -63,12 +60,13 @@ export function useRelatedProducts({
     };
   }
 
+  // Optimized query with only necessary fields
   const query = qs.stringify({
     filters,
+    fields: ["id", "name", "slug", "price"], // Only essential fields
     populate: {
-      collections: { fields: ["name", "slug"] },
       images: {
-        fields: ["url", "alternativeText", "formats"],
+        fields: ["url", "formats"], // Remove alternativeText if not used
       },
       sizes: {
         fields: ["value"],
@@ -87,11 +85,18 @@ export function useRelatedProducts({
         },
       },
     },
+    pagination: { limit: 8 }, // Limit results
   });
+
   const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/products?${query}`;
+
+  // Use SWR with better caching
   const { data, error, isLoading } = useSWR<Product[]>(url, fetcher, {
     revalidateOnFocus: false,
-    dedupingInterval: 0,
+    dedupingInterval: 60000, // 1 minute deduping
+    revalidateIfStale: false,
+    shouldRetryOnError: false,
+    focusThrottleInterval: 300000, // 5 minutes
   });
 
   return {

@@ -30,7 +30,7 @@ export default function RelatedProducts({
     return <RelatedProductsSkeleton />;
   }
 
-  // filter out the product from the related products
+  // Filter out current product
   const filteredProducts = relatedProducts.filter(
     (relatedProduct) => relatedProduct.id !== product?.id
   );
@@ -38,11 +38,11 @@ export default function RelatedProducts({
   if (!filteredProducts || filteredProducts.length === 0) return null;
 
   return (
-    <section className="container max-w-screen-xl mb-20 space-y-10">
-      <h2
-        className="text-3xl md:text-4xl lg:text-5xl text-center font-light uppercase leading-tight tracking-tight"
-        aria-label={`More products like ${product?.name}`}
-      >
+    <section
+      id="related-products"
+      className="container max-w-screen-xl mb-20 space-y-10"
+    >
+      <h2 className="text-3xl md:text-4xl lg:text-5xl text-center font-light uppercase leading-tight tracking-tight">
         You May Also Like
       </h2>
 

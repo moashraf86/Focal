@@ -3,12 +3,29 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useFeaturedProducts } from "@/hooks/useFeatured";
 import ProductHotspotCard from "./ProductHotspotCard";
 import { useIntersectionObserver } from "@uidotdev/usehooks";
+import { fetchFeaturedProducts } from "@/lib/data";
+import { Product } from "@/lib/definitions";
 
 export default function FeaturedProductsSlider() {
-  const { products, isLoading } = useFeaturedProducts();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { products } = await fetchFeaturedProducts();
+        setProducts(products);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   const [current, setCurrent] = useState(0);
   const [ref, entry] = useIntersectionObserver({
     threshold: 0.2,

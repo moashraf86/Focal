@@ -5,6 +5,7 @@ export const jost = Jost({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700"],
   display: "swap",
+  preload: true,
 });
 
 export const barlow = Barlow({
@@ -12,4 +13,5 @@ export const barlow = Barlow({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   display: "swap",
+  preload: true,
 });
