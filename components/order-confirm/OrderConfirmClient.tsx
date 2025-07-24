@@ -8,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import OrderConfirmSkeleton from "./OrderConfirmSkeleton";
+import { getProductImages } from "@/lib/helper";
 
 export default function OrderConfirmClient({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | GuestOrder | null>(null);
@@ -134,11 +135,11 @@ export default function OrderConfirmClient({ orderId }: { orderId: string }) {
         <ul className="space-y-4 divide-y divide-border w-full">
           {order.order_items.map((item: OrderItem) => {
             // Find the selected image based on size and color
-            const selectedImage =
-              item.product?.sizes
-                ?.find((size) => size.value === item.size)
-                ?.colors?.find((color) => color.name === item.color)
-                ?.images?.[0] ?? item.product?.images?.[0];
+            const selectedImage = getProductImages(
+              item.product,
+              item.size,
+              item.color
+            )[0];
             return (
               <li
                 key={item.documentId}

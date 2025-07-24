@@ -11,6 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ProductSizeSelector from "../product/ProductSizeSelector";
 import ColorSelector from "../product/ColorSelector";
+import { analyzeProductStructure, getColorsForSize } from "@/lib/helper";
 
 export default function QuickViewDrawer({
   isOpen,
@@ -18,7 +19,7 @@ export default function QuickViewDrawer({
   onClose,
 }: {
   isOpen: boolean;
-  product: Product | null;
+  product: Product;
   onClose: () => void;
 }) {
   const { selectedSize, selectedColor, quantity, setQuantity, updateState } =
@@ -26,19 +27,11 @@ export default function QuickViewDrawer({
   const { width } = useWindowSize();
   const isMobile = width && width < 768;
 
-  const defaultSize = useMemo(
-    () => selectedSize ?? getInitialSize(product),
-    [product, selectedSize]
-  );
-  const defaultColor = useMemo(
-    () => selectedColor ?? getInitialColor(product),
-    [product, selectedColor]
-  );
+  const { hasActualSizes, actualSizes } = analyzeProductStructure(product);
 
-  const allColors = useMemo(
-    () => getAvailableColors(product, selectedSize),
-    [product, selectedSize]
-  );
+  const currentSize = selectedSize ?? actualSizes[0]?.value ?? undefined;
+  const availableColors = getColorsForSize(product, currentSize);
+  const currentColor = selectedColor ?? availableColors[0]?.name ?? undefined;
 
   const pathname = usePathname();
   const prevPathnameRef = useRef(pathname);
@@ -57,21 +50,23 @@ export default function QuickViewDrawer({
   // Get the image for the selected color or fallback to the first product image
   const selectedImage = useMemo(() => {
     if (!product) return null;
-    const selectedColorObj = allColors.find((c) => c.name === selectedColor);
+    const selectedColorObj = availableColors.find(
+      (c) => c.name === selectedColor
+    );
 
     return (
       selectedColorObj?.images?.[0]?.formats?.small ||
       product.images?.[0]?.formats?.small ||
       "/fallback-image.jpg"
     );
-  }, [allColors, selectedColor, product]);
+  }, [availableColors, selectedColor, product]);
 
   // Set initial values when product changes
   useEffect(() => {
     if (product) {
       updateState({
-        selectedSize: defaultSize,
-        selectedColor: defaultColor,
+        selectedSize: currentSize,
+        selectedColor: currentColor,
         quantity: 1,
       });
     }
@@ -83,24 +78,21 @@ export default function QuickViewDrawer({
 
   // Handle size change and update available colors
   const handleSizeChange = (size: string) => {
-    const newColors = getAvailableColors(product, size);
+    const newColors = getColorsForSize(product, size);
     updateState({
       selectedSize: size,
-      selectedColor: newColors[0]?.name || "",
+      selectedColor: newColors[0]?.name || undefined,
     });
   };
 
   // set href for quick view
   const params = new URLSearchParams();
-
-  if (selectedSize && selectedSize !== "free") {
+  if (selectedSize) {
     params.append("size", selectedSize);
   }
-
   if (selectedColor) {
     params.append("color", selectedColor);
   }
-
   const queryString = params.toString();
   const href = `/products/${product.slug}${queryString ? `?${queryString}` : ""}`;
 
@@ -169,7 +161,7 @@ export default function QuickViewDrawer({
           </div>
 
           <div className="px-6 md:px-10 space-y-4">
-            {selectedSize !== "free" && (
+            {hasActualSizes && (
               <div className="space-y-2">
                 <span>
                   {product.collections?.some((collection) =>
@@ -199,7 +191,7 @@ export default function QuickViewDrawer({
                 </span>{" "}
                 <ColorSelector
                   mode="single"
-                  colors={allColors}
+                  colors={availableColors}
                   selectedColors={[selectedColor]}
                   onColorSelect={(colorName) =>
                     updateState({ selectedColor: colorName })
@@ -241,15 +233,4 @@ export default function QuickViewDrawer({
       </SheetContent>
     </Sheet>
   );
-}
-
-// Utilities (can be placed in a separate file)
-function getInitialSize(product: Product | null) {
-  return product?.sizes?.[0]?.value ?? "";
-}
-function getInitialColor(product: Product | null) {
-  return product?.sizes?.[0]?.colors?.[0]?.name ?? "";
-}
-function getAvailableColors(product: Product | null, size: string) {
-  return product?.sizes?.find((s) => s.value === size)?.colors || [];
 }

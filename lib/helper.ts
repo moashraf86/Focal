@@ -266,8 +266,8 @@ export function expandProducts(
   const selectedColors = Array.isArray(selectedColor)
     ? selectedColor
     : selectedColor
-    ? [selectedColor]
-    : [];
+      ? [selectedColor]
+      : [];
 
   const size = Array.isArray(selectedSize) ? selectedSize[0] : selectedSize;
 
@@ -318,4 +318,97 @@ export function expandProducts(
   }
 
   return expandedProducts;
+}
+
+// =========================================
+// Analyze product structure
+// =========================================
+export function analyzeProductStructure(product: Product) {
+  const sizes = Array.isArray(product.sizes) ? product.sizes : [];
+
+  // Check if we have actual sizes (non-null, non-empty values)
+  const actualSizes = sizes.filter(
+    (size) =>
+      size.value !== null && size.value !== "" && size.value !== undefined
+  );
+  const hasActualSizes = actualSizes.length > 0;
+
+  // Get colors based on structure
+  let availableColors: Color[] = [];
+
+  if (hasActualSizes) {
+    // Product has real sizes, colors come from size selection
+    availableColors = actualSizes[0]?.colors || [];
+  } else if (
+    sizes.length > 0 &&
+    Array.isArray(sizes[0]?.colors) &&
+    sizes[0].colors.length > 0
+  ) {
+    // Product has no sizes but colors are stored in the first size entry (your current case)
+    availableColors = sizes[0].colors;
+  }
+
+  return {
+    hasActualSizes,
+    actualSizes,
+    availableColors,
+    hasColors: availableColors.length > 0,
+    // Debug info (remove in production)
+    debug: {
+      sizesLength: sizes.length,
+      firstSizeValue: sizes[0]?.value,
+      firstSizeColorsLength: sizes[0]?.colors?.length || 0,
+    },
+  };
+}
+
+// =========================================
+// Get colors for the selected size
+// =========================================
+export function getColorsForSize(product: Product, sizeValue?: string) {
+  const { hasActualSizes, actualSizes, availableColors } =
+    analyzeProductStructure(product);
+
+  if (!hasActualSizes) {
+    // No actual sizes, return the available colors
+    return availableColors;
+  }
+
+  if (!sizeValue) {
+    return [];
+  }
+
+  const sizeObj = actualSizes.find((size) => size.value === sizeValue);
+  return Array.isArray(sizeObj?.colors) ? sizeObj.colors : [];
+}
+
+// =========================================
+// Get product images
+// =========================================
+export function getProductImages(
+  product: Product,
+  selectedSize?: string,
+  selectedColor?: string
+) {
+  const { hasActualSizes, availableColors } = analyzeProductStructure(product);
+
+  let colorsToSearch: Color[] = [];
+
+  if (hasActualSizes && selectedSize) {
+    colorsToSearch = getColorsForSize(product, selectedSize);
+  } else {
+    colorsToSearch = availableColors;
+  }
+
+  if (selectedColor && colorsToSearch.length > 0) {
+    const colorObj = colorsToSearch.find(
+      (color) => color.name === selectedColor
+    );
+    if (colorObj?.images && colorObj.images.length > 0) {
+      return colorObj.images;
+    }
+  }
+
+  // Fallback to product images
+  return product.images ?? [];
 }

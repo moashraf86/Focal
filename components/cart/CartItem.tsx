@@ -8,6 +8,7 @@ import QuantitySelector from "../shared/QuantitySelector";
 import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import Link from "next/link";
+import { getProductImages } from "@/lib/helper";
 
 export default function CartItem({
   item,
@@ -32,12 +33,11 @@ export default function CartItem({
     setQuantity(newQuantity);
   };
 
-  // get product selected color image
-  const selectedColorImage =
-    item.product?.sizes
-      ?.find((size) => size.value === item.size)
-      ?.colors?.find((color) => color.name === item.color)?.images?.[0] ??
-    item.product?.images?.[0];
+  const selectedColorImage = getProductImages(
+    item.product,
+    item.size,
+    item.color
+  )[0];
 
   // set href for cart item
   const params = new URLSearchParams();
@@ -76,13 +76,11 @@ export default function CartItem({
               {item.product?.name}
             </Link>
             <p>
-              {item.size && item.size !== "undefined" && (
-                <>
-                  {item.size !== "free" && <span>{item.size} </span>}
-                  {item.size !== "free" && item.color && <span>/ </span>}
-                  {item.color && <span>{item.color}</span>}
-                </>
-              )}
+              <>
+                {item.size !== "" && <span>{item.size} </span>}
+                {item.size !== "" && item.color && <span>/ </span>}
+                {item.color && <span>{item.color}</span>}
+              </>
             </p>
             <ProductPrice
               price={item.product?.price}
