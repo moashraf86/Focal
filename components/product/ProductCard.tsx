@@ -119,7 +119,7 @@ export default function ProductCard({
   // set href  for product card
   const params = new URLSearchParams();
 
-  if (chosenSize?.value && chosenSize.value !== "free") {
+  if (chosenSize?.value && chosenSize.value !== "") {
     params.append("size", chosenSize.value);
   }
 

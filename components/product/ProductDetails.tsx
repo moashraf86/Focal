@@ -98,6 +98,21 @@ function getProductImages(
   return product.images ?? [];
 }
 
+// Validation functions
+function isValidSize(product: Product, sizeValue: string): boolean {
+  const { actualSizes } = analyzeProductStructure(product);
+  return actualSizes.some((size) => size.value === sizeValue);
+}
+
+function isValidColor(
+  product: Product,
+  colorName: string,
+  sizeValue?: string
+): boolean {
+  const availableColors = getColorsForSize(product, sizeValue);
+  return availableColors.some((color) => color.name === colorName);
+}
+
 export default function ProductDetails({
   product,
   initialQuantity = 1,
@@ -119,13 +134,44 @@ export default function ProductDetails({
 
   // Get defaults
   const defaultSize = hasActualSizes ? actualSizes[0].value : undefined;
-  const selectedSize = searchParams.get("size") || defaultSize;
-
-  // Get colors based on current selection
-  const availableColors = getColorsForSize(product, selectedSize);
+  const defaultSizeColors = getColorsForSize(product, defaultSize);
   const defaultColor =
-    availableColors.length > 0 ? availableColors[0].name : undefined;
-  const selectedColor = searchParams.get("color") || defaultColor;
+    defaultSizeColors.length > 0 ? defaultSizeColors[0].name : undefined;
+
+  // Get URL params
+  const sizeParam = searchParams.get("size");
+  const colorParam = searchParams.get("color");
+
+  // Validate and set selections
+  let selectedSize = defaultSize;
+  let selectedColor = defaultColor;
+  let needsRedirect = false;
+
+  // Validate size
+  if (hasActualSizes) {
+    if (sizeParam && isValidSize(product, sizeParam)) {
+      selectedSize = sizeParam;
+    } else if (sizeParam && !isValidSize(product, sizeParam)) {
+      // Invalid size in URL, mark for redirect
+      needsRedirect = true;
+    }
+  }
+
+  // Validate color
+  const availableColors = getColorsForSize(product, selectedSize);
+  if (hasColors && availableColors.length > 0) {
+    const defaultColorForSize = availableColors[0].name;
+
+    if (colorParam && isValidColor(product, colorParam, selectedSize)) {
+      selectedColor = colorParam;
+    } else if (colorParam && !isValidColor(product, colorParam, selectedSize)) {
+      // Invalid color in URL, mark for redirect
+      needsRedirect = true;
+      selectedColor = defaultColorForSize;
+    } else if (!colorParam) {
+      selectedColor = defaultColorForSize;
+    }
+  }
 
   // Get carousel images
   const carouselImages = getProductImages(product, selectedSize, selectedColor);
@@ -165,9 +211,29 @@ export default function ProductDetails({
     setResetCarousel((prev) => !prev);
   }, [selectedSize, selectedColor]);
 
-  // Set initial URL params if needed
+  // Handle URL validation and redirects
   useEffect(() => {
     const currentParams = new URLSearchParams(searchParams.toString());
+
+    // Check if we need to redirect due to invalid params
+    if (needsRedirect) {
+      const params = new URLSearchParams();
+
+      if (hasActualSizes && selectedSize) {
+        params.set("size", selectedSize);
+      }
+      if (hasColors && selectedColor) {
+        params.set("color", selectedColor);
+      }
+
+      const newUrl = params.toString()
+        ? `?${params.toString()}`
+        : window.location.pathname;
+      router.replace(newUrl, { scroll: false });
+      return;
+    }
+
+    // Set initial URL params if needed (for products without URL params)
     const needsSizeParam = hasActualSizes && !currentParams.has("size");
     const needsColorParam = hasColors && !currentParams.has("color");
 
@@ -187,7 +253,15 @@ export default function ProductDetails({
         router.replace(newUrl, { scroll: false });
       }
     }
-  }, []); // Only run on mount
+  }, [
+    hasActualSizes,
+    hasColors,
+    selectedSize,
+    selectedColor,
+    needsRedirect,
+    searchParams,
+    router,
+  ]);
 
   // Safe values for rendering
   const selectedSizeSafe = selectedSize || "";
