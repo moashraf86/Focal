@@ -72,6 +72,7 @@ export default function ProductsFilter({
   // Update the URL query parameters without reloading the page
   const updateQueryParam = (key: string, values: string[]) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
     params.delete(key);
     values.forEach((value) => params.append(key, value));
     router.push(`?${params.toString()}`, { scroll: false });
@@ -86,6 +87,7 @@ export default function ProductsFilter({
     setSelectedColorsState(newSelectedColors);
     updateQueryParam("color", newSelectedColors);
   };
+
   // Initialize selected colors from URL on first render
   useEffect(() => {
     const colorParam = searchParams.getAll("color");

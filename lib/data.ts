@@ -1,8 +1,16 @@
 import qs from "qs";
 
 type filterType = {
-  [key: string]: string | string[] | undefined;
+  [key: string]: string | string[] | number | undefined;
 };
+
+type Pagination = {
+  total: number;
+  limit: number;
+  start: number;
+};
+
+const PAGE_LIMIT = 12;
 
 import {
   Category,
@@ -246,14 +254,20 @@ const apiRequest = async <T>(
 };
 
 // Fetch all products (base data - heavily cached)
-export async function fetchAllProductsBase(): Promise<{ products: Product[] }> {
-  const cacheKey = getCacheKey("products-base", {});
+export async function fetchAllProductsBase(
+  page: number
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const cacheKey = getCacheKey("products-base", { page });
 
   const query = {
     sort: ["createdAt:desc"],
     populate: {
       ...POPULATE_CONFIGS.basic,
       ...POPULATE_CONFIGS.withSizes,
+    },
+    pagination: {
+      limit: PAGE_LIMIT,
+      start: (page - 1) * PAGE_LIMIT,
     },
   };
 
@@ -264,22 +278,24 @@ export async function fetchAllProductsBase(): Promise<{ products: Product[] }> {
     3600000 // 1 hour
   );
 
-  return { products: response.data };
+  const pagination = response.meta.pagination as unknown as Pagination;
+
+  return { products: response.data, pagination };
 }
 
 // Fetch all products with filters (optimized)
 export async function fetchAllProducts(
   filters: filterType = {}
-): Promise<{ products: Product[] }> {
-  const { sort = "createdAt:desc", ...otherFilters } = filters;
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const { sort = "createdAt:desc", page, ...otherFilters } = filters;
 
-  // Check if we can use the base cached version
+  // Check if we can use the base cached version (only if no filters and page 1)
   const hasFilters =
     Object.keys(otherFilters).some((key) => otherFilters[key] !== undefined) ||
     sort !== "createdAt:desc";
 
-  if (!hasFilters) {
-    return fetchAllProductsBase();
+  if (!hasFilters && page) {
+    return fetchAllProductsBase(page as number);
   }
 
   const cacheKey = getCacheKey("products-filtered", filters);
@@ -291,6 +307,13 @@ export async function fetchAllProducts(
       ...POPULATE_CONFIGS.basic,
       ...POPULATE_CONFIGS.withSizes,
     },
+    // Only add pagination if page is specified
+    ...(page && {
+      pagination: {
+        limit: PAGE_LIMIT,
+        start: ((page as number) - 1) * PAGE_LIMIT,
+      },
+    }),
   };
 
   const response: StrapiResponse<Product> = await apiRequest(
@@ -300,14 +323,24 @@ export async function fetchAllProducts(
     300000 // 5 minutes for filtered results
   );
 
-  return { products: response.data };
+  // Create pagination object - if no pagination was requested, create a mock one
+  const pagination = page
+    ? (response.meta.pagination as unknown as Pagination)
+    : {
+        total: response.data.length,
+        limit: response.data.length,
+        start: 0,
+      };
+
+  return { products: response.data, pagination };
 }
 
 // Base fetch function for products by category (optimized)
 export async function fetchProductsByCategoryBase(
-  slug: string | string[]
-): Promise<{ products: Product[] }> {
-  const cacheKey = getCacheKey("category-base", { slug });
+  slug: string | string[],
+  page: number
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const cacheKey = getCacheKey("category-base", { slug, page });
 
   const query = {
     filters: {
@@ -322,6 +355,10 @@ export async function fetchProductsByCategoryBase(
         populate: POPULATE_CONFIGS.withBanner,
       },
     },
+    pagination: {
+      limit: PAGE_LIMIT,
+      start: (page - 1) * PAGE_LIMIT,
+    },
   };
 
   const response: StrapiResponse<Product> = await apiRequest(
@@ -331,14 +368,16 @@ export async function fetchProductsByCategoryBase(
     3600000 // 1 hour
   );
 
-  return { products: response.data };
+  const pagination = response.meta.pagination as unknown as Pagination;
+
+  return { products: response.data, pagination };
 }
 
 // Fetch by category (optimized)
 export async function fetchProductsByCategory(
   filters: filterType = {}
-): Promise<{ products: Product[] }> {
-  const { slug, sort = "createdAt:desc", ...otherFilters } = filters;
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const { slug, sort = "createdAt:desc", page, ...otherFilters } = filters;
 
   if (!slug) {
     throw new Error("No slug provided");
@@ -348,8 +387,8 @@ export async function fetchProductsByCategory(
     Object.keys(otherFilters).some((key) => otherFilters[key] !== undefined) ||
     sort !== "createdAt:desc";
 
-  if (!hasFilters) {
-    return fetchProductsByCategoryBase(slug);
+  if (!hasFilters && page) {
+    return fetchProductsByCategoryBase(slug as string, filters.page as number);
   }
 
   const cacheKey = getCacheKey("category-filtered", filters);
@@ -368,6 +407,12 @@ export async function fetchProductsByCategory(
         populate: POPULATE_CONFIGS.withBanner,
       },
     },
+    ...(page && {
+      pagination: {
+        limit: PAGE_LIMIT,
+        start: ((page as number) - 1) * PAGE_LIMIT,
+      },
+    }),
   };
 
   const response: StrapiResponse<Product> = await apiRequest(
@@ -377,7 +422,15 @@ export async function fetchProductsByCategory(
     300000 // 5 minutes
   );
 
-  return { products: response.data };
+  const pagination = page
+    ? (response.meta.pagination as unknown as Pagination)
+    : {
+        total: response.data.length,
+        limit: response.data.length,
+        start: 0,
+      };
+
+  return { products: response.data, pagination };
 }
 
 // Fetch product by slug (optimized)
@@ -571,30 +624,27 @@ export async function fetchFaces(): Promise<{ faces: Face[] }> {
 }
 
 // Fetch by face (optimized)
-export async function fetchProductsByFace(
-  filters: filterType = {}
-): Promise<{ products: Product[] }> {
-  const { slug, sort = "createdAt:desc" } = filters;
-
-  if (!slug) {
-    throw new Error("No slug provided");
-  }
-
-  const cacheKey = getCacheKey("face-products", filters);
+export async function fetchProductsByFaceBase(
+  slug: string | string[],
+  page: number
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const cacheKey = getCacheKey("face-base", { slug, page });
 
   const query = {
     filters: {
       faces: { slug: { $eq: slug } },
-      ...buildFilters(filters),
     },
-    sort: [sort],
+    sort: ["createdAt:desc"],
     populate: {
       ...POPULATE_CONFIGS.basic,
       ...POPULATE_CONFIGS.withSizes,
-      categories: {
-        ...POPULATE_CONFIGS.basic.categories,
+      faces: {
         populate: POPULATE_CONFIGS.withBanner,
       },
+    },
+    pagination: {
+      limit: PAGE_LIMIT,
+      start: (page - 1) * PAGE_LIMIT,
     },
   };
 
@@ -605,7 +655,71 @@ export async function fetchProductsByFace(
     3600000 // 1 hour
   );
 
-  return { products: response.data };
+  const pagination = response.meta.pagination as unknown as Pagination;
+
+  return { products: response.data, pagination };
+}
+
+// Fetch by face (optimized with pagination support)
+export async function fetchProductsByFace(
+  filters: filterType = {}
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const { slug, sort = "createdAt:desc", page, ...otherFilters } = filters;
+
+  if (!slug) {
+    throw new Error("No slug provided");
+  }
+
+  const hasFilters =
+    Object.keys(otherFilters).some((key) => otherFilters[key] !== undefined) ||
+    sort !== "createdAt:desc";
+
+  // Use base cached version if no filters and page is specified
+  if (!hasFilters && page) {
+    return fetchProductsByFaceBase(slug as string, page as number);
+  }
+
+  const cacheKey = getCacheKey("face-filtered", filters);
+
+  const query = {
+    filters: {
+      faces: { slug: { $eq: slug } },
+      ...buildFilters(filters),
+    },
+    sort: [sort],
+    populate: {
+      ...POPULATE_CONFIGS.basic,
+      ...POPULATE_CONFIGS.withSizes,
+      faces: {
+        populate: POPULATE_CONFIGS.withBanner,
+      },
+    },
+    // Only add pagination if page is specified
+    ...(page && {
+      pagination: {
+        limit: PAGE_LIMIT,
+        start: ((page as number) - 1) * PAGE_LIMIT,
+      },
+    }),
+  };
+
+  const response: StrapiResponse<Product> = await apiRequest(
+    "/products",
+    query,
+    cacheKey,
+    300000 // 5 minutes for filtered results
+  );
+
+  // Create pagination object - if no pagination was requested, create a mock one
+  const pagination = page
+    ? (response.meta.pagination as unknown as Pagination)
+    : {
+        total: response.data.length,
+        limit: response.data.length,
+        start: 0,
+      };
+
+  return { products: response.data, pagination };
 }
 
 /**

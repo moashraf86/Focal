@@ -20,8 +20,10 @@ import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 import { cache } from "react";
 import { Product } from "@/lib/definitions";
+import { Metadata } from "next";
+import SmartPagination from "@/components/ui/smartPagination";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "All Products",
   description: "Browse all products available in the Focal Store.",
 };
@@ -55,18 +57,10 @@ export default async function Categories({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { sort_by, size, color, price_min, price_max, collection } =
+  const { sort_by, size, color, price_min, price_max, collection, page } =
     await searchParams;
 
-  // Fetch base data (heavily cached)
-  const [{ categories }, { products: allProducts }] = await Promise.all([
-    getCachedCategories(),
-    getCachedAllProducts(),
-  ]);
-
-  // Precompute filter options from base products
-  const { allSizes, allColors, allCollections } =
-    computeFilterOptions(allProducts);
+  const currentPage = page ? parseInt(page as string) : 1;
 
   // Check if any filters are applied
   const hasFilters = Boolean(
@@ -78,44 +72,84 @@ export default async function Categories({
       (sort_by && sort_by !== "createdAt:desc")
   );
 
+  // Fetch base data (heavily cached) - this is for the paginated display
+  const [{ categories }, { products: allProducts, pagination }] =
+    await Promise.all([
+      getCachedCategories(),
+      getCachedAllProducts(currentPage),
+    ]);
+
+  // Fetch ALL products without pagination for filter calculations
+  // This ensures filters show all available options across the entire dataset
+  const { products: allProductsForFilters } = await fetchAllProducts({
+    // No pagination parameters - fetch all products
+    sort: "createdAt:desc", // Use default sort for consistency
+  });
+
+  // Precompute filter options from ALL products (not just paginated results)
+  const { allSizes, allColors, allCollections } = computeFilterOptions(
+    allProductsForFilters
+  );
+
+  // Calculate pagination
+  let totalPages = Math.ceil(pagination.total / pagination.limit);
+
   // Fetch filtered products only when needed
   let products = allProducts;
-  let productsForSizes = allProducts;
+  let allFilteredProducts = allProductsForFilters;
+  let allFilteredProductsForSizes = allProductsForFilters;
+
   if (hasFilters) {
-    const { products: filtered } = await fetchAllProducts({
+    const { products: filtered, pagination: filteredPagination } =
+      await fetchAllProducts({
+        sort: sort_by,
+        size,
+        color,
+        price_min,
+        price_max,
+        collection,
+        page: currentPage,
+      });
+    products = filtered;
+    totalPages = Math.ceil(filteredPagination.total / filteredPagination.limit);
+
+    // Fetch ALL filtered products (without pagination) for available filters calculation
+    const { products: allFilteredNoPage } = await fetchAllProducts({
       sort: sort_by,
       size,
       color,
       price_min,
       price_max,
       collection,
+      // No page parameter - fetch all filtered products
     });
-    products = filtered;
+    allFilteredProducts = allFilteredNoPage;
 
-    // Fetch separate product set WITHOUT Size filter
-    const { products: filteredWithoutSize } = await fetchAllProducts({
+    // Fetch ALL products WITHOUT Size filter (no pagination) for size availability
+    const { products: allFilteredWithoutSize } = await fetchAllProducts({
       sort: sort_by,
       color,
       price_min,
       price_max,
       collection,
+      // No page parameter and no size filter - fetch all matching products
     });
-    productsForSizes = filteredWithoutSize;
+    allFilteredProductsForSizes = allFilteredWithoutSize;
   }
 
-  // Compute available filters based on current results
+  // Compute available filters based on ALL filtered results (not paginated)
   const availableSizes = getAvailableSizes({
     color,
-    productsForAvailableSizes: productsForSizes,
+    productsForAvailableSizes: allFilteredProductsForSizes,
   });
 
   const availableColors = getAvailableColors({
     size,
-    availableProducts: products,
+    availableProducts: allFilteredProducts,
   });
 
   const availableCollections = getAvailableCollections({
-    availableProducts: products,
+    availableProducts: allFilteredProducts,
   });
 
   // Get expanded products length
@@ -222,6 +256,9 @@ export default async function Categories({
           </div>
         )}
       </section>
+      {totalPages > 1 && (
+        <SmartPagination currentPage={currentPage} totalPages={totalPages} />
+      )}
     </main>
   );
 }

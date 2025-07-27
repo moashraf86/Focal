@@ -40,6 +40,7 @@ export default function SizeFilter({ sizes, availableSizes }: SizeFilterProps) {
   // Update the URL query parameters based on selected filters
   const updateQueryParam = (key: string, values: string[]) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
     params.delete(key);
     values.forEach((value) => params.append(key, value));
     router.push(`?${params.toString()}`, { scroll: false });
