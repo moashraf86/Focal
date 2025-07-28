@@ -113,11 +113,10 @@ export default async function FacePage({ params, searchParams }: Props) {
   );
 
   // Calculate pagination
-  let totalPages = Math.ceil(pagination.total / 9); // Use 9 items per page
+  let totalPages = Math.ceil(pagination.total / pagination.limit); // Use 9 items per page
 
   // Fetch filtered products only when needed
   let products = allProducts;
-  let allFilteredProducts = allFaceProductsForFilters;
   let allFilteredProductsForSizes = allFaceProductsForFilters;
 
   if (hasFilters) {
@@ -133,20 +132,7 @@ export default async function FacePage({ params, searchParams }: Props) {
         page: currentPage,
       });
     products = filtered;
-    totalPages = Math.ceil(filteredPagination.total / 9); // Use 9 items per page
-
-    // Fetch ALL filtered products (no pagination) for available filters calculation
-    const { products: allFilteredNoPage } = await fetchProductsByFace({
-      slug,
-      sort: sort_by,
-      size,
-      color,
-      price_min,
-      price_max,
-      collection,
-      // No pagination - fetch all filtered products
-    });
-    allFilteredProducts = allFilteredNoPage;
+    totalPages = Math.ceil(filteredPagination.total / filteredPagination.limit); // Use 9 items per page
 
     // Fetch ALL products WITHOUT Size filter for size availability
     const { products: allFilteredWithoutSize } = await fetchProductsByFace({
@@ -160,6 +146,26 @@ export default async function FacePage({ params, searchParams }: Props) {
     });
     allFilteredProductsForSizes = allFilteredWithoutSize;
   }
+
+  // Fetch all products without color filter for color availability
+  const { products: allFilteredWithoutColor } = await fetchProductsByFace({
+    slug,
+    sort: sort_by,
+    size,
+    price_min,
+    price_max,
+    collection,
+  });
+
+  // Fetch all products WITHOUT Collection filter for collection availability
+  const { products: allFilteredWithoutCollection } = await fetchProductsByFace({
+    slug,
+    sort: sort_by,
+    size,
+    color,
+    price_min,
+    price_max,
+  });
 
   // Get face banner and description
   const faceBanner = face.banner || {
@@ -176,17 +182,18 @@ export default async function FacePage({ params, searchParams }: Props) {
 
   const availableColors = getAvailableColors({
     size,
-    availableProducts: allFilteredProducts,
+    availableProducts: allFilteredWithoutColor,
   });
 
   const availableCollections = getAvailableCollections({
-    availableProducts: allFilteredProducts,
+    availableProducts: allFilteredWithoutCollection,
   });
 
   // Get expanded products based on selected size and color
   const expandedProducts = expandProducts(products, size, color);
   const variantsCount = expandedProducts.length;
   const productsCount = products.length;
+  const allProductsCount = allFaceProductsForFilters.length;
 
   // Determine if this is a strap face (adapt as needed for face logic)
   const isStrapCategory = face?.slug.includes("strap") || false;
@@ -259,8 +266,11 @@ export default async function FacePage({ params, searchParams }: Props) {
               isStrapCategory={isStrapCategory}
             />
             <div className="hidden md:flex items-center gap-2">
-              {products.length > 0 && (
+              {productsCount > 0 && hasFilters && (
                 <span className="text-sm">{productsCount} Products</span>
+              )}
+              {!hasFilters && allProductsCount >= productsCount && (
+                <span className="text-sm">{allProductsCount} Products</span>
               )}
               {variantsCount > productsCount && (
                 <span className="text-sm text-gray-500">
@@ -271,6 +281,19 @@ export default async function FacePage({ params, searchParams }: Props) {
           </div>
           <div className="col-span-1 flex justify-end md:order-1">
             <ProductSorting />
+          </div>
+          <div className="flex md:hidden items-center justify-center col-span-2 gap-2">
+            {productsCount > 0 && hasFilters && (
+              <span className="text-sm">{productsCount} Products</span>
+            )}
+            {!hasFilters && allProductsCount >= productsCount && (
+              <span className="text-sm">{allProductsCount} Products</span>
+            )}
+            {variantsCount > productsCount && (
+              <span className="text-sm text-gray-500">
+                ({variantsCount} Variants)
+              </span>
+            )}
           </div>
           <div className="flex md:hidden items-center justify-center col-span-2 gap-2">
             {products.length > 0 && (

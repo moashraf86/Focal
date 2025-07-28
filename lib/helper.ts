@@ -98,16 +98,24 @@ export function getAllSizes({ allSizesData }: { allSizesData: Size[] }) {
   // Deduplicate sizes by value
   const uniqueSizesMap = new Map();
   allSizesData.forEach((size) => {
-    if (!uniqueSizesMap.has(size.value)) {
+    if (size && size.value && !uniqueSizesMap.has(size.value)) {
       uniqueSizesMap.set(size.value, {
         id: crypto.randomUUID().slice(0, 3),
         value: size.value,
-        count: allSizesData.filter((s) => s.value === size.value).length,
-        colors: size.colors,
+        count: allSizesData.filter((s) => s && s.value === size.value).length,
+        colors: size.colors || [],
       });
     }
   });
+
   const allSizes = Array.from(uniqueSizesMap.values());
+
+  // Sort sizes numerically (assuming they're in format like "32mm", "36mm", "39mm")
+  allSizes.sort((a, b) => {
+    const aNum = parseInt(a.value.replace(/\D/g, ""));
+    const bNum = parseInt(b.value.replace(/\D/g, ""));
+    return aNum - bNum;
+  });
 
   return allSizes;
 }

@@ -308,12 +308,15 @@ export async function fetchAllProducts(
       ...POPULATE_CONFIGS.withSizes,
     },
     // Only add pagination if page is specified
-    ...(page && {
-      pagination: {
-        limit: PAGE_LIMIT,
-        start: ((page as number) - 1) * PAGE_LIMIT,
-      },
-    }),
+    pagination: page
+      ? {
+          limit: PAGE_LIMIT,
+          start: ((page as number) - 1) * PAGE_LIMIT,
+        }
+      : {
+          limit: 1000,
+          start: 0,
+        },
   };
 
   const response: StrapiResponse<Product> = await apiRequest(

@@ -110,7 +110,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   // Fetch filtered products only when needed
   let products = allProducts;
-  let allFilteredProducts = allCategoryProductsForFilters;
   let allFilteredProductsForSizes = allCategoryProductsForFilters;
 
   if (hasFilters) {
@@ -128,19 +127,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     products = filtered;
     totalPages = Math.ceil(filteredPagination.total / filteredPagination.limit);
 
-    // Fetch ALL filtered products (no pagination) for available filters calculation
-    const { products: allFilteredNoPage } = await fetchProductsByCategory({
-      slug,
-      sort: sort_by,
-      size,
-      color,
-      price_min,
-      price_max,
-      collection,
-      // No pagination - fetch all filtered products
-    });
-    allFilteredProducts = allFilteredNoPage;
-
     // Fetch ALL products WITHOUT Size filter for size availability
     const { products: allFilteredWithoutSize } = await fetchProductsByCategory({
       slug,
@@ -153,6 +139,27 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     });
     allFilteredProductsForSizes = allFilteredWithoutSize;
   }
+
+  // Fetch all products without color filter for color availability
+  const { products: allFilteredWithoutColor } = await fetchProductsByCategory({
+    slug,
+    sort: sort_by,
+    size,
+    price_min,
+    price_max,
+    collection,
+  });
+
+  // Fetch all products without collection filter for collection availability
+  const { products: allFilteredWithoutCollection } =
+    await fetchProductsByCategory({
+      slug,
+      sort: sort_by,
+      size,
+      color,
+      price_min,
+      price_max,
+    });
 
   // Get current category
   const category = categories.find((category) => category.slug === slug);
@@ -169,18 +176,18 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   const availableColors = getAvailableColors({
     size,
-    availableProducts: allFilteredProducts,
+    availableProducts: allFilteredWithoutColor,
   });
 
   const availableCollections = getAvailableCollections({
-    availableProducts: allFilteredProducts,
+    availableProducts: allFilteredWithoutCollection,
   });
 
   // Get expanded products based on selected size and color
   const expandedProducts = expandProducts(products, size, color);
   const variantsCount = expandedProducts.length;
   const productsCount = products.length;
-
+  const allProductsCount = allCategoryProductsForFilters.length;
   // Determine if the category is a strap category
   const isStrapCategory = category?.slug.includes("strap") || false;
 
@@ -259,8 +266,11 @@ export default async function CategoryPage({ params, searchParams }: Props) {
               isStrapCategory={isStrapCategory}
             />
             <div className="hidden md:flex items-center gap-2">
-              {products.length > 0 && (
+              {productsCount > 0 && hasFilters && (
                 <span className="text-sm">{productsCount} Products</span>
+              )}
+              {!hasFilters && allProductsCount >= productsCount && (
+                <span className="text-sm">{allProductsCount} Products</span>
               )}
               {variantsCount > productsCount && (
                 <span className="text-sm text-gray-500">
@@ -273,12 +283,15 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             <ProductSorting />
           </div>
           <div className="flex md:hidden items-center justify-center col-span-2 gap-2">
-            {products.length > 0 && (
+            {productsCount > 0 && hasFilters && (
               <span className="text-sm">{productsCount} Products</span>
+            )}
+            {!hasFilters && allProductsCount >= productsCount && (
+              <span className="text-sm">{allProductsCount} Products</span>
             )}
             {variantsCount > productsCount && (
               <span className="text-sm text-gray-500">
-                ({variantsCount} variants)
+                ({variantsCount} Variants)
               </span>
             )}
           </div>
