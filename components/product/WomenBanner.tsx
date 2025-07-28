@@ -15,6 +15,7 @@ const colorVariants: ColorVariant = {
   midnight: "bg-midnight text-midnight-foreground",
   green: "bg-green text-green-foreground",
   "blue-sunray": "bg-blue-sunray text-blue-sunray-foreground",
+  orange: "bg-orange text-orange-foreground",
 };
 
 export default function WomenBanner({ product }: { product: Product }) {

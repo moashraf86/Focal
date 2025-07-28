@@ -48,6 +48,8 @@
     --moonphase-foreground: 0 0% 98%;
     --steel-blue: 214 54% 19%;
     --steel-blue-foreground: 0 0% 98%;
+    --orange: 31 100% 50%;
+    --orange-foreground: 0 0 18.04%;
   }
   .dark {
     --background: 0 0 5.1%;

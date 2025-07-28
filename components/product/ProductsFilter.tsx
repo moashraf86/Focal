@@ -154,7 +154,7 @@ export default function ProductsFilter({
             )}
           </span>
         </SheetTrigger>
-        <SheetContent>
+        <SheetContent style={{ maxWidth: "400px" }}>
           <SheetHeader>
             <SheetTitle>
               <p className="relative flex items-center gap-2">

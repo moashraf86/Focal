@@ -168,7 +168,7 @@ export default function ProductCard({
             </>
           )}
           {/* Product Labels */}
-          <div className="absolute top-2 left-2 flex flex-col items-center justify-center gap-1 z-10">
+          <div className="absolute top-2 left-2 flex flex-col items-start justify-center gap-1 z-10">
             {isLimitedEdition && (
               <span className="inline-block py-0.5 px-1.5 bg-[#1f8f8f] text-primary-foreground text-xs uppercase font-barlow font-semibold tracking-wider">
                 Limited Edition
