@@ -6,12 +6,14 @@ import {
   CarouselContent,
   CarouselItem,
 } from "../ui/carousel";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
+import Autoplay from "embla-carousel-autoplay";
 
 export default function StoreFeatures() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState<number>(0);
+  const autoplayRef = useRef(Autoplay({ delay: 3000 }));
 
   // handle carousel scroll to specific item
   const handleScrollToItem = (index: number) => {
@@ -80,7 +82,14 @@ export default function StoreFeatures() {
           </div>
         ))}
       </div>
-      <Carousel className="lg:hidden" setApi={setApi} opts={{ loop: true }}>
+      <Carousel
+        className="lg:hidden"
+        setApi={setApi}
+        opts={{ loop: true }}
+        plugins={[autoplayRef.current]}
+        onMouseEnter={() => autoplayRef.current.stop()}
+        onMouseLeave={() => autoplayRef.current.play()}
+      >
         <CarouselContent className="flex gap-6">
           {features.map((feature) => (
             <CarouselItem key={feature.id}>

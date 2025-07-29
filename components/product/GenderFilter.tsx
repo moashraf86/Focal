@@ -5,8 +5,8 @@ export default function GenderFilter({
   gender,
   setGender,
 }: {
-  gender: string;
-  setGender: (gender: string) => void;
+  gender: "men" | "women";
+  setGender: (gender: "men" | "women") => void;
 }) {
   return (
     <div className="relative flex justify-center items-center mx-auto max-w-fit gap-6 after:content-[''] after:absolute after:w-full after:h-px after:bg-gray-200 after:-bottom-2">

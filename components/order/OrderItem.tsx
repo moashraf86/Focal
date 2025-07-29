@@ -3,14 +3,36 @@ import Image from "next/image";
 import ProductPrice from "../product/ProductPrice";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { getProductImages } from "@/lib/helper";
 
 export default function OrderItem({ item }: { item: OrderItemType }) {
   // Find the selected image based on size and color
-  const selectedImage =
-    item.product?.sizes
-      ?.find((size) => size.value === item.size)
-      ?.colors?.find((color) => color.name === item.color)?.images?.[0] ??
-    item.product?.images?.[0];
+  const selectedImage = getProductImages(
+    item.product,
+    item.size,
+    item.color
+  )[0];
+
+  // view product link
+  // const viewProductLink =
+  //   item.size && item.size !== "free"
+  //     ? `/products/${item.product.slug}?size=${item.size}&color=${item.color}`
+  //     : item.size === "free" && item.color
+  //       ? `/products/${item.product.slug}?color=${item.color}`
+  //       : `/products/${item.product.slug}`;
+
+  const params = new URLSearchParams();
+
+  if (item.size && item.size !== "free") {
+    params.append("size", item.size);
+  }
+
+  if (item.color) {
+    params.append("color", item.color);
+  }
+
+  const queryString = params.toString();
+  const href = `/products/${item.product?.slug}${queryString ? `?${queryString}` : ""}`;
 
   return (
     <>
@@ -36,7 +58,11 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
                 {item.product.name}
               </h2>
               <p className="text-sm font-light">
-                {item.size} / {item.color}
+                <>
+                  {item.size !== "" && <span>{item.size} </span>}
+                  {item.size !== "" && item.color && <span>/ </span>}
+                  {item.color && <span>{item.color}</span>}
+                </>
               </p>
               <ProductPrice price={item.product.price} className="sm:hidden" />
               <p className="font-light">Qty: {item.quantity}</p>
@@ -46,9 +72,7 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
                 size="sm"
                 className="sm:hidden text-sky-700 p-0"
               >
-                <Link href={`/products/${item.product.slug}`}>
-                  View product
-                </Link>
+                <Link href={href}>View product</Link>
               </Button>
             </div>
           </div>
@@ -66,11 +90,7 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
             size="sm"
             className="text-sky-700 px-0 hidden sm:inline-flex"
           >
-            <Link
-              href={`/products/${item.product.slug}?size=${item.size}&color=${item.color}`}
-            >
-              View product
-            </Link>
+            <Link href={href}>View product</Link>
           </Button>
         </td>
       </tr>

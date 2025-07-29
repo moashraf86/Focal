@@ -14,13 +14,16 @@ const colorVariants: ColorVariant = {
   white: "bg-white text-white-foreground",
   midnight: "bg-midnight text-midnight-foreground",
   green: "bg-green text-green-foreground",
-  blue: "bg-blue text-blue-foreground",
+  "blue-sunray": "bg-blue-sunray text-blue-sunray-foreground",
+  orange: "bg-orange text-orange-foreground",
 };
 
 export default function WomenBanner({ product }: { product: Product }) {
-  const title = product.faces[0].name;
-  const description = product.faces[0].description[0].children[0].text;
-  const webBanner = product.bannerImage[0].url;
+  const title = product.faces[0]?.name || product.name;
+  const description =
+    product.faces[0]?.description[0]?.children[0]?.text ||
+    product.description[0]?.children[0]?.text;
+  const webBanner = product.bannerImage[0]?.url;
   const color = product.bannerBgColor;
 
   const [sectionRef, entry] = useIntersectionObserver({

@@ -14,14 +14,18 @@ const colorVariants: ColorVariant = {
   white: "bg-white text-white-foreground",
   midnight: "bg-midnight text-midnight-foreground",
   green: "bg-green text-green-foreground",
-  blue: "bg-blue text-blue-foreground",
+  "blue-sunray": "bg-blue-sunray text-blue-sunray-foreground",
+  moonphase: "bg-moonphase text-moonphase-foreground",
+  "steel-blue": "bg-steel-blue text-steel-blue-foreground",
 };
 
 export default function MenBanner({ product }: { product: Product }) {
-  const title = product.faces[0].name;
-  const description = product.faces[0]?.description[0]?.children[0]?.text;
-  const webBanner = product.bannerImage[0].url;
-  const mobileBanner = product.bannerImage[1]?.url;
+  const title = product.faces[0]?.name || product.name;
+  const description =
+    product.faces[0]?.description[0]?.children[0]?.text ||
+    product.description[0]?.children[0]?.text;
+  const webBanner = product.bannerImage?.[0]?.url || "";
+  const mobileBanner = product.bannerImage?.[1]?.url || "";
   const color = product.bannerBgColor;
 
   const [sectionRef, entry] = useIntersectionObserver({
@@ -40,7 +44,7 @@ export default function MenBanner({ product }: { product: Product }) {
 
   return (
     <section
-      className="relative flex items-center py-10 mb-20 bg-cover bg-center bg-no-repeat lg:min-h-[700px] bg-gray-100"
+      className="relative flex items-center mb-20 bg-cover bg-center bg-no-repeat lg:min-h-[700px] bg-gray-100"
       ref={sectionRef}
     >
       <div className="lg:container lg:flex items-center justify-start w-full">

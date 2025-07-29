@@ -1,57 +1,99 @@
 import { Product } from "@/lib/definitions";
+import React from "react";
 
-// Type for text nodes within a block
-type childrenType = { type: string; text: string; bold?: boolean };
+// Import the StrapiRichText type
+import type { StrapiRichText } from "@/lib/definitions";
 
-// Type for list items (used in list blocks)
-type ListItemType = {
-  type: string;
-  children: childrenType[];
-};
-
-// Type for blocks (paragraph or list)
-type blockType = {
-  type: string;
-  children: childrenType[] | ListItemType[];
+// Extend StrapiRichText to allow optional fields for rich text node types
+interface NodeWithPossibleFields extends StrapiRichText {
+  level?: number;
+  text?: string;
+  bold?: boolean;
+  code?: boolean;
+  italic?: boolean;
+  strikethrough?: boolean;
+  underline?: boolean;
+  url?: string;
   format?: string;
-};
+  image?: {
+    url: string;
+    height: number;
+    width: number;
+    alternativeText: string;
+  };
+}
+
+function resolveRichText(nodes: StrapiRichText[]): string {
+  return nodes
+    .map((c) => resolveRichTextNode(c as NodeWithPossibleFields))
+    .join("");
+}
+
+function resolveRichTextNode(node: NodeWithPossibleFields): string {
+  let html = "";
+  const children =
+    node.children
+      ?.map((c) => resolveRichTextNode(c as NodeWithPossibleFields))
+      .join("") ?? "";
+
+  switch (node.type) {
+    case "heading":
+      html = `<h${node.level} class="font-inter uppercase text-xl font-light">${children}</h${node.level}>`;
+      break;
+    case "text":
+      if (node.text) {
+        let tmp = node.text.replaceAll("\n", "<br />");
+        if (node.bold) tmp = `<b>${tmp}</b>`;
+        if (node.code) tmp = `<code>${tmp}</code>`;
+        if (node.italic) tmp = `<i>${tmp}</i>`;
+        if (node.strikethrough) tmp = `<s>${tmp}</s>`;
+        if (node.underline) tmp = `<u>${tmp}</u>`;
+        html = tmp;
+      }
+      break;
+    case "paragraph":
+      html = `<p>${children}</p>`;
+      break;
+    case "link":
+      html = `<a href="${node.url}">${children}</a>`;
+      break;
+    case "list":
+      switch (node.format) {
+        case "ordered":
+          html = `<ol class="list-decimal pl-5 space-y-1 marker:text-gray-900">${children}</ol>`;
+          break;
+        case "unordered":
+          html = `<ul class="list-disc pl-5 space-y-1 marker:text-gray-900">${children}</ul>`;
+          break;
+      }
+      break;
+    case "list-item":
+      html = `<li >${children}</li>`;
+      break;
+    case "quote":
+      html = `<blockquote>${children}</blockquote>`;
+      break;
+    case "code":
+      html = `<pre>${children}</pre>`;
+      break;
+    case "image":
+      if (node.image) {
+        html = `<img src="${node.image.url}" height="${node.image.height}" width="${node.image.width}" alt="${node.image.alternativeText}" />`;
+      }
+      break;
+  }
+  return html;
+}
 
 export default function ProductDescription({
   description,
 }: {
   description: Product["description"];
 }) {
-  const renderChildren = (children: childrenType[]) => {
-    return children.map((child, i) => (
-      <span key={i} style={{ fontWeight: child.bold ? "bold" : "normal" }}>
-        {child.text}
-      </span>
-    ));
-  };
-
-  const renderBlock = (block: blockType, index: number) => {
-    if (block.type === "paragraph") {
-      return (
-        <p key={index}>{renderChildren(block.children as childrenType[])}</p>
-      );
-    }
-
-    if (block.type === "list") {
-      const ListTag = block.format === "ordered" ? "ol" : "ul";
-      return (
-        <ListTag
-          key={index}
-          className="pl-5 space-y-1 list-disc marker:text-gray-500"
-        >
-          {(block.children as ListItemType[]).map((item, i) => (
-            <li key={i}>{renderChildren(item.children)}</li>
-          ))}
-        </ListTag>
-      );
-    }
-
-    return null;
-  };
-
-  return <div className="space-y-4">{description.map(renderBlock)}</div>;
+  return (
+    <div
+      className="space-y-4"
+      dangerouslySetInnerHTML={{ __html: resolveRichText(description) }}
+    />
+  );
 }

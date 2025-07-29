@@ -110,7 +110,7 @@ export default function MobileMenu() {
             </AccordionItem>
             <Link
               href="/orders"
-              className="block py-5 text-lg font-jost font-light hover:no-underline tracking-wide uppercase"
+              className="block py-5 text-sm sm:text-lg font-jost font-light hover:no-underline tracking-wide uppercase"
             >
               My Orders
             </Link>

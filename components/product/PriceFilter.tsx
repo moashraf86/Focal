@@ -18,6 +18,7 @@ export default function PriceFilter() {
     //TODO: Scroll to the products section
     setRange(newRange as [number, number]);
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
     params.set("price_min", newRange[0].toString());
     params.set("price_max", newRange[1].toString());
     router.replace(`?${params.toString()}`, { scroll: false });

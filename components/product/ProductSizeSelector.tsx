@@ -8,12 +8,11 @@ export default function ProductSizeSelector({
   onSizeChange,
 }: {
   sizes: Size[];
-  selectedSize: string;
+  selectedSize: string | undefined;
   onSizeChange: (value: string) => void;
 }) {
   return (
     <div className="space-y-2">
-      <span>Watch size:</span>
       <div className="flex items-center gap-2">
         {sizes.map((size) => (
           <Button

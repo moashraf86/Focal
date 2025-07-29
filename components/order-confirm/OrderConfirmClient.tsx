@@ -8,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import OrderConfirmSkeleton from "./OrderConfirmSkeleton";
+import { getProductImages } from "@/lib/helper";
 
 export default function OrderConfirmClient({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | GuestOrder | null>(null);
@@ -59,8 +60,8 @@ export default function OrderConfirmClient({ orderId }: { orderId: string }) {
           return {
             product: item.product,
             quantity: item.quantity,
-            size: item.size,
-            color: item.color || null,
+            size: item.size ?? "",
+            color: item.color ?? "",
             price: item.product.price,
           };
         });
@@ -95,7 +96,7 @@ export default function OrderConfirmClient({ orderId }: { orderId: string }) {
     };
 
     // Only send email if not sent before for this order
-    if (!localStorage.getItem(sentKey)) {
+    if (!localStorage.getItem(sentKey) && order.email) {
       sendEmail();
     }
   }, [order]);
@@ -134,11 +135,11 @@ export default function OrderConfirmClient({ orderId }: { orderId: string }) {
         <ul className="space-y-4 divide-y divide-border w-full">
           {order.order_items.map((item: OrderItem) => {
             // Find the selected image based on size and color
-            const selectedImage =
-              item.product?.sizes
-                ?.find((size) => size.value === item.size)
-                ?.colors?.find((color) => color.name === item.color)
-                ?.images?.[0] ?? item.product?.images?.[0];
+            const selectedImage = getProductImages(
+              item.product,
+              item.size,
+              item.color
+            )[0];
             return (
               <li
                 key={item.documentId}
@@ -165,7 +166,10 @@ export default function OrderConfirmClient({ orderId }: { orderId: string }) {
                       {item.product.name}
                     </Link>
                     <span className="text-xs text-muted-foreground">
-                      {item.size} {item.color ? `/ ${item.color}` : ""}
+                      {item.size && item.size !== "free"
+                        ? `${item.size} / `
+                        : ""}
+                      {item.color ? `${item.color}` : ""}
                     </span>{" "}
                     <ProductPrice
                       className="text-xs text-muted-foreground font-sans"

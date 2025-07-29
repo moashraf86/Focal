@@ -122,7 +122,7 @@ export default function Cart() {
           )}
         </div>
       </section>
-      <RelatedProducts category="men" face="1969" />
+      <RelatedProducts categories={["men"]} face="1969" />
     </>
   );
 }

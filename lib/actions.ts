@@ -47,9 +47,9 @@ export const addProductToCart = async (
   email: string | undefined,
   username: string,
   quantity: number,
-  size: string | null,
   product: Product,
-  color?: string | undefined
+  color?: string,
+  size?: string
 ) => {
   try {
     // Fetch existing cart for the user

@@ -16,6 +16,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useProductVisibilitySubscription } from "@/hooks/useProductVisibility";
 import { cn } from "@/lib/utils";
 import { useWindowSize } from "@uidotdev/usehooks";
+import { analyzeProductStructure, getColorsForSize } from "@/lib/helper";
 
 interface StickyProductSummaryProps {
   product: Product;
@@ -43,19 +44,22 @@ const StickyProductSummary: React.FC<StickyProductSummaryProps> = ({
 
   const show = !isVisible && mounted && isInitialized;
 
+  const { hasActualSizes, actualSizes } = analyzeProductStructure(product);
   // Get all sizes
-  const sizes = product.sizes.map((size) => size.value);
-
-  const defaultSize = product.sizes?.[0].value ?? "";
+  const sizes = hasActualSizes ? actualSizes.map((size) => size.value) : [];
+  const defaultSize = hasActualSizes ? sizes[0] : "";
   const selectedSize = searchParams.get("size") ?? defaultSize;
-
-  const defaultColor = product.sizes?.[0].colors?.[0].name ?? "";
+  const availableColors = getColorsForSize(product, selectedSize);
+  const defaultColor =
+    availableColors.length > 0 ? availableColors[0].name : undefined;
   const selectedColor = searchParams.get("color") ?? defaultColor;
+
+  const selectedColorObj = availableColors.find(
+    (c) => c.name === selectedColor
+  );
+
   const selectedImage =
-    product.sizes
-      ?.find((size) => size.value === selectedSize)
-      ?.colors?.find((color) => color.name === selectedColor)?.images?.[0]
-      ?.url ?? product.images[0].url;
+    selectedColorObj?.images?.[0]?.url ?? product.images[0].url;
 
   const handleSizeChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -75,7 +79,7 @@ const StickyProductSummary: React.FC<StickyProductSummaryProps> = ({
         <div
           id="sticky-product-summary"
           className={cn(
-            "fixed bottom-0 lg:top-20 lg:bottom-auto left-0 right-0 z-10 bg-background shadow-sm items-center py-4 gap-4 border-b border-border transition-[transform,opacity] duration-300",
+            "fixed bottom-0 lg:top-20 lg:bottom-auto left-0 right-0 z-40 bg-background shadow-sm items-center py-4 gap-4 border-b border-border transition-[transform,opacity] duration-300",
             show
               ? "opacity-100 translate-y-0"
               : "opacity-0 -translate-y-20 pointer-events-none"
@@ -106,40 +110,41 @@ const StickyProductSummary: React.FC<StickyProductSummaryProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Select
-                  defaultValue={defaultSize}
-                  onValueChange={handleSizeChange}
-                  value={selectedSize}
-                >
-                  <SelectTrigger className="h-12 min-w-24">
-                    <SelectValue
-                      placeholder={defaultSize}
-                      className="text-base"
-                    />
-                  </SelectTrigger>
-                  <SelectContent align="end" className="min-w-24">
-                    {sizes.map((size) => (
-                      <SelectItem key={size} value={size}>
-                        {size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  defaultValue={defaultColor}
-                  onValueChange={handleColorChange}
-                  value={selectedColor}
-                >
-                  <SelectTrigger className="h-12 min-w-40">
-                    <SelectValue
-                      placeholder={defaultColor}
-                      className="text-base"
-                    />
-                  </SelectTrigger>
-                  <SelectContent align="end" className="min-w-40">
-                    {product.sizes
-                      ?.find((size) => size.value === selectedSize)
-                      ?.colors?.map((color) => (
+                {hasActualSizes && (
+                  <Select
+                    defaultValue={defaultSize}
+                    onValueChange={handleSizeChange}
+                    value={selectedSize}
+                  >
+                    <SelectTrigger className="h-12 min-w-24">
+                      <SelectValue
+                        placeholder={defaultSize}
+                        className="text-base"
+                      />
+                    </SelectTrigger>
+                    <SelectContent align="end" className="min-w-24">
+                      {sizes.map((size) => (
+                        <SelectItem key={size} value={size}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {selectedColor && (
+                  <Select
+                    defaultValue={defaultColor}
+                    onValueChange={handleColorChange}
+                    value={selectedColor}
+                  >
+                    <SelectTrigger className="h-12 min-w-40">
+                      <SelectValue
+                        placeholder={defaultColor}
+                        className="text-base"
+                      />
+                    </SelectTrigger>
+                    <SelectContent align="end" className="min-w-40">
+                      {availableColors.map((color) => (
                         <SelectItem key={color.name} value={color.name}>
                           <div className="flex items-center gap-2">
                             <div
@@ -155,12 +160,13 @@ const StickyProductSummary: React.FC<StickyProductSummaryProps> = ({
                           </div>
                         </SelectItem>
                       ))}
-                  </SelectContent>
-                </Select>
+                    </SelectContent>
+                  </Select>
+                )}
                 <ProductActions
                   product={product}
                   quantity={1}
-                  selectedSize={selectedSize}
+                  selectedSize={selectedSize ?? ""}
                   color={selectedColor}
                 />
               </div>
@@ -169,7 +175,7 @@ const StickyProductSummary: React.FC<StickyProductSummaryProps> = ({
               <ProductActions
                 product={product}
                 quantity={1}
-                selectedSize={selectedSize}
+                selectedSize={selectedSize ?? ""}
                 color={selectedColor}
               />
             </div>
@@ -178,16 +184,16 @@ const StickyProductSummary: React.FC<StickyProductSummaryProps> = ({
       ) : (
         <div
           className={cn(
-            "fixed bottom-0 lg:top-20 lg:bottom-auto left-0 right-0 z-10 bg-background shadow-sm items-center py-4 gap-4 border-b border-border transition-[transform,opacity] duration-300",
-            show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+            "fixed bottom-0 lg:top-20 lg:bottom-auto left-0 right-0 z-40 bg-background shadow-sm items-center py-4 gap-4 border-b border-border transition-[transform,opacity] duration-300",
+            show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"
           )}
         >
           <div className="container max-w-screen-xl">
             <ProductActions
               product={product}
               quantity={1}
-              selectedSize={selectedSize}
-              color={selectedColor}
+              selectedSize={selectedSize ?? ""}
+              color={selectedColor ?? ""}
             />
           </div>
         </div>

@@ -13,16 +13,16 @@ import { useRelatedProducts } from "@/hooks/useRelated";
 import RelatedProductsSkeleton from "./RelatedProductsSkelton";
 
 export default function RelatedProducts({
-  category,
+  categories,
   face,
   product,
 }: {
-  category: string;
+  categories: string | string[];
   face?: string;
   product?: Product;
 }) {
   const { products: relatedProducts, isLoading } = useRelatedProducts({
-    cat: category,
+    cat: categories,
     face: face || "",
   });
 
@@ -30,20 +30,25 @@ export default function RelatedProducts({
     return <RelatedProductsSkeleton />;
   }
 
-  if (!relatedProducts || relatedProducts.length === 0) return null;
+  // Filter out current product
+  const filteredProducts = relatedProducts.filter(
+    (relatedProduct) => relatedProduct.id !== product?.id
+  );
+
+  if (!filteredProducts || filteredProducts.length === 0) return null;
 
   return (
-    <section className="container max-w-screen-xl mb-20 space-y-10">
-      <h2
-        className="text-3xl md:text-4xl lg:text-5xl text-center font-light uppercase leading-tight tracking-tight"
-        aria-label={`More products like ${product?.name}`}
-      >
-        Available styles
+    <section
+      id="related-products"
+      className="container max-w-screen-xl mb-20 space-y-10"
+    >
+      <h2 className="text-3xl md:text-4xl lg:text-5xl text-center font-light uppercase leading-tight tracking-tight">
+        You May Also Like
       </h2>
 
       {/* Mobile: horizontal scroll */}
       <div className="grid auto-cols-[52vw] md:auto-cols-[35vw] grid-cols-none grid-flow-col gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:hidden">
-        {relatedProducts.map((product) => (
+        {filteredProducts.map((product) => (
           <div key={product.id} className="snap-center snap-always">
             <ProductCard product={product} />
           </div>
@@ -56,7 +61,7 @@ export default function RelatedProducts({
         opts={{ align: "start", slidesToScroll: 4 }}
       >
         <CarouselContent className="-ml-6">
-          {relatedProducts.map((product) => (
+          {filteredProducts.map((product) => (
             <CarouselItem
               key={product.id}
               className="pl-6 md:basis-1/2 lg:basis-1/4"

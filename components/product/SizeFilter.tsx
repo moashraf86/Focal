@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Checkbox } from "../ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Size } from "@/lib/definitions";
@@ -9,14 +9,38 @@ type SizeFilterProps = {
   availableSizes: Size[];
 };
 
+// Helper function to filter out sizes with null values
+function processSizesForFilter(sizes: Size[]) {
+  const actualSizes = sizes.filter(
+    (size) =>
+      size.value !== null && size.value !== "" && size.value !== undefined
+  );
+  const nonSizedCount = sizes.length - actualSizes.length;
+
+  return {
+    actualSizes,
+    hasNonSizedProducts: nonSizedCount > 0,
+    nonSizedCount,
+  };
+}
+
 export default function SizeFilter({ sizes, availableSizes }: SizeFilterProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
 
+  // size filter data
+  const sizeFilterData = useMemo(() => {
+    return {
+      all: processSizesForFilter(sizes),
+      available: processSizesForFilter(availableSizes),
+    };
+  }, [sizes, availableSizes]);
+
   // Update the URL query parameters based on selected filters
   const updateQueryParam = (key: string, values: string[]) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
     params.delete(key);
     values.forEach((value) => params.append(key, value));
     router.push(`?${params.toString()}`, { scroll: false });
@@ -45,8 +69,8 @@ export default function SizeFilter({ sizes, availableSizes }: SizeFilterProps) {
 
   return (
     <div className="space-y-3">
-      {sizes.map((size) => {
-        const isAvailable = availableSizes?.some(
+      {sizeFilterData.all.actualSizes.map((size) => {
+        const isAvailable = sizeFilterData.available.actualSizes.some(
           (sizeObj) => sizeObj.value === size.value
         );
         const isSelected = selectedSizes.includes(size.value);

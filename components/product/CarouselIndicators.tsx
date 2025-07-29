@@ -18,7 +18,7 @@ export default function CarouselIndicators({
   return (
     <div
       className={cn(
-        "lg:overflow-y-auto lg:min-w-fit scrollbar-hide",
+        "relative lg:overflow-y-auto lg:min-w-fit scrollbar-hide",
         className
       )}
       style={{
@@ -39,7 +39,7 @@ export default function CarouselIndicators({
             onClick={() => handleScrollToImage(index)}
           >
             <Image
-              src={images[index].formats?.small?.url}
+              src={images[index].formats?.small?.url || images[index].url}
               alt={images[index].alternativeText || "Indicator image"}
               fill
               quality={100}

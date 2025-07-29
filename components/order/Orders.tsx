@@ -3,7 +3,7 @@
 import OrderItem from "@/components/order/OrderItem";
 import OrderSummary from "@/components/order/OrderSummary";
 import OrderTable from "@/components/order/OrderTable";
-import { Order } from "@/lib/definitions";
+import { Order, OrderItem as OrderItemType } from "@/lib/definitions";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -104,8 +104,8 @@ export default function Orders({
         >
           <OrderSummary order={order} />
           <OrderTable>
-            {order.order_items.map((item) => (
-              <OrderItem key={item.id} item={item} />
+            {order.order_items.map((item: OrderItemType) => (
+              <OrderItem key={item.documentId} item={item} />
             ))}
           </OrderTable>
         </div>

@@ -48,12 +48,7 @@ export async function POST(req: NextRequest) {
 
     // Validate each order item has required fields
     for (const item of orderItems) {
-      if (
-        !item.product?.name ||
-        !item.quantity ||
-        !item.size ||
-        item.price === undefined
-      ) {
+      if (!item.product?.name || !item.quantity || item.price === undefined) {
         return Response.json(
           {
             error:

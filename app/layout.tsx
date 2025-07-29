@@ -14,7 +14,8 @@ export const metadata: Metadata = {
     default: "Home | Focal Store",
     template: "%s | Focal Store",
   },
-  description: "An e-commerce store built with Next.js, Clerk, and Shadcn UI",
+  description:
+    "An e-commerce store built with Next.js, TailwindCSS, Shadcn/ui and Strapi",
   keywords: [
     "Next.js",
     "E-commerce",
@@ -24,7 +25,9 @@ export const metadata: Metadata = {
     "Tailwind CSS",
     "Online Store",
   ],
-  metadataBase: new URL("https://example.com"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  ),
 };
 
 export default function RootLayout({

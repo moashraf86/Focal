@@ -36,7 +36,7 @@ export function useQuickView() {
   const openQuickView = (
     product: Product,
     chosenSize: Size,
-    chosenColor: Color | undefined
+    chosenColor?: Color | undefined
   ) => {
     updateState({
       isOpen: true,

@@ -11,6 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ProductSizeSelector from "../product/ProductSizeSelector";
 import ColorSelector from "../product/ColorSelector";
+import { analyzeProductStructure, getColorsForSize } from "@/lib/helper";
 
 export default function QuickViewDrawer({
   isOpen,
@@ -18,7 +19,7 @@ export default function QuickViewDrawer({
   onClose,
 }: {
   isOpen: boolean;
-  product: Product | null;
+  product: Product;
   onClose: () => void;
 }) {
   const { selectedSize, selectedColor, quantity, setQuantity, updateState } =
@@ -26,19 +27,11 @@ export default function QuickViewDrawer({
   const { width } = useWindowSize();
   const isMobile = width && width < 768;
 
-  const defaultSize = useMemo(
-    () => selectedSize ?? getInitialSize(product),
-    [product, selectedSize]
-  );
-  const defaultColor = useMemo(
-    () => selectedColor ?? getInitialColor(product),
-    [product, selectedColor]
-  );
+  const { hasActualSizes, actualSizes } = analyzeProductStructure(product);
 
-  const allColors = useMemo(
-    () => getAvailableColors(product, selectedSize),
-    [product, selectedSize]
-  );
+  const currentSize = selectedSize ?? actualSizes[0]?.value ?? undefined;
+  const availableColors = getColorsForSize(product, currentSize);
+  const currentColor = selectedColor ?? availableColors[0]?.name ?? undefined;
 
   const pathname = usePathname();
   const prevPathnameRef = useRef(pathname);
@@ -57,23 +50,27 @@ export default function QuickViewDrawer({
   // Get the image for the selected color or fallback to the first product image
   const selectedImage = useMemo(() => {
     if (!product) return null;
-    const selectedColorObj = allColors.find((c) => c.name === selectedColor);
+    const selectedColorObj = availableColors.find(
+      (c) => c.name === selectedColor
+    );
+
     return (
-      selectedColorObj?.images?.[0].formats?.small?.url ||
-      product.images?.[0]?.formats?.small?.url ||
+      selectedColorObj?.images?.[0]?.formats?.small ||
+      product.images?.[0]?.formats?.small ||
       "/fallback-image.jpg"
     );
-  }, [allColors, selectedColor, product]);
+  }, [availableColors, selectedColor, product]);
 
   // Set initial values when product changes
   useEffect(() => {
     if (product) {
       updateState({
-        selectedSize: defaultSize,
-        selectedColor: defaultColor,
+        selectedSize: currentSize,
+        selectedColor: currentColor,
         quantity: 1,
       });
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
@@ -81,26 +78,37 @@ export default function QuickViewDrawer({
 
   // Handle size change and update available colors
   const handleSizeChange = (size: string) => {
-    const newColors = getAvailableColors(product, size);
+    const newColors = getColorsForSize(product, size);
     updateState({
       selectedSize: size,
-      selectedColor: newColors[0]?.name || "",
+      selectedColor: newColors[0]?.name || undefined,
     });
   };
+
+  // set href for quick view
+  const params = new URLSearchParams();
+  if (selectedSize) {
+    params.append("size", selectedSize);
+  }
+  if (selectedColor) {
+    params.append("color", selectedColor);
+  }
+  const queryString = params.toString();
+  const href = `/products/${product.slug}${queryString ? `?${queryString}` : ""}`;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
-        className="max-h-[75vh] md:max-h-full md:min-w-[500px] overflow-y-auto"
+        className="max-h-[75vh] md:max-h-full overflow-y-auto"
       >
         <SheetHeader>
           <SheetTitle className="tracking-normal">
             {/* Mobile Header */}
             <div className="flex md:hidden items-center gap-4">
               <Image
-                src={selectedImage || "/fallback-image.jpg"}
-                alt={product.images[0]?.alternativeText || "Product image"}
+                src={selectedImage?.url || "/fallback-image.jpg"}
+                alt={selectedImage?.hash || "Product image"}
                 width={65}
                 height={80}
                 quality={100}
@@ -133,10 +141,10 @@ export default function QuickViewDrawer({
           {/* Desktop Image Section */}
           <div className="hidden md:flex items-center gap-4 px-6 md:px-10">
             <Image
-              src={selectedImage || "/fallback-image.jpg"}
-              alt={product.images[0]?.alternativeText || "Product image"}
-              width={product.images[0]?.formats?.thumbnail?.width || 100}
-              height={product.images[0]?.formats?.thumbnail?.height || 100}
+              src={selectedImage?.url || "/fallback-image.jpg"}
+              alt={selectedImage?.hash || "Product image"}
+              width={120}
+              height={120}
               quality={100}
               className="object-cover object-center"
               priority
@@ -153,22 +161,44 @@ export default function QuickViewDrawer({
           </div>
 
           <div className="px-6 md:px-10 space-y-4">
-            <ProductSizeSelector
-              sizes={product.sizes}
-              selectedSize={selectedSize}
-              onSizeChange={handleSizeChange}
-            />
+            {hasActualSizes && (
+              <div className="space-y-2">
+                <span>
+                  {product.collections?.some((collection) =>
+                    collection.slug.includes("strap")
+                  )
+                    ? "Strap width"
+                    : "Watch size"}
+                  : {selectedSize}
+                </span>{" "}
+                <ProductSizeSelector
+                  sizes={product.sizes}
+                  selectedSize={selectedSize}
+                  onSizeChange={handleSizeChange}
+                />
+              </div>
+            )}
 
-            <div className="space-y-2">
-              <ColorSelector
-                mode="single"
-                colors={allColors}
-                selectedColors={[selectedColor]}
-                onColorSelect={(colorName) =>
-                  updateState({ selectedColor: colorName })
-                }
-              />
-            </div>
+            {selectedColor && (
+              <div className="space-y-2">
+                <span>
+                  {product.collections?.some((collection) =>
+                    collection.slug.includes("strap")
+                  )
+                    ? "Fastener"
+                    : "Strap"}
+                  : {selectedColor}
+                </span>{" "}
+                <ColorSelector
+                  mode="single"
+                  colors={availableColors}
+                  selectedColors={[selectedColor]}
+                  onColorSelect={(colorName) =>
+                    updateState({ selectedColor: colorName })
+                  }
+                />
+              </div>
+            )}
 
             <div className="space-y-1">
               <span>Quantity:</span>
@@ -193,7 +223,7 @@ export default function QuickViewDrawer({
           {/* Desktop Details Link */}
           <div className="flex items-center justify-center">
             <Link
-              href={`/products/${product.slug}?size=${selectedSize}&color=${selectedColor}`}
+              href={href}
               className="capitalize font-barlow hidden md:inline-block font-light underline text-primary/70 hover:text-primary"
             >
               View details
@@ -203,15 +233,4 @@ export default function QuickViewDrawer({
       </SheetContent>
     </Sheet>
   );
-}
-
-// Utilities (can be placed in a separate file)
-function getInitialSize(product: Product | null) {
-  return product?.sizes?.[0]?.value ?? "";
-}
-function getInitialColor(product: Product | null) {
-  return product?.sizes?.[0]?.colors?.[0]?.name ?? "";
-}
-function getAvailableColors(product: Product | null, size: string) {
-  return product?.sizes?.find((s) => s.value === size)?.colors || [];
 }

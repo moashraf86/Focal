@@ -55,7 +55,7 @@ export interface Filter {
   value: string | undefined;
 }
 
-interface StrapiRichText {
+export interface StrapiRichText {
   children: Array<{
     text: string;
     type: string;
@@ -87,6 +87,8 @@ interface StrapiImageFormat {
   url: string;
   height: number;
   width: number;
+  name: string;
+  hash: string;
 }
 
 export interface SingleStrapiResponse<T> {
@@ -118,7 +120,7 @@ export interface CartItem {
   documentId: string;
   quantity: number;
   product: Product;
-  size: string;
+  size: string | undefined;
   color: string | undefined;
   createdAt: string;
 }

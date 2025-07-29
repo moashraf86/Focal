@@ -8,6 +8,7 @@ import QuantitySelector from "../shared/QuantitySelector";
 import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import Link from "next/link";
+import { getProductImages } from "@/lib/helper";
 
 export default function CartItem({
   item,
@@ -32,19 +33,36 @@ export default function CartItem({
     setQuantity(newQuantity);
   };
 
-  // get product selected color image
-  const selectedColorImage =
-    item.product?.sizes
-      ?.find((size) => size.value === item.size)
-      ?.colors?.find((color) => color.name === item.color)?.images?.[0] ??
-    item.product?.images?.[0];
+  const selectedColorImage = getProductImages(
+    item.product,
+    item.size,
+    item.color
+  )[0];
+
+  // set href for cart item
+  const params = new URLSearchParams();
+
+  if (item.size && item.size !== "free") {
+    params.append("size", item.size);
+  }
+
+  if (item.color) {
+    params.append("color", item.color);
+  }
+
+  const queryString = params.toString();
+  const href = `/products/${item.product?.slug}${queryString ? `?${queryString}` : ""}`;
 
   return (
     <tr className={cn("font-light", className)} style={style}>
       <td className="px-6 py-4 text-sm font-medium text-gray-800">
         <div className="flex items-center gap-4">
           <Image
-            src={selectedColorImage?.formats?.small?.url || ""}
+            src={
+              selectedColorImage?.formats?.small?.url ||
+              selectedColorImage?.url ||
+              ""
+            }
             alt={selectedColorImage?.alternativeText || "product image"}
             width={100}
             height={100}
@@ -52,14 +70,17 @@ export default function CartItem({
           />
           <div className="space-y-2 sm:space-y-2 font-light grow">
             <Link
-              href={`/products/${item.product?.slug}?size=${item.size}&color=${item.color}`}
+              href={href}
               className="text-base font-barlow leading-tight hover:underline underline-offset-2"
             >
               {item.product?.name}
             </Link>
             <p>
-              {item.size && <span>{item.size}</span>}{" "}
-              {item.color && <span> / {item.color}</span>}
+              <>
+                {item.size !== "" && <span>{item.size} </span>}
+                {item.size !== "" && item.color && <span>/ </span>}
+                {item.color && <span>{item.color}</span>}
+              </>
             </p>
             <ProductPrice
               price={item.product?.price}

@@ -47,7 +47,7 @@ export default function ColorSelector({
             disabled={!isAvailable}
           >
             <Image
-              src={color?.pattern?.url || ""}
+              src={color?.pattern?.url || "/no-pattern.png"}
               alt={color?.pattern?.alternativeText || "Pattern Image"}
               width={32}
               height={32}

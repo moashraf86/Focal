@@ -44,6 +44,8 @@ export default function ProductSorting() {
       startTransition(() => {
         // create a new URLSearchParams object from the current search params
         const params = new URLSearchParams(searchParams.toString());
+        // delete page parameter
+        params.delete("page");
         // Clear old sorting
         params.delete("sort_by");
         // Add new sorting value

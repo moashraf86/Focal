@@ -91,7 +91,7 @@ export default function OrderDetails({
         <OrderDetailsSummary order={orderData} />
         <OrderTable>
           {orderData?.order_items?.map((item: OrderItemType) => (
-            <OrderItem key={item.id} item={item} />
+            <OrderItem key={item.documentId} item={item} />
           ))}
         </OrderTable>
       </div>

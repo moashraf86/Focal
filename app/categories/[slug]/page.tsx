@@ -21,6 +21,7 @@ import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 import { cache } from "react";
 import { Product } from "@/lib/definitions";
+import SmartPagination from "@/components/ui/smartPagination";
 
 // Cache data fetching functions
 const getCachedCategories = cache(fetchCategories);
@@ -57,23 +58,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${capitalizedSlug}`,
     description: `Explore our ${capitalizedSlug} collection. Find the perfect product that suits your style and needs.`,
+    openGraph: {
+      type: "website",
+      title: `${capitalizedSlug}`,
+      description: `Explore our ${capitalizedSlug} collection. Find the perfect product that suits your style and needs.`,
+      images: [{ url: `opengraph/opengraph-${slug}.jpg` }],
+    },
   };
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { sort_by, size, color, price_min, price_max, collection } =
+  const { sort_by, size, color, price_min, price_max, collection, page } =
     await searchParams;
 
-  // Fetch base data (heavily cached)
-  const [{ categories }, { products: allProducts }] = await Promise.all([
-    getCachedCategories(),
-    getCachedProductsByCategoryBase(slug),
-  ]);
-
-  // Precompute filter options from base products
-  const { allSizes, allColors, allCollections } =
-    computeFilterOptions(allProducts);
+  const currentPage = page ? parseInt(page as string) : 1;
 
   // Check if any filters are applied
   const hasFilters = Boolean(
@@ -85,20 +84,82 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       (sort_by && sort_by !== "createdAt:desc")
   );
 
+  // Fetch base data (heavily cached)
+  const [{ categories }, { products: allProducts, pagination }] =
+    await Promise.all([
+      getCachedCategories(),
+      getCachedProductsByCategoryBase(slug, currentPage),
+    ]);
+
+  // Fetch ALL products for this category (without any filters) for filter calculations
+  // This ensures filters show all available options across the entire category dataset
+  const { products: allCategoryProductsForFilters } =
+    await fetchProductsByCategory({
+      slug,
+      sort: "createdAt:desc", // Use default sort for consistency
+      // No filters applied - fetch all products in this category
+    });
+
+  // Precompute filter options from ALL category products (not just base/cached results)
+  const { allSizes, allColors, allCollections } = computeFilterOptions(
+    allCategoryProductsForFilters
+  );
+
+  // Calculate pagination
+  let totalPages = Math.ceil(pagination.total / pagination.limit);
+
   // Fetch filtered products only when needed
   let products = allProducts;
+  let allFilteredProductsForSizes = allCategoryProductsForFilters;
+
   if (hasFilters) {
-    const { products: filtered } = await fetchProductsByCategory({
+    const { products: filtered, pagination: filteredPagination } =
+      await fetchProductsByCategory({
+        slug,
+        sort: sort_by,
+        size,
+        color,
+        price_min,
+        price_max,
+        collection,
+        page: currentPage,
+      });
+    products = filtered;
+    totalPages = Math.ceil(filteredPagination.total / filteredPagination.limit);
+
+    // Fetch ALL products WITHOUT Size filter for size availability
+    const { products: allFilteredWithoutSize } = await fetchProductsByCategory({
+      slug,
+      sort: sort_by,
+      color,
+      price_min,
+      price_max,
+      collection,
+      // No size filter and no pagination - fetch all matching products
+    });
+    allFilteredProductsForSizes = allFilteredWithoutSize;
+  }
+
+  // Fetch all products without color filter for color availability
+  const { products: allFilteredWithoutColor } = await fetchProductsByCategory({
+    slug,
+    sort: sort_by,
+    size,
+    price_min,
+    price_max,
+    collection,
+  });
+
+  // Fetch all products without collection filter for collection availability
+  const { products: allFilteredWithoutCollection } =
+    await fetchProductsByCategory({
       slug,
       sort: sort_by,
       size,
       color,
       price_min,
       price_max,
-      collection,
     });
-    products = filtered;
-  }
 
   // Get current category
   const category = categories.find((category) => category.slug === slug);
@@ -107,24 +168,28 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     alternativeText: "Category Banner",
   };
 
-  // Compute available filters based on current results
+  // Compute available filters based on ALL filtered results (not paginated)
   const availableSizes = getAvailableSizes({
     color,
-    productsForAvailableSizes: products,
+    productsForAvailableSizes: allFilteredProductsForSizes,
   });
 
   const availableColors = getAvailableColors({
     size,
-    availableProducts: products,
+    availableProducts: allFilteredWithoutColor,
   });
 
   const availableCollections = getAvailableCollections({
-    availableProducts: products,
+    availableProducts: allFilteredWithoutCollection,
   });
 
   // Get expanded products based on selected size and color
   const expandedProducts = expandProducts(products, size, color);
-  const resultsCount = expandedProducts.length;
+  const variantsCount = expandedProducts.length;
+  const productsCount = products.length;
+  const allProductsCount = allCategoryProductsForFilters.length;
+  // Determine if the category is a strap category
+  const isStrapCategory = category?.slug.includes("strap") || false;
 
   return (
     <main>
@@ -197,22 +262,39 @@ export default async function CategoryPage({ params, searchParams }: Props) {
               availableSizes={availableSizes}
               availableColors={availableColors}
               availableCollections={availableCollections}
-              resultsCount={resultsCount}
+              resultsCount={variantsCount}
+              isStrapCategory={isStrapCategory}
             />
-            {products.length > 0 && (
-              <span className="hidden md:inline-block text-sm ">
-                {resultsCount} Results
-              </span>
-            )}
+            <div className="hidden md:flex items-center gap-2">
+              {productsCount > 0 && hasFilters && (
+                <span className="text-sm">{productsCount} Products</span>
+              )}
+              {!hasFilters && allProductsCount >= productsCount && (
+                <span className="text-sm">{allProductsCount} Products</span>
+              )}
+              {variantsCount > productsCount && (
+                <span className="text-sm text-gray-500">
+                  ({variantsCount} variants)
+                </span>
+              )}
+            </div>
           </div>
           <div className="col-span-1 flex justify-end md:order-1">
             <ProductSorting />
           </div>
-          {products.length > 0 && (
-            <span className="md:hidden text-sm text-center col-span-2">
-              {resultsCount} Results
-            </span>
-          )}
+          <div className="flex md:hidden items-center justify-center col-span-2 gap-2">
+            {productsCount > 0 && hasFilters && (
+              <span className="text-sm">{productsCount} Products</span>
+            )}
+            {!hasFilters && allProductsCount >= productsCount && (
+              <span className="text-sm">{allProductsCount} Products</span>
+            )}
+            {variantsCount > productsCount && (
+              <span className="text-sm text-gray-500">
+                ({variantsCount} Variants)
+              </span>
+            )}
+          </div>
         </div>
         {products.length > 0 ? (
           <ProductList
@@ -231,6 +313,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           </div>
         )}
       </section>
+      {totalPages > 1 && (
+        <SmartPagination currentPage={currentPage} totalPages={totalPages} />
+      )}
     </main>
   );
 }

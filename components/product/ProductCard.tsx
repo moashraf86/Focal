@@ -6,8 +6,6 @@ import { Button } from "../ui/button";
 import { useQuickView } from "@/hooks/useQuickView";
 import { useCart } from "@/hooks/useCart";
 import { Loader2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { ToastAction } from "../ui/toast";
 import { useIntersectionObserver } from "@uidotdev/usehooks";
 import { useEffect, useState } from "react";
 
@@ -98,31 +96,18 @@ export default function ProductCard({
     product.sizes?.length > 1;
 
   // Handle add to cart action
-  const handleAddToCart = async (product: Product) => {
-    if (!chosenSize || !chosenColor) {
-      console.error("Product must have a size and color selected.");
-      return;
-    }
-    addProductToCart(product, 1, chosenSize.value, chosenColor.name);
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    // Optionally, you can show a toast or notification here
-    toast({
-      title: "Product added to cart",
-      variant: "success",
-      duration: 1500,
-      action: (
-        <ToastAction altText="view-cart">
-          <Link href="/cart" className="text-inherit">
-            View Cart
-          </Link>
-        </ToastAction>
-      ),
-    });
+  const handleAddToCart = (product: Product) => {
+    addProductToCart(
+      product,
+      1,
+      chosenSize?.value ?? "",
+      chosenColor?.name ?? ""
+    );
   };
 
   // Handle quick view action
   const handleQuickView = (product: Product) => {
-    if (!chosenSize || !chosenColor) {
+    if (!chosenSize) {
       console.error(
         "Product must have a size and color selected for quick view."
       );
@@ -130,6 +115,20 @@ export default function ProductCard({
     }
     openQuickView(product, chosenSize, chosenColor);
   };
+
+  // set href  for product card
+  const params = new URLSearchParams();
+
+  if (chosenSize?.value && chosenSize.value !== "") {
+    params.append("size", chosenSize.value);
+  }
+
+  if (chosenColor?.name) {
+    params.append("color", chosenColor.name);
+  }
+
+  const queryString = params.toString();
+  const href = `/products/${product.slug}${queryString ? `?${queryString}` : ""}`;
 
   // If the component has been visible, set hasBeenVisible to true
   useEffect(() => {
@@ -143,29 +142,33 @@ export default function ProductCard({
       <div className="relative group grid gap-4 overflow-hidden">
         <Link
           ref={ref}
-          href={`/products/${product.slug}?size=${chosenSize?.value}&color=${chosenColor?.name}`}
+          href={href}
           className="group aspect-[3/4] relative overflow-hidden bg-gray-100 block"
         >
           {hasBeenVisible && (
             <>
               <Image
-                className="group-hover:opacity-0 object-cover transition-opacity duration-300"
+                className={`${
+                  hoverImageUrl ? "group-hover:opacity-0" : "opacity-100"
+                } object-cover transition-opacity duration-300`}
                 src={imageUrl}
                 alt={imageAlt || "product image"}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               />
-              <Image
-                className="opacity-0 group-hover:opacity-100 object-cover transition-opacity duration-300"
-                src={hoverImageUrl}
-                alt={hoverImageUrl || "product image Hover"}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              />
+              {hoverImageUrl && (
+                <Image
+                  className="opacity-0 group-hover:opacity-100 object-cover transition-opacity duration-300"
+                  src={hoverImageUrl}
+                  alt={hoverImageUrl || "product image Hover"}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                />
+              )}
             </>
           )}
           {/* Product Labels */}
-          <div className="absolute top-2 left-2 flex flex-col items-center justify-center gap-1 z-10">
+          <div className="absolute top-2 left-2 flex flex-col items-start justify-center gap-1 z-10">
             {isLimitedEdition && (
               <span className="inline-block py-0.5 px-1.5 bg-[#1f8f8f] text-primary-foreground text-xs uppercase font-barlow font-semibold tracking-wider">
                 Limited Edition

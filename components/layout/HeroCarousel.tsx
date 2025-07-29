@@ -15,11 +15,11 @@ export default function HeroCarousel() {
       links: [
         {
           text: "Shop The Watch",
-          href: "/shop",
+          href: "/products/1926-at-sea-steel-green-turtle-vintage?size=39mm&color=3-Link",
         },
         {
-          text: "Learn More",
-          href: "/about",
+          text: "Shop The Collection",
+          href: "/faces/1926",
         },
       ],
       align: "start",
@@ -31,19 +31,19 @@ export default function HeroCarousel() {
       links: [
         {
           text: "Shop The Watch",
-          href: "/shop",
+          href: "/products/1988-moonphase",
         },
       ],
       align: "start",
     },
     {
       title: "Women's Collection",
-      slogan: "1988 Moonphase",
+      slogan: "New In",
       image: "/hero-3.webp",
       links: [
         {
           text: "Shop The Watch",
-          href: "/shop",
+          href: "/products/1969-petite-rose-gold-blue-sunray?size=32mm&color=Mesh%20Rose%20Gold",
         },
       ],
       align: "start",
@@ -52,8 +52,42 @@ export default function HeroCarousel() {
 
   const [activeIndex, setActiveIndex] = React.useState(0);
   const activeSlide = carouselData[activeIndex];
+
   const nextSlide = () =>
     setActiveIndex((activeIndex + 1) % carouselData.length);
+
+  const prevSlide = () =>
+    setActiveIndex(
+      (activeIndex - 1 + carouselData.length) % carouselData.length
+    );
+
+  // Handle click on left/right half of carousel
+  const handleCarouselClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, right } = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX;
+    const isLeftHalf = clickX < left + (right - left) / 2;
+
+    // If clicked on left half, go to previous; if right half, go to next
+    if (isLeftHalf) {
+      prevSlide();
+    } else {
+      nextSlide();
+    }
+  };
+
+  // Handle mouse move to change cursor based on position
+  const handleCarouselMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, right } = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX;
+    const isLeftHalf = clickX < left + (right - left) / 2;
+
+    // Change cursor based on mouse position
+    if (isLeftHalf) {
+      e.currentTarget.style.cursor = "w-resize";
+    } else {
+      e.currentTarget.style.cursor = "e-resize";
+    }
+  };
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -65,7 +99,12 @@ export default function HeroCarousel() {
 
   return (
     <section className="relative h-[calc(100vh-6rem)]">
-      <div className="absolute inset-0 bg-black/20 z-[1]"></div>
+      <div
+        className="absolute inset-0 bg-black/20 z-[1]"
+        onClick={handleCarouselClick}
+        onMouseMove={handleCarouselMouseMove}
+      />
+
       {/* slide images */}
       {carouselData.map((_, index) => (
         <div key={index} className="absolute inset-0">
@@ -73,17 +112,17 @@ export default function HeroCarousel() {
             src={carouselData[index].image}
             alt={carouselData[index].title}
             className={cn(
-              "absolute inset-0 object-cover transition-opacity duration-700 ease-in-out",
+              "absolute inset-0 object-cover transition-opacity duration-700 ease-in-out select-none",
               activeIndex === index ? "opacity-100" : "opacity-0"
             )}
             fill
-            priority={index === 0}
             loading={index === 0 ? "eager" : "lazy"}
           />
         </div>
       ))}
+
       {/* Slide Content */}
-      <div className="container mx-auto h-full max-w-5xl px-4 lg:px-8 relative z-[2]">
+      <div className="container mx-auto h-full max-w-5xl px-4 lg:px-8 relative z-[2] pointer-events-none">
         <div
           className={cn(
             "flex items-center h-full",
@@ -104,7 +143,7 @@ export default function HeroCarousel() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-light uppercase text-primary-foreground max-w-[20ch]">
               {activeSlide.title}
             </h1>
-            <div className="flex gap-4 flex-wrap">
+            <div className="flex gap-4 flex-wrap pointer-events-auto">
               {activeSlide.links.map((link, index) => (
                 <Button
                   key={activeIndex + link.text + index}
@@ -119,8 +158,9 @@ export default function HeroCarousel() {
           </div>
         </div>
       </div>
+
       {/* Indicators */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-[2]">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-[3] pointer-events-auto">
         {carouselData.map((_, index) => (
           <button
             key={index}

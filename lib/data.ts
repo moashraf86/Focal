@@ -1,8 +1,16 @@
 import qs from "qs";
 
 type filterType = {
-  [key: string]: string | string[] | undefined;
+  [key: string]: string | string[] | number | undefined;
 };
+
+type Pagination = {
+  total: number;
+  limit: number;
+  start: number;
+};
+
+const PAGE_LIMIT = 12;
 
 import {
   Category,
@@ -112,6 +120,7 @@ const POPULATE_CONFIGS = {
     bannerImage: { fields: ["url", "alternativeText"] },
     images: { fields: ["url", "alternativeText"] },
     categories: { fields: ["name", "slug"] },
+    collections: { fields: ["name", "slug"] },
     faces: { fields: ["name", "slug", "description"] },
     sizes: {
       fields: ["value"],
@@ -138,6 +147,7 @@ const POPULATE_CONFIGS = {
                 images: {
                   fields: ["name", "alternativeText", "url", "formats"],
                 },
+                pattern: { fields: ["url", "alternativeText"] },
               },
             },
           },
@@ -189,15 +199,24 @@ const apiRequest = async <T>(
   cacheKey?: string,
   cacheTtl = 3600000 // 1 hour default
 ): Promise<T> => {
+  const startTime = performance.now();
+
   // Check cache first
   if (cacheKey) {
     const cached = getFromCache<T>(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      const cacheTime = performance.now() - startTime;
+      console.log(
+        `[Server Timing] ${endpoint} - Cache hit: ${cacheTime.toFixed(2)}ms`
+      );
+      return cached;
+    }
   }
 
   const queryString = qs.stringify(query);
   const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${endpoint}?${queryString}`;
 
+  const fetchStartTime = performance.now();
   const response = await fetchWithRetry(url, {
     headers: {
       Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
@@ -208,26 +227,47 @@ const apiRequest = async <T>(
       revalidate: Math.floor(cacheTtl / 1000),
     },
   });
+  const fetchTime = performance.now() - fetchStartTime;
 
+  const parseStartTime = performance.now();
   const data = await response.json();
+  const parseTime = performance.now() - parseStartTime;
 
   // Cache the result
   if (cacheKey) {
     setCache(cacheKey, data, cacheTtl);
   }
 
+  const totalTime = performance.now() - startTime;
+
+  // Log server timing data
+  console.log(`[Server Timing] ${endpoint}:`, {
+    total: `${totalTime.toFixed(2)}ms`,
+    fetch: `${fetchTime.toFixed(2)}ms`,
+    parse: `${parseTime.toFixed(2)}ms`,
+    cacheKey: cacheKey || "none",
+    status: response.status,
+    url: url.split("?")[0], // Log endpoint without query params for cleaner output
+  });
+
   return data;
 };
 
 // Fetch all products (base data - heavily cached)
-export async function fetchAllProductsBase(): Promise<{ products: Product[] }> {
-  const cacheKey = getCacheKey("products-base", {});
+export async function fetchAllProductsBase(
+  page: number
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const cacheKey = getCacheKey("products-base", { page });
 
   const query = {
     sort: ["createdAt:desc"],
     populate: {
       ...POPULATE_CONFIGS.basic,
       ...POPULATE_CONFIGS.withSizes,
+    },
+    pagination: {
+      limit: PAGE_LIMIT,
+      start: (page - 1) * PAGE_LIMIT,
     },
   };
 
@@ -238,22 +278,24 @@ export async function fetchAllProductsBase(): Promise<{ products: Product[] }> {
     3600000 // 1 hour
   );
 
-  return { products: response.data };
+  const pagination = response.meta.pagination as unknown as Pagination;
+
+  return { products: response.data, pagination };
 }
 
 // Fetch all products with filters (optimized)
 export async function fetchAllProducts(
   filters: filterType = {}
-): Promise<{ products: Product[] }> {
-  const { sort = "createdAt:desc", ...otherFilters } = filters;
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const { sort = "createdAt:desc", page, ...otherFilters } = filters;
 
-  // Check if we can use the base cached version
+  // Check if we can use the base cached version (only if no filters and page 1)
   const hasFilters =
     Object.keys(otherFilters).some((key) => otherFilters[key] !== undefined) ||
     sort !== "createdAt:desc";
 
-  if (!hasFilters) {
-    return fetchAllProductsBase();
+  if (!hasFilters && page) {
+    return fetchAllProductsBase(page as number);
   }
 
   const cacheKey = getCacheKey("products-filtered", filters);
@@ -265,6 +307,16 @@ export async function fetchAllProducts(
       ...POPULATE_CONFIGS.basic,
       ...POPULATE_CONFIGS.withSizes,
     },
+    // Only add pagination if page is specified
+    pagination: page
+      ? {
+          limit: PAGE_LIMIT,
+          start: ((page as number) - 1) * PAGE_LIMIT,
+        }
+      : {
+          limit: 1000,
+          start: 0,
+        },
   };
 
   const response: StrapiResponse<Product> = await apiRequest(
@@ -274,14 +326,24 @@ export async function fetchAllProducts(
     300000 // 5 minutes for filtered results
   );
 
-  return { products: response.data };
+  // Create pagination object - if no pagination was requested, create a mock one
+  const pagination = page
+    ? (response.meta.pagination as unknown as Pagination)
+    : {
+        total: response.data.length,
+        limit: response.data.length,
+        start: 0,
+      };
+
+  return { products: response.data, pagination };
 }
 
 // Base fetch function for products by category (optimized)
 export async function fetchProductsByCategoryBase(
-  slug: string | string[]
-): Promise<{ products: Product[] }> {
-  const cacheKey = getCacheKey("category-base", { slug });
+  slug: string | string[],
+  page: number
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const cacheKey = getCacheKey("category-base", { slug, page });
 
   const query = {
     filters: {
@@ -296,6 +358,10 @@ export async function fetchProductsByCategoryBase(
         populate: POPULATE_CONFIGS.withBanner,
       },
     },
+    pagination: {
+      limit: PAGE_LIMIT,
+      start: (page - 1) * PAGE_LIMIT,
+    },
   };
 
   const response: StrapiResponse<Product> = await apiRequest(
@@ -305,14 +371,16 @@ export async function fetchProductsByCategoryBase(
     3600000 // 1 hour
   );
 
-  return { products: response.data };
+  const pagination = response.meta.pagination as unknown as Pagination;
+
+  return { products: response.data, pagination };
 }
 
 // Fetch by category (optimized)
 export async function fetchProductsByCategory(
   filters: filterType = {}
-): Promise<{ products: Product[] }> {
-  const { slug, sort = "createdAt:desc", ...otherFilters } = filters;
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const { slug, sort = "createdAt:desc", page, ...otherFilters } = filters;
 
   if (!slug) {
     throw new Error("No slug provided");
@@ -322,8 +390,8 @@ export async function fetchProductsByCategory(
     Object.keys(otherFilters).some((key) => otherFilters[key] !== undefined) ||
     sort !== "createdAt:desc";
 
-  if (!hasFilters) {
-    return fetchProductsByCategoryBase(slug);
+  if (!hasFilters && page) {
+    return fetchProductsByCategoryBase(slug as string, filters.page as number);
   }
 
   const cacheKey = getCacheKey("category-filtered", filters);
@@ -342,6 +410,12 @@ export async function fetchProductsByCategory(
         populate: POPULATE_CONFIGS.withBanner,
       },
     },
+    ...(page && {
+      pagination: {
+        limit: PAGE_LIMIT,
+        start: ((page as number) - 1) * PAGE_LIMIT,
+      },
+    }),
   };
 
   const response: StrapiResponse<Product> = await apiRequest(
@@ -351,7 +425,15 @@ export async function fetchProductsByCategory(
     300000 // 5 minutes
   );
 
-  return { products: response.data };
+  const pagination = page
+    ? (response.meta.pagination as unknown as Pagination)
+    : {
+        total: response.data.length,
+        limit: response.data.length,
+        start: 0,
+      };
+
+  return { products: response.data, pagination };
 }
 
 // Fetch product by slug (optimized)
@@ -373,34 +455,6 @@ export async function fetchProductBySlug(
   );
 
   return { product: response.data[0] };
-}
-
-// Fetch all related products (optimized)
-export async function fetchRelatedProducts(
-  cat: string,
-  face?: string
-): Promise<{ products: Product[] }> {
-  const cacheKey = getCacheKey("related", { cat, face });
-
-  const query = {
-    filters: {
-      categories: { slug: { $eq: cat } },
-      ...(face && { faces: { slug: { $eq: face } } }),
-    },
-    populate: {
-      ...POPULATE_CONFIGS.basic.images,
-      ...POPULATE_CONFIGS.withSizes,
-    },
-  };
-
-  const response: StrapiResponse<Product> = await apiRequest(
-    "/products",
-    query,
-    cacheKey,
-    3600000 // 1 hour
-  );
-
-  return { products: response.data };
 }
 
 // Search products (optimized with debouncing consideration)
@@ -434,39 +488,6 @@ export async function searchProducts(queryText: string): Promise<Product[]> {
   );
 
   return response.data;
-}
-
-// Fetch cart items (optimized)
-export async function fetchCartItems(email: string | undefined) {
-  if (!email) return [];
-
-  const query = {
-    filters: { email: { $eq: email } },
-    populate: {
-      cart_items: {
-        fields: ["quantity", "size", "color", "createdAt"],
-        populate: {
-          product: {
-            fields: ["name", "slug", "price"],
-            populate: {
-              images: { fields: ["url", "alternativeText", "formats"] },
-              ...POPULATE_CONFIGS.withSizes,
-            },
-          },
-        },
-      },
-    },
-  };
-
-  // no cache for cart items
-  const response: StrapiResponse<Product> = await apiRequest(
-    "/carts",
-    query,
-    undefined,
-    60 // 1 minute
-  );
-
-  return response.data[0]?.cart_items || [];
 }
 
 // Fetch order by id (optimized)
@@ -606,16 +627,62 @@ export async function fetchFaces(): Promise<{ faces: Face[] }> {
 }
 
 // Fetch by face (optimized)
+export async function fetchProductsByFaceBase(
+  slug: string | string[],
+  page: number
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const cacheKey = getCacheKey("face-base", { slug, page });
+
+  const query = {
+    filters: {
+      faces: { slug: { $eq: slug } },
+    },
+    sort: ["createdAt:desc"],
+    populate: {
+      ...POPULATE_CONFIGS.basic,
+      ...POPULATE_CONFIGS.withSizes,
+      faces: {
+        populate: POPULATE_CONFIGS.withBanner,
+      },
+    },
+    pagination: {
+      limit: PAGE_LIMIT,
+      start: (page - 1) * PAGE_LIMIT,
+    },
+  };
+
+  const response: StrapiResponse<Product> = await apiRequest(
+    "/products",
+    query,
+    cacheKey,
+    3600000 // 1 hour
+  );
+
+  const pagination = response.meta.pagination as unknown as Pagination;
+
+  return { products: response.data, pagination };
+}
+
+// Fetch by face (optimized with pagination support)
 export async function fetchProductsByFace(
   filters: filterType = {}
-): Promise<{ products: Product[] }> {
-  const { slug, sort = "createdAt:desc" } = filters;
+): Promise<{ products: Product[]; pagination: Pagination }> {
+  const { slug, sort = "createdAt:desc", page, ...otherFilters } = filters;
 
   if (!slug) {
     throw new Error("No slug provided");
   }
 
-  const cacheKey = getCacheKey("face-products", filters);
+  const hasFilters =
+    Object.keys(otherFilters).some((key) => otherFilters[key] !== undefined) ||
+    sort !== "createdAt:desc";
+
+  // Use base cached version if no filters and page is specified
+  if (!hasFilters && page) {
+    return fetchProductsByFaceBase(slug as string, page as number);
+  }
+
+  const cacheKey = getCacheKey("face-filtered", filters);
 
   const query = {
     filters: {
@@ -626,18 +693,99 @@ export async function fetchProductsByFace(
     populate: {
       ...POPULATE_CONFIGS.basic,
       ...POPULATE_CONFIGS.withSizes,
-      categories: {
-        ...POPULATE_CONFIGS.basic.categories,
+      faces: {
         populate: POPULATE_CONFIGS.withBanner,
       },
     },
+    // Only add pagination if page is specified
+    ...(page && {
+      pagination: {
+        limit: PAGE_LIMIT,
+        start: ((page as number) - 1) * PAGE_LIMIT,
+      },
+    }),
   };
 
   const response: StrapiResponse<Product> = await apiRequest(
     "/products",
     query,
     cacheKey,
-    3600000 // 1 hour
+    300000 // 5 minutes for filtered results
+  );
+
+  // Create pagination object - if no pagination was requested, create a mock one
+  const pagination = page
+    ? (response.meta.pagination as unknown as Pagination)
+    : {
+        total: response.data.length,
+        limit: response.data.length,
+        start: 0,
+      };
+
+  return { products: response.data, pagination };
+}
+
+/**
+ * Fetch bestselling products for a specific gender
+ * @param gender - The gender category (e.g., 'men', 'women')
+ * @returns Promise with bestselling products
+ */
+export async function fetchBestsellingProducts(
+  gender: string
+): Promise<{ products: Product[] }> {
+  const cacheKey = getCacheKey("bestselling", { gender });
+
+  const query = {
+    filters: {
+      collections: { slug: { $eq: "bestselling" } },
+      categories: { slug: { $eq: gender } },
+    },
+    populate: {
+      ...POPULATE_CONFIGS.basic,
+      ...POPULATE_CONFIGS.withSizes,
+    },
+    pagination: { limit: 8 },
+  };
+
+  const response: StrapiResponse<Product> = await apiRequest(
+    "/products",
+    query,
+    cacheKey,
+    3600000 // 1 hour cache for frequently changing products
+  );
+
+  return { products: response.data };
+}
+
+/**
+ * Fetch featured products
+ * @returns Promise with featured products
+ */
+export async function fetchFeaturedProducts(): Promise<{
+  products: Product[];
+}> {
+  const cacheKey = getCacheKey("featured", {});
+
+  const query = {
+    filters: {
+      featured: {
+        $eq: true,
+      },
+    },
+    populate: {
+      ...POPULATE_CONFIGS.basic,
+      ...POPULATE_CONFIGS.withSizes,
+      // ...POPULATE_CONFIGS.detailed,
+      featuredBannerImg: { fields: ["url", "alternativeText"] },
+    },
+    pagination: { limit: 4 },
+  };
+
+  const response: StrapiResponse<Product> = await apiRequest(
+    "/products",
+    query,
+    cacheKey,
+    3600000 // 1 hour cache
   );
 
   return { products: response.data };

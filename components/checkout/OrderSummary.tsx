@@ -4,6 +4,7 @@ import Image from "next/image";
 import OrderSummarySkeleton from "./OrderSummarySkeleton";
 import ProductPrice from "@/components/product/ProductPrice";
 import { useCart } from "@/hooks/useCart";
+import { getProductImages } from "@/lib/helper";
 
 export default function OrderSummary() {
   const { cartItems, isLoading, getTotalPrice } = useCart();
@@ -20,11 +21,11 @@ export default function OrderSummary() {
       {cartItems.length > 0 && (
         <div className="space-y-4 divide-y divide-border">
           {cartItems.map((item: CartItem) => {
-            const selectedImage =
-              item.product?.sizes
-                ?.find((size) => size.value === item.size)
-                ?.colors?.find((color) => color.name === item.color)
-                ?.images?.[0] ?? item.product?.images?.[0];
+            const selectedImage = getProductImages(
+              item.product,
+              item.size,
+              item.color
+            )[0];
             return (
               <div
                 key={item.documentId}
