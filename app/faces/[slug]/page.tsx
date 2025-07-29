@@ -20,13 +20,8 @@ import {
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 import { notFound } from "next/navigation";
-// import { cache } from "react";
 import { Product } from "@/lib/definitions";
 import SmartPagination from "@/components/ui/smartPagination";
-
-// Cache data fetching functions
-// const getCachedFaces = cache(fetchFaces);
-// const getCachedProductsByFaceBase = cache(fetchProductsByFaceBase);
 
 // Precompute filter options
 const computeFilterOptions = (products: Product[]) => {
@@ -63,7 +58,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "website",
       title: `${capitalizedSlug}`,
       description: `Explore our ${capitalizedSlug} collection. Find the perfect product that suits your style and needs.`,
-      images: [{ url: `opengraph/opengraph-${slug}.jpg` }],
+      images: [
+        {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/opengraph/opengraph-${slug}.jpg`,
+        },
+      ],
     },
   };
 }
@@ -172,6 +171,7 @@ export default async function FacePage({ params, searchParams }: Props) {
     url: "/categories/all.webp",
     alternativeText: "Face Banner",
   };
+
   const faceDescription = face.description[0]?.children[0]?.text;
 
   // Compute available filters based on ALL filtered results (not paginated)
