@@ -1,9 +1,34 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchCategories } from "@/lib/data";
 import Image from "next/image";
 
+const categories = [
+  {
+    name: "All",
+    slug: "all",
+  },
+  {
+    name: "Men",
+    slug: "men",
+  },
+  {
+    name: "Women",
+    slug: "women",
+  },
+  {
+    name: "Straps & Bands",
+    slug: "straps-bands",
+  },
+  {
+    name: "Gifts & Pouches",
+    slug: "gifts-pouches",
+  },
+  {
+    name: "Limited Edition",
+    slug: "limited-edition",
+  },
+];
+
 export default async function Loading() {
-  const { categories } = await fetchCategories();
   return (
     <main>
       {/* Banner image */}
@@ -32,9 +57,8 @@ export default async function Loading() {
             </span>
             <nav className="max-w-full overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-proximity">
               <ul className="grid grid-flow-col gap-10 min-w-max font-barlow pe-10">
-                <li className="py-5">All</li>
                 {categories.map((category) => (
-                  <li key={category.documentId} className="py-5">
+                  <li key={category.slug} className="py-5">
                     {category.name}
                   </li>
                 ))}
