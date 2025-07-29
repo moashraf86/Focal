@@ -22,6 +22,7 @@ import ProductsFilter from "@/components/product/ProductsFilter";
 import { cache } from "react";
 import { Product } from "@/lib/definitions";
 import SmartPagination from "@/components/ui/smartPagination";
+import { notFound } from "next/navigation";
 
 // Cache data fetching functions
 const getCachedCategories = cache(fetchCategories);
@@ -163,6 +164,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   // Get current category
   const category = categories.find((category) => category.slug === slug);
+  if (!category) {
+    notFound();
+  }
   const catBanner = category?.banner || {
     url: "/categories/all.webp",
     alternativeText: "Category Banner",
