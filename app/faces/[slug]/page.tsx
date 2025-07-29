@@ -20,13 +20,13 @@ import {
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 import { notFound } from "next/navigation";
-import { cache } from "react";
+// import { cache } from "react";
 import { Product } from "@/lib/definitions";
 import SmartPagination from "@/components/ui/smartPagination";
 
 // Cache data fetching functions
-const getCachedFaces = cache(fetchFaces);
-const getCachedProductsByFaceBase = cache(fetchProductsByFaceBase);
+// const getCachedFaces = cache(fetchFaces);
+// const getCachedProductsByFaceBase = cache(fetchProductsByFaceBase);
 
 // Precompute filter options
 const computeFilterOptions = (products: Product[]) => {
@@ -87,8 +87,8 @@ export default async function FacePage({ params, searchParams }: Props) {
 
   // Fetch base data (heavily cached)
   const [{ faces }, { products: allProducts, pagination }] = await Promise.all([
-    getCachedFaces(),
-    getCachedProductsByFaceBase(slug, currentPage),
+    fetchFaces(),
+    fetchProductsByFaceBase(slug, currentPage),
   ]);
 
   // Get current Face
