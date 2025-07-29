@@ -26,6 +26,16 @@ import SmartPagination from "@/components/ui/smartPagination";
 export const metadata: Metadata = {
   title: "All Products",
   description: "Browse all products available in the Focal Store.",
+  openGraph: {
+    type: "website",
+    title: "All Products",
+    description: "Browse all products available in the Focal Store.",
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_BASE_URL}/opengraph/opengraph-all.jpg`,
+      },
+    ],
+  },
 };
 
 // Cache data fetching functions

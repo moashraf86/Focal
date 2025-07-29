@@ -63,7 +63,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "website",
       title: `${capitalizedSlug}`,
       description: `Explore our ${capitalizedSlug} collection. Find the perfect product that suits your style and needs.`,
-      images: [{ url: `opengraph/opengraph-${slug}.jpg` }],
+      images: [
+        {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/opengraph/opengraph-${slug}.jpg`,
+        },
+      ],
     },
   };
 }
