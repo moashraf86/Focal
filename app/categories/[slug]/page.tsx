@@ -19,14 +19,14 @@ import {
 } from "@/lib/helper";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
-import { cache } from "react";
+// import { cache } from "react";
 import { Product } from "@/lib/definitions";
 import SmartPagination from "@/components/ui/smartPagination";
 import { notFound } from "next/navigation";
 
 // Cache data fetching functions
-const getCachedCategories = cache(fetchCategories);
-const getCachedProductsByCategoryBase = cache(fetchProductsByCategoryBase);
+// const getCachedCategories = cache(fetchCategories);
+// const getCachedProductsByCategoryBase = cache(fetchProductsByCategoryBase);
 
 // Precompute filter options
 const computeFilterOptions = (products: Product[]) => {
@@ -92,9 +92,16 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   // Fetch base data (heavily cached)
   const [{ categories }, { products: allProducts, pagination }] =
     await Promise.all([
-      getCachedCategories(),
-      getCachedProductsByCategoryBase(slug, currentPage),
+      fetchCategories(),
+      fetchProductsByCategoryBase(slug, currentPage),
     ]);
+
+  // Get current category
+  const category = categories.find((category) => category.slug === slug);
+
+  if (!category) {
+    notFound();
+  }
 
   // Fetch ALL products for this category (without any filters) for filter calculations
   // This ensures filters show all available options across the entire category dataset
@@ -167,11 +174,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     });
 
   // Get current category
-  const category = categories.find((category) => category.slug === slug);
-  if (!category) {
-    notFound();
-  }
-  const catBanner = category?.banner || {
+  const catBanner = category.banner || {
     url: "/categories/all.webp",
     alternativeText: "Category Banner",
   };
