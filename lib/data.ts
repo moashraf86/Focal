@@ -21,74 +21,6 @@ import {
   StrapiResponse,
 } from "./definitions";
 
-// Cache for storing frequently accessed data
-const cache = new Map<
-  string,
-  { data: unknown; timestamp: number; ttl: number }
->();
-
-// Cache utility functions
-const getCacheKey = (
-  prefix: string,
-  params: Record<string, unknown>
-): string => {
-  const sortedParams = Object.keys(params)
-    .sort()
-    .reduce((result: Record<string, unknown>, key) => {
-      result[key] = params[key];
-      return result;
-    }, {});
-  return `${prefix}:${JSON.stringify(sortedParams)}`;
-};
-
-const getFromCache = <T>(key: string): T | null => {
-  const cached = cache.get(key);
-  if (cached && Date.now() - cached.timestamp < cached.ttl) {
-    return cached.data as T;
-  }
-  cache.delete(key);
-  return null;
-};
-
-const setCache = <T>(key: string, data: T, ttl: number): void => {
-  cache.set(key, { data, timestamp: Date.now(), ttl });
-};
-
-// Optimized fetch function with retry logic and better error handling
-const fetchWithRetry = async (
-  url: string,
-  options: RequestInit,
-  retries = 3,
-  delay = 1000
-): Promise<Response> => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await fetch(url, options);
-      if (response.ok) return response;
-
-      // Don't retry on 4xx errors (client errors)
-      if (response.status >= 400 && response.status < 500) {
-        throw new Error(
-          `Client error: ${response.status} ${response.statusText}`
-        );
-      }
-
-      // Retry on 5xx errors (server errors)
-      if (i === retries - 1) {
-        throw new Error(
-          `Server error after ${retries} retries: ${response.status} ${response.statusText}`
-        );
-      }
-    } catch (error) {
-      if (i === retries - 1) throw error;
-      await new Promise((resolve) =>
-        setTimeout(resolve, delay * Math.pow(2, i))
-      );
-    }
-  }
-  throw new Error("Max retries exceeded");
-};
-
 // Common populate configurations to reduce duplication
 const POPULATE_CONFIGS = {
   basic: {
@@ -157,6 +89,35 @@ const POPULATE_CONFIGS = {
   },
 };
 
+// Optimized fetch function
+const fetchData = async <T>(
+  endpoint: string,
+  query: Record<string, unknown>,
+  options: {
+    tags?: string[];
+    revalidate?: number | false;
+  } = {}
+): Promise<T> => {
+  const queryString = qs.stringify(query, { encodeValuesOnly: true });
+  const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${endpoint}?${queryString}`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
+    },
+    next: {
+      tags: options.tags,
+      revalidate: options.revalidate,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);
+  }
+
+  return response.json();
+};
+
 // Build filter object helper
 const buildFilters = (filters: filterType) => {
   const result: Record<string, unknown> = {};
@@ -192,73 +153,10 @@ const buildFilters = (filters: filterType) => {
   return result;
 };
 
-// Enhanced base API function
-const apiRequest = async <T>(
-  endpoint: string,
-  query: Record<string, unknown>,
-  cacheKey?: string,
-  cacheTtl = 3600000 // 1 hour default
-): Promise<T> => {
-  const startTime = performance.now();
-
-  // Check cache first
-  if (cacheKey) {
-    const cached = getFromCache<T>(cacheKey);
-    if (cached) {
-      const cacheTime = performance.now() - startTime;
-      console.log(
-        `[Server Timing] ${endpoint} - Cache hit: ${cacheTime.toFixed(2)}ms`
-      );
-      return cached;
-    }
-  }
-
-  const queryString = qs.stringify(query);
-  const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${endpoint}?${queryString}`;
-
-  const fetchStartTime = performance.now();
-  const response = await fetchWithRetry(url, {
-    headers: {
-      Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    next: {
-      tags: cacheKey ? [cacheKey.split(":")[0]] : undefined,
-      revalidate: Math.floor(cacheTtl / 1000),
-    },
-  });
-  const fetchTime = performance.now() - fetchStartTime;
-
-  const parseStartTime = performance.now();
-  const data = await response.json();
-  const parseTime = performance.now() - parseStartTime;
-
-  // Cache the result
-  if (cacheKey) {
-    setCache(cacheKey, data, cacheTtl);
-  }
-
-  const totalTime = performance.now() - startTime;
-
-  // Log server timing data
-  console.log(`[Server Timing] ${endpoint}:`, {
-    total: `${totalTime.toFixed(2)}ms`,
-    fetch: `${fetchTime.toFixed(2)}ms`,
-    parse: `${parseTime.toFixed(2)}ms`,
-    cacheKey: cacheKey || "none",
-    status: response.status,
-    url: url.split("?")[0], // Log endpoint without query params for cleaner output
-  });
-
-  return data;
-};
-
 // Fetch all products (base data - heavily cached)
 export async function fetchAllProductsBase(
   page: number
 ): Promise<{ products: Product[]; pagination: Pagination }> {
-  const cacheKey = getCacheKey("products-base", { page });
-
   const query = {
     sort: ["createdAt:desc"],
     populate: {
@@ -271,11 +169,13 @@ export async function fetchAllProductsBase(
     },
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchData(
     "/products",
     query,
-    cacheKey,
-    3600000 // 1 hour
+    {
+      tags: ["products-base"],
+      revalidate: 3600, // 1 hour
+    }
   );
 
   const pagination = response.meta.pagination as unknown as Pagination;
@@ -298,8 +198,6 @@ export async function fetchAllProducts(
     return fetchAllProductsBase(page as number);
   }
 
-  const cacheKey = getCacheKey("products-filtered", filters);
-
   const query = {
     filters: buildFilters(filters),
     sort: [sort],
@@ -319,11 +217,13 @@ export async function fetchAllProducts(
         },
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchData(
     "/products",
     query,
-    cacheKey,
-    300000 // 5 minutes for filtered results
+    {
+      tags: ["products-filtered"],
+      revalidate: 3600, // 1 hour for filtered results
+    }
   );
 
   // Create pagination object - if no pagination was requested, create a mock one
@@ -343,8 +243,6 @@ export async function fetchProductsByCategoryBase(
   slug: string | string[],
   page: number
 ): Promise<{ products: Product[]; pagination: Pagination }> {
-  const cacheKey = getCacheKey("category-base", { slug, page });
-
   const query = {
     filters: {
       categories: { slug: { $eq: slug } },
@@ -364,11 +262,13 @@ export async function fetchProductsByCategoryBase(
     },
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchData(
     "/products",
     query,
-    cacheKey,
-    3600000 // 1 hour
+    {
+      tags: ["category-base"],
+      revalidate: 3600, // 1 hour
+    }
   );
 
   const pagination = response.meta.pagination as unknown as Pagination;
@@ -394,8 +294,6 @@ export async function fetchProductsByCategory(
     return fetchProductsByCategoryBase(slug as string, filters.page as number);
   }
 
-  const cacheKey = getCacheKey("category-filtered", filters);
-
   const query = {
     filters: {
       categories: { slug: { $eq: slug } },
@@ -418,11 +316,13 @@ export async function fetchProductsByCategory(
     }),
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchData(
     "/products",
     query,
-    cacheKey,
-    300000 // 5 minutes
+    {
+      tags: ["category-filtered"],
+      revalidate: 3600, // 1 hour
+    }
   );
 
   const pagination = page
@@ -440,18 +340,18 @@ export async function fetchProductsByCategory(
 export async function fetchProductBySlug(
   slug: string
 ): Promise<{ product: Product }> {
-  const cacheKey = getCacheKey("product", { slug });
-
   const query = {
     filters: { slug: { $eq: slug } },
     populate: POPULATE_CONFIGS.detailed,
   };
 
-  const response: SingleStrapiResponse<Product[]> = await apiRequest(
+  const response: SingleStrapiResponse<Product[]> = await fetchData(
     "/products",
     query,
-    cacheKey,
-    3600000 // 1 hour
+    {
+      tags: ["product"],
+      revalidate: 3600, // 1 hour
+    }
   );
 
   return { product: response.data[0] };
@@ -460,10 +360,6 @@ export async function fetchProductBySlug(
 // Search products (optimized with debouncing consideration)
 export async function searchProducts(queryText: string): Promise<Product[]> {
   if (!queryText.trim()) return [];
-
-  const cacheKey = getCacheKey("search", {
-    queryText: queryText.toLowerCase().trim(),
-  });
 
   const query = {
     filters: {
@@ -480,11 +376,13 @@ export async function searchProducts(queryText: string): Promise<Product[]> {
     },
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchData(
     "/products",
     query,
-    cacheKey,
-    1800000 // 30 minutes for search results
+    {
+      tags: ["search"],
+      revalidate: 3600, // 1 hour for search results
+    }
   );
 
   return response.data;
@@ -492,8 +390,6 @@ export async function searchProducts(queryText: string): Promise<Product[]> {
 
 // Fetch order by id (optimized)
 export const fetchOrderById = async (id: string): Promise<Order> => {
-  const cacheKey = getCacheKey("order", { id });
-
   const query = {
     populate: {
       order_items: {
@@ -521,11 +417,13 @@ export const fetchOrderById = async (id: string): Promise<Order> => {
   };
 
   try {
-    const response: SingleStrapiResponse<Order> = await apiRequest(
+    const response: SingleStrapiResponse<Order> = await fetchData(
       `/orders/${id}`,
       query,
-      cacheKey,
-      3600000 // 1 hour
+      {
+        tags: ["order"],
+        revalidate: 3600, // 1 hour
+      }
     );
 
     return response.data;
@@ -538,8 +436,6 @@ export const fetchOrderById = async (id: string): Promise<Order> => {
 // Fetch all orders (optimized)
 export const fetchOrders = async (email: string | undefined) => {
   if (!email) return [];
-
-  const cacheKey = getCacheKey("orders", { email });
 
   const query = {
     filters: { email: { $eq: email } },
@@ -568,12 +464,10 @@ export const fetchOrders = async (email: string | undefined) => {
   };
 
   try {
-    const response: StrapiResponse<Order> = await apiRequest(
-      "/orders",
-      query,
-      cacheKey,
-      300000 // 5 minutes for orders
-    );
+    const response: StrapiResponse<Order> = await fetchData("/orders", query, {
+      tags: ["orders"],
+      revalidate: 3600, // 1 hour for orders
+    });
 
     return response.data;
   } catch (error) {
@@ -584,8 +478,6 @@ export const fetchOrders = async (email: string | undefined) => {
 
 // Fetch all categories (optimized)
 export async function fetchCategories(): Promise<{ categories: Category[] }> {
-  const cacheKey = getCacheKey("categories", {});
-
   const query = {
     sort: ["createdAt:asc"],
     populate: {
@@ -594,11 +486,13 @@ export async function fetchCategories(): Promise<{ categories: Category[] }> {
     },
   };
 
-  const response: StrapiResponse<Category> = await apiRequest(
+  const response: StrapiResponse<Category> = await fetchData(
     "/categories",
     query,
-    cacheKey,
-    7200000 // 2 hours - categories change infrequently
+    {
+      tags: ["categories"],
+      revalidate: 7200, // 2 hours - categories change infrequently
+    }
   );
 
   return { categories: response.data };
@@ -606,8 +500,6 @@ export async function fetchCategories(): Promise<{ categories: Category[] }> {
 
 // Fetch all faces (optimized)
 export async function fetchFaces(): Promise<{ faces: Face[] }> {
-  const cacheKey = getCacheKey("faces", {});
-
   const query = {
     sort: ["createdAt:asc"],
     populate: {
@@ -616,12 +508,10 @@ export async function fetchFaces(): Promise<{ faces: Face[] }> {
     },
   };
 
-  const response: StrapiResponse<Face> = await apiRequest(
-    "/faces",
-    query,
-    cacheKey,
-    7200000 // 2 hours
-  );
+  const response: StrapiResponse<Face> = await fetchData("/faces", query, {
+    tags: ["faces"],
+    revalidate: 7200, // 2 hours
+  });
 
   return { faces: response.data };
 }
@@ -631,8 +521,6 @@ export async function fetchProductsByFaceBase(
   slug: string | string[],
   page: number
 ): Promise<{ products: Product[]; pagination: Pagination }> {
-  const cacheKey = getCacheKey("face-base", { slug, page });
-
   const query = {
     filters: {
       faces: { slug: { $eq: slug } },
@@ -651,11 +539,13 @@ export async function fetchProductsByFaceBase(
     },
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchData(
     "/products",
     query,
-    cacheKey,
-    3600000 // 1 hour
+    {
+      tags: ["face-base"],
+      revalidate: 3600000, // 1 hour
+    }
   );
 
   const pagination = response.meta.pagination as unknown as Pagination;
@@ -682,8 +572,6 @@ export async function fetchProductsByFace(
     return fetchProductsByFaceBase(slug as string, page as number);
   }
 
-  const cacheKey = getCacheKey("face-filtered", filters);
-
   const query = {
     filters: {
       faces: { slug: { $eq: slug } },
@@ -706,11 +594,13 @@ export async function fetchProductsByFace(
     }),
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchData(
     "/products",
     query,
-    cacheKey,
-    300000 // 5 minutes for filtered results
+    {
+      tags: ["face-filtered"],
+      revalidate: 300000, // 5 minutes for filtered results
+    }
   );
 
   // Create pagination object - if no pagination was requested, create a mock one
@@ -726,66 +616,87 @@ export async function fetchProductsByFace(
 }
 
 /**
- * Fetch bestselling products for a specific gender
- * @param gender - The gender category (e.g., 'men', 'women')
- * @returns Promise with bestselling products
+ * Optimized fetch for static generation
+ */
+const fetchStaticData = async <T>(
+  endpoint: string,
+  query: Record<string, unknown>,
+  tags: string[]
+): Promise<T> => {
+  const queryString = qs.stringify(query);
+  const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${endpoint}?${queryString}`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
+    },
+    next: {
+      tags: tags,
+      revalidate: 3600, // 1 hour
+    },
+  });
+
+  if (!response.ok) throw new Error(`Failed to fetch ${endpoint}`);
+  return response.json();
+};
+
+// Consolidated populate configuration
+const BESTSELLING_POPULATE = {
+  ...POPULATE_CONFIGS.basic,
+  ...POPULATE_CONFIGS.withSizes,
+};
+
+const FEATURED_POPULATE = {
+  ...POPULATE_CONFIGS.basic,
+  ...POPULATE_CONFIGS.withSizes,
+  featuredBannerImg: { fields: ["url", "alternativeText"] },
+};
+
+/**
+ * Fetch bestselling products for a specific gender (optimized for static)
  */
 export async function fetchBestsellingProducts(
   gender: string
 ): Promise<{ products: Product[] }> {
-  const cacheKey = getCacheKey("bestselling", { gender });
-
   const query = {
     filters: {
       collections: { slug: { $eq: "bestselling" } },
       categories: { slug: { $eq: gender } },
     },
-    populate: {
-      ...POPULATE_CONFIGS.basic,
-      ...POPULATE_CONFIGS.withSizes,
-    },
+    populate: BESTSELLING_POPULATE,
     pagination: { limit: 8 },
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchStaticData(
     "/products",
     query,
-    cacheKey,
-    3600000 // 1 hour cache for frequently changing products
+    ["bestselling-products"]
   );
 
   return { products: response.data };
 }
 
 /**
- * Fetch featured products
- * @returns Promise with featured products
+ * Fetch featured products (optimized for static)
  */
+
 export async function fetchFeaturedProducts(): Promise<{
   products: Product[];
 }> {
-  const cacheKey = getCacheKey("featured", {});
-
   const query = {
     filters: {
       featured: {
         $eq: true,
       },
     },
-    populate: {
-      ...POPULATE_CONFIGS.basic,
-      ...POPULATE_CONFIGS.withSizes,
-      // ...POPULATE_CONFIGS.detailed,
-      featuredBannerImg: { fields: ["url", "alternativeText"] },
-    },
+    populate: FEATURED_POPULATE,
     pagination: { limit: 4 },
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchStaticData(
     "/products",
     query,
-    cacheKey,
-    3600000 // 1 hour cache
+    ["featured-products"]
   );
 
   return { products: response.data };

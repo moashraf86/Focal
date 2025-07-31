@@ -1,16 +1,17 @@
 import Carousel from "@/components/layout/HeroCarousel";
 import Categories from "@/components/layout/Categories";
-import BestsellingProducts from "../components/product/BestsellingProducts";
-import FeaturedProductsSlider from "@/components/product/FeaturedProductsSlider";
+// import FeaturedProductsSlider from "@/components/product/FeaturedProductsSlider";
 import WhyChooseUs from "@/components/shared/WhyChooseUs";
+import BestsellingSection from "@/components/layout/BestsellingSection";
+import { FeaturedSection } from "@/components/layout/FeaturedSection";
 
-export default async function Home() {
+export default function Home() {
   return (
     <main>
       <Carousel />
       <Categories />
-      <BestsellingProducts />
-      <FeaturedProductsSlider />
+      <BestsellingSection />
+      <FeaturedSection />
       <WhyChooseUs />
     </main>
   );
