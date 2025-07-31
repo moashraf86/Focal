@@ -726,66 +726,81 @@ export async function fetchProductsByFace(
 }
 
 /**
- * Fetch bestselling products for a specific gender
- * @param gender - The gender category (e.g., 'men', 'women')
- * @returns Promise with bestselling products
+ * Optimized fetch for static generation
+ */
+const fetchStaticData = async <T>(
+  endpoint: string,
+  query: Record<string, unknown>
+): Promise<T> => {
+  const queryString = qs.stringify(query);
+  const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${endpoint}?${queryString}`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_API_TOKEN}`,
+    },
+    cache: "force-cache", // Leverage Next.js static caching
+  });
+
+  if (!response.ok) throw new Error(`Failed to fetch ${endpoint}`);
+  return response.json();
+};
+
+// Consolidated populate configuration
+const BESTSELLING_POPULATE = {
+  ...POPULATE_CONFIGS.basic,
+  ...POPULATE_CONFIGS.withSizes,
+};
+
+const FEATURED_POPULATE = {
+  ...POPULATE_CONFIGS.basic,
+  ...POPULATE_CONFIGS.withSizes,
+  featuredBannerImg: { fields: ["url", "alternativeText"] },
+};
+
+/**
+ * Fetch bestselling products for a specific gender (optimized for static)
  */
 export async function fetchBestsellingProducts(
   gender: string
 ): Promise<{ products: Product[] }> {
-  const cacheKey = getCacheKey("bestselling", { gender });
-
   const query = {
     filters: {
       collections: { slug: { $eq: "bestselling" } },
       categories: { slug: { $eq: gender } },
     },
-    populate: {
-      ...POPULATE_CONFIGS.basic,
-      ...POPULATE_CONFIGS.withSizes,
-    },
+    populate: BESTSELLING_POPULATE,
     pagination: { limit: 8 },
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchStaticData(
     "/products",
-    query,
-    cacheKey,
-    3600000 // 1 hour cache for frequently changing products
+    query
   );
 
   return { products: response.data };
 }
 
 /**
- * Fetch featured products
- * @returns Promise with featured products
+ * Fetch featured products (optimized for static)
  */
+
 export async function fetchFeaturedProducts(): Promise<{
   products: Product[];
 }> {
-  const cacheKey = getCacheKey("featured", {});
-
   const query = {
     filters: {
       featured: {
         $eq: true,
       },
     },
-    populate: {
-      ...POPULATE_CONFIGS.basic,
-      ...POPULATE_CONFIGS.withSizes,
-      // ...POPULATE_CONFIGS.detailed,
-      featuredBannerImg: { fields: ["url", "alternativeText"] },
-    },
+    populate: FEATURED_POPULATE,
     pagination: { limit: 4 },
   };
 
-  const response: StrapiResponse<Product> = await apiRequest(
+  const response: StrapiResponse<Product> = await fetchStaticData(
     "/products",
-    query,
-    cacheKey,
-    3600000 // 1 hour cache
+    query
   );
 
   return { products: response.data };

@@ -5,26 +5,14 @@ import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import ProductHotspotCard from "./ProductHotspotCard";
 import { useIntersectionObserver } from "@uidotdev/usehooks";
-import { fetchFeaturedProducts } from "@/lib/data";
 import { Product } from "@/lib/definitions";
 
-export default function FeaturedProductsSlider() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const { products } = await fetchFeaturedProducts();
-        setProducts(products);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+export default function FeaturedProductsSlider({
+  staticProducts,
+}: {
+  staticProducts: { products: Product[] };
+}) {
+  const products = staticProducts?.products;
 
   const [current, setCurrent] = useState(0);
   const [ref, entry] = useIntersectionObserver({
@@ -61,9 +49,6 @@ export default function FeaturedProductsSlider() {
 
   return (
     <div className="relative h-[700px] w-full overflow-hidden">
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-300 animate-pulse"></div>
-      )}
       {products.map((product, index) => {
         const isActive = index === current;
         const odd = index % 2 === 0;
@@ -85,7 +70,6 @@ export default function FeaturedProductsSlider() {
                 className="object-cover object-center"
               />
             )}
-            {/* Hotspot component */}
             <ProductHotspotCard
               isActive={isActive}
               odd={odd}
