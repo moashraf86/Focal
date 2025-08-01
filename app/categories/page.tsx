@@ -3,7 +3,7 @@ import {
   fetchAllProductsBase,
   fetchCategories,
 } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import { Product } from "@/lib/definitions";
 import {
   expandProducts,
   getAllCollections,
@@ -14,15 +14,18 @@ import {
   getAvailableSizes,
 } from "@/lib/helper";
 import Image from "next/image";
-import Link from "next/link";
-import ProductList from "../../components/product/ProductList";
+import ProductList from "@/components/product/ProductList";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
-import { cache } from "react";
-import { Product } from "@/lib/definitions";
 import { Metadata } from "next";
 import SmartPagination from "@/components/ui/smartPagination";
+import NavigationBar from "@/components/shared/NavigationBar";
 
+type Props = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+// Generate metadata for the categories page
 export const metadata: Metadata = {
   title: "All Products",
   description: "Browse all products available in the Focal Store.",
@@ -37,10 +40,6 @@ export const metadata: Metadata = {
     ],
   },
 };
-
-// Cache data fetching functions
-const getCachedCategories = cache(fetchCategories);
-const getCachedAllProducts = cache(fetchAllProductsBase);
 
 // Precompute filter options
 const computeFilterOptions = (products: Product[]) => {
@@ -75,11 +74,7 @@ const computeFilterOptions = (products: Product[]) => {
   };
 };
 
-export default async function Categories({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+export default async function Categories({ searchParams }: Props) {
   const { sort_by, size, color, price_min, price_max, collection, page } =
     await searchParams;
 
@@ -97,10 +92,7 @@ export default async function Categories({
 
   // Fetch base data (heavily cached) - this is for the paginated display
   const [{ categories }, { products: allProducts, pagination }] =
-    await Promise.all([
-      getCachedCategories(),
-      getCachedAllProducts(currentPage),
-    ]);
+    await Promise.all([fetchCategories(), fetchAllProductsBase(currentPage)]);
 
   // Fetch ALL products without pagination for filter calculations
   // This ensures filters show all available options across the entire dataset
@@ -204,43 +196,14 @@ export default async function Categories({
           </h1>
         </div>
       </section>
-      {/* Categories Bar */}
-      <div className="border-b border-border">
-        <div className="container">
-          <div className="flex items-center justify-center gap-10">
-            <span className="sticky left-0 text-sm text-gray-500 uppercase font-semibold tracking-[1px]">
-              Shop
-            </span>
-            <nav className="max-w-full overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-proximity">
-              <ul className="grid grid-flow-col gap-10 min-w-max font-barlow pe-10">
-                <li className="py-5">
-                  <Link
-                    href="/categories"
-                    className={cn(
-                      "relative inline-block after:absolute after:w-full after:left-0 after:h-px after:bottom-0 after:content-[''] after:bg-black after:transition-transform after:duration-200 after:ease-in-out after:scale-x-0 hover:after:scale-x-100 after:origin-right hover:after:origin-left",
-                      {
-                        "after:scale-x-100 after:origin-left": true,
-                      }
-                    )}
-                  >
-                    All
-                  </Link>
-                </li>
-                {categories.map((category) => (
-                  <li key={category.documentId} className="py-5">
-                    <Link
-                      href={`/categories/${category.slug}`}
-                      className="relative inline-block after:absolute after:w-full after:left-0 after:h-px after:bottom-0 after:content-[''] after:bg-black after:transition-transform after:duration-200 after:ease-in-out after:scale-x-0 hover:after:scale-x-100 after:origin-right hover:after:origin-left"
-                    >
-                      {category.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-        </div>
-      </div>
+      {/* Navigation Bar */}
+      <NavigationBar
+        title="Shop"
+        items={categories}
+        basePath="/categories"
+        currentSlug="all"
+        showAll={true}
+      />
       <section className="container max-w-screen-xl py-10">
         <div className="grid grid-cols-2 mb-5 gap-4">
           <div className="flex items-center gap-10 col-span-1">
@@ -284,11 +247,6 @@ export default async function Categories({
               </span>
             )}
           </div>
-          {products.length > 0 && (
-            <span className="md:hidden text-sm text-center col-span-2">
-              {variantsCount} Results
-            </span>
-          )}
         </div>
         {products.length > 0 ? (
           <ProductList
