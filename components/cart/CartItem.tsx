@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QuantitySelector from "../shared/QuantitySelector";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import Link from "next/link";
 import { getProductImages } from "@/lib/helper";
@@ -52,6 +52,11 @@ export default function CartItem({
 
   const queryString = params.toString();
   const href = `/products/${item.product?.slug}${queryString ? `?${queryString}` : ""}`;
+
+  // update the quantity when the item is updated
+  useEffect(() => {
+    setQuantity(item.quantity);
+  }, [item.quantity]);
 
   return (
     <tr className={cn("font-light", className)} style={style}>

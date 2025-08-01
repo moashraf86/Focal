@@ -14,13 +14,6 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
   )[0];
 
   // view product link
-  // const viewProductLink =
-  //   item.size && item.size !== "free"
-  //     ? `/products/${item.product.slug}?size=${item.size}&color=${item.color}`
-  //     : item.size === "free" && item.color
-  //       ? `/products/${item.product.slug}?color=${item.color}`
-  //       : `/products/${item.product.slug}`;
-
   const params = new URLSearchParams();
 
   if (item.size && item.size !== "free") {
@@ -45,7 +38,7 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
               }
               alt={
                 selectedImage?.alternativeText ||
-                item.product.name ||
+                item.product?.name ||
                 "Product Image"
               }
               width={96}
@@ -55,7 +48,7 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
             />
             <div className="space-y-1 pt-2">
               <h2 className="text-base font-barlow leading-tight font-medium">
-                {item.product.name}
+                {item.product?.name}
               </h2>
               <p className="text-sm font-light">
                 <>
@@ -64,7 +57,7 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
                   {item.color && <span>{item.color}</span>}
                 </>
               </p>
-              <ProductPrice price={item.product.price} className="sm:hidden" />
+              <ProductPrice price={item.product?.price} className="sm:hidden" />
               <p className="font-light">Qty: {item.quantity}</p>
               <Button
                 asChild
@@ -78,7 +71,7 @@ export default function OrderItem({ item }: { item: OrderItemType }) {
           </div>
         </td>
         <td className="hidden sm:table-cell p-6 ps-0 text-center text-sm text-gray-500">
-          <ProductPrice price={item.product.price} />
+          <ProductPrice price={item.product?.price} />
         </td>
         <td className="hidden sm:table-cell p-6 ps-0 text-center text-sm text-gray-500">
           Delivered

@@ -14,5 +14,3 @@ export default async function BestsellingSection() {
 
   return <BestsellingProducts staticProducts={staticProducts} />;
 }
-
-export const revalidate = 3600; // Revalidate data every hour

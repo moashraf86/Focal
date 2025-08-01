@@ -122,7 +122,7 @@ export interface CartItem {
   product: Product;
   size: string | undefined;
   color: string | undefined;
-  createdAt: string;
+  addedToCartAt: string;
 }
 
 export interface OrderItem {

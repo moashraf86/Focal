@@ -4,54 +4,68 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useWindowSize } from "@uidotdev/usehooks";
+
+// carousel data
+const carouselData = [
+  {
+    title: "The First Waterproof Wristwatch",
+    slogan: "1926 At'Sea",
+    image: {
+      desktop: "/hero-1.webp",
+      mobile: "/hero-1-mobile.webp",
+    },
+    links: [
+      {
+        text: "Shop The Watch",
+        href: "/products/1926-at-sea-steel-green-turtle-vintage?size=39mm&color=3-Link",
+      },
+      {
+        text: "Shop The Collection",
+        href: "/faces/1926",
+      },
+    ],
+    align: "start",
+  },
+  {
+    title: "Limited Edition Frederique Constant",
+    slogan: "1988 Moonphase",
+    image: {
+      desktop: "/hero-2.webp",
+      mobile: "/hero-2-mobile.webp",
+    },
+    links: [
+      {
+        text: "Shop The Watch",
+        href: "/products/1988-moonphase",
+      },
+    ],
+    align: "start",
+  },
+  {
+    title: "Women's Collection",
+    slogan: "New In",
+    image: {
+      desktop: "/hero-3.webp",
+      mobile: "/hero-3-mobile.webp",
+    },
+    links: [
+      {
+        text: "Shop The Watch",
+        href: "/products/1969-petite-rose-gold-blue-sunray?size=32mm&color=Mesh%20Rose%20Gold",
+      },
+    ],
+    align: "start",
+  },
+];
 
 export default function HeroCarousel() {
-  // carousel data
-  const carouselData = [
-    {
-      title: "The First Waterproof Wristwatch",
-      slogan: "1926 At'Sea",
-      image: "/hero-2.webp",
-      links: [
-        {
-          text: "Shop The Watch",
-          href: "/products/1926-at-sea-steel-green-turtle-vintage?size=39mm&color=3-Link",
-        },
-        {
-          text: "Shop The Collection",
-          href: "/faces/1926",
-        },
-      ],
-      align: "start",
-    },
-    {
-      title: "Limited Edition Frederique Constant",
-      slogan: "1988 Moonphase",
-      image: "/hero-1.webp",
-      links: [
-        {
-          text: "Shop The Watch",
-          href: "/products/1988-moonphase",
-        },
-      ],
-      align: "start",
-    },
-    {
-      title: "Women's Collection",
-      slogan: "New In",
-      image: "/hero-3.webp",
-      links: [
-        {
-          text: "Shop The Watch",
-          href: "/products/1969-petite-rose-gold-blue-sunray?size=32mm&color=Mesh%20Rose%20Gold",
-        },
-      ],
-      align: "start",
-    },
-  ];
-
   const [activeIndex, setActiveIndex] = React.useState(0);
   const activeSlide = carouselData[activeIndex];
+
+  // Check if the screen is mobile
+  const { width } = useWindowSize();
+  const isMobile = width !== null && width < 768;
 
   const nextSlide = () =>
     setActiveIndex((activeIndex + 1) % carouselData.length);
@@ -109,7 +123,11 @@ export default function HeroCarousel() {
       {carouselData.map((_, index) => (
         <div key={index} className="absolute inset-0">
           <Image
-            src={carouselData[index].image}
+            src={
+              isMobile
+                ? carouselData[index].image.mobile
+                : carouselData[index].image.desktop
+            }
             alt={carouselData[index].title}
             className={cn(
               "absolute inset-0 object-cover transition-opacity duration-700 ease-in-out select-none",
@@ -143,7 +161,7 @@ export default function HeroCarousel() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-light uppercase text-primary-foreground max-w-[20ch]">
               {activeSlide.title}
             </h1>
-            <div className="flex gap-4 flex-wrap pointer-events-auto">
+            <div className="flex gap-4 flex-wrap pointer-events-auto max-w-min">
               {activeSlide.links.map((link, index) => (
                 <Button
                   key={activeIndex + link.text + index}
