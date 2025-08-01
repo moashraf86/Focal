@@ -49,7 +49,8 @@ export const addProductToCart = async (
   quantity: number,
   product: Product,
   color?: string,
-  size?: string
+  size?: string,
+  addedToCartAt?: string
 ) => {
   try {
     // Fetch existing cart for the user
@@ -131,6 +132,7 @@ export const addProductToCart = async (
               cart: cart.id,
               product: product.id,
               color: color,
+              addedToCartAt: addedToCartAt || new Date().toISOString(),
             },
           }),
         }

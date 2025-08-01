@@ -332,7 +332,7 @@ export function expandProducts(
 // Analyze product structure
 // =========================================
 export function analyzeProductStructure(product: Product) {
-  const sizes = Array.isArray(product.sizes) ? product.sizes : [];
+  const sizes = Array.isArray(product?.sizes) ? product?.sizes : [];
 
   // Check if we have actual sizes (non-null, non-empty values)
   const actualSizes = sizes.filter(
@@ -418,5 +418,5 @@ export function getProductImages(
   }
 
   // Fallback to product images
-  return product.images ?? [];
+  return product?.images ?? [];
 }

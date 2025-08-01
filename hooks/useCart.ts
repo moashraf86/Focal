@@ -23,7 +23,7 @@ const fetchCartItems = async (email: string | undefined) => {
     filters: { email: { $eq: email } },
     populate: {
       cart_items: {
-        fields: ["quantity", "size", "color", "createdAt"],
+        fields: ["quantity", "size", "color", "addedToCartAt"],
         populate: {
           product: {
             fields: ["name", "slug", "price"],
@@ -63,7 +63,11 @@ const fetchCartItems = async (email: string | undefined) => {
   }
 
   const data: StrapiResponse<Product> = await response.json();
-  return data.data[0]?.cart_items || [];
+  const sortedCartItems = data.data[0]?.cart_items.sort(
+    (a, b) =>
+      new Date(b.addedToCartAt).getTime() - new Date(a.addedToCartAt).getTime()
+  );
+  return sortedCartItems || [];
 };
 
 const fetcher = (email: string | undefined) => fetchCartItems(email);
@@ -133,7 +137,7 @@ export const useCart = () => {
           // add new item
           updatedCart.push({
             id: product.id,
-            createdAt: product.createdAt,
+            addedToCartAt: new Date().toISOString(),
             documentId: crypto.randomUUID(), // or use a uuid lib
             product,
             quantity,
@@ -141,6 +145,12 @@ export const useCart = () => {
             color,
           });
         }
+        // sort the cart items by addedToCartAt
+        updatedCart.sort(
+          (a, b) =>
+            new Date(b.addedToCartAt).getTime() -
+            new Date(a.addedToCartAt).getTime()
+        );
         saveToLocalStorage(updatedCart);
         mutate(swrKey, updatedCart, false);
         return;
