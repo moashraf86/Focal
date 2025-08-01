@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     domains: ["res.cloudinary.com"],
   },
   experimental: {
-    scrollRestoration: true,
+    scrollRestoration: false,
   },
 };
 
