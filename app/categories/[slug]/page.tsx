@@ -4,10 +4,8 @@ import {
   fetchProductsByCategory,
   fetchProductsByCategoryBase,
 } from "@/lib/data";
-import ProductList from "../../../components/product/ProductList";
-import Link from "next/link";
+import ProductList from "@/components/product/ProductList";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 import {
   expandProducts,
   getAllCollections,
@@ -19,14 +17,10 @@ import {
 } from "@/lib/helper";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
-// import { cache } from "react";
 import { Product } from "@/lib/definitions";
 import SmartPagination from "@/components/ui/smartPagination";
 import { notFound } from "next/navigation";
-
-// Cache data fetching functions
-// const getCachedCategories = cache(fetchCategories);
-// const getCachedProductsByCategoryBase = cache(fetchProductsByCategoryBase);
+import NavigationBar from "@/components/shared/NavigationBar";
 
 // Precompute filter options
 const computeFilterOptions = (products: Product[]) => {
@@ -220,49 +214,14 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           </h1>
         </div>
       </section>
-      {/* Categories Bar */}
-      <div className="border-b border-border">
-        <div className="container">
-          <div className="flex items-center justify-center gap-10">
-            <span className="sticky left-0 text-sm text-gray-500 uppercase font-semibold tracking-[1px]">
-              Shop
-            </span>
-            <nav className="max-w-full overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-proximity">
-              <ul className="grid grid-flow-col gap-10 min-w-max font-barlow pe-10">
-                <li className="py-5">
-                  <Link
-                    href="/categories"
-                    className={cn(
-                      "relative inline-block after:absolute after:w-full after:left-0 after:h-px after:bottom-0 after:content-[''] after:bg-black after:transition-transform after:duration-200 after:ease-in-out after:scale-x-0 hover:after:scale-x-100 after:origin-right hover:after:origin-left",
-                      {
-                        "after:scale-x-100 after:origin-left": slug === "all",
-                      }
-                    )}
-                  >
-                    All
-                  </Link>
-                </li>
-                {categories.map((category) => (
-                  <li key={category.documentId} className="py-5">
-                    <Link
-                      href={`/categories/${category.slug}`}
-                      className={cn(
-                        "relative inline-block after:absolute after:w-full after:left-0 after:h-px after:bottom-0 after:content-[''] after:bg-black after:transition-transform after:duration-200 after:ease-in-out after:scale-x-0 hover:after:scale-x-100 after:origin-right hover:after:origin-left",
-                        {
-                          "after:scale-x-100 after:origin-left":
-                            slug === category.slug,
-                        }
-                      )}
-                    >
-                      {category.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-        </div>
-      </div>
+      {/* Navigation Bar */}
+      <NavigationBar
+        title="Shop"
+        items={categories}
+        basePath="/categories"
+        currentSlug={slug}
+        showAll={true}
+      />
       <section className="container max-w-screen-xl py-10">
         <div className="grid grid-cols-2 mb-5 gap-4">
           <div className="flex items-center gap-10 col-span-1">

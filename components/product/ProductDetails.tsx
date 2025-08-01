@@ -11,7 +11,6 @@ import ProductSizeSelector from "./ProductSizeSelector";
 import ColorSelector from "./ColorSelector";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useProductVisibilityObserver } from "@/hooks/useProductVisibility";
-import useScrollToTop from "@/hooks/useScrollToTop";
 import {
   analyzeProductStructure,
   getColorsForSize,
@@ -95,9 +94,6 @@ export default function ProductDetails({
 
   // Get carousel images
   const carouselImages = getProductImages(product, selectedSize, selectedColor);
-
-  // Scroll to top
-  useScrollToTop();
 
   // Handle size change
   const handleSizeChange = (newSize: string) => {
