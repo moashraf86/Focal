@@ -10,10 +10,11 @@ export default function Loading() {
         <Skeleton className="h-4 w-[50px]" />
       </div>
 
+      {/* Product Carousel */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mb-20">
-        {/* Product Image */}
         <div className="w-full flex flex-col-reverse lg:flex-row gap-4 lg:col-span-7">
-          <div className="grid grid-flow-col auto-cols-fr sm:auto-cols-max gap-2 p-2 lg:flex lg:flex-col">
+          {/* Product Indicators */}
+          <div className="hidden md:grid grid-flow-col auto-cols-fr sm:auto-cols-max gap-2 p-2 lg:flex lg:flex-col">
             {Array.from({ length: 5 }).map((_, index) => (
               <Skeleton
                 key={index}
@@ -21,12 +22,13 @@ export default function Loading() {
               />
             ))}
           </div>
+          {/* Product Image */}
           <Skeleton className="w-full aspect-auto px-[50%] py-[62%] lg:p-0" />
         </div>
         {/* Product Info */}
         <div className="space-y-6 lg:col-span-5">
           {/* Title */}
-          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-[90%]" />
           {/* Price */}
           <Skeleton className="h-8 w-32" />
           {/* Rating */}
@@ -36,12 +38,21 @@ export default function Loading() {
           </div>
           {/* Divider */}
           <div className="border-b border-border" />
-          {/* Variant */}
+          {/* Size Selector */}
           <div className="space-y-2">
-            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-32" />
             <div className="flex items-center gap-2">
               <Skeleton className="h-12 w-20" />
               <Skeleton className="h-12 w-20" />
+            </div>
+          </div>
+          {/* Color Selector */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <div className="flex items-center gap-2">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Skeleton key={index} className="h-9 w-9" />
+              ))}
             </div>
           </div>
           {/* Quantity */}
@@ -52,10 +63,9 @@ export default function Loading() {
           {/* Buttons */}
           <div className="space-y-4">
             <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
           </div>
           {/* Accordion */}
-          <div className="space-y-2">
+          <div className="md:hidden space-y-2">
             <div className="flex justify-between items-center py-4 border-b border-border">
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-4 w-4" />

@@ -4,7 +4,7 @@ import ProductPrice from "./ProductPrice";
 import QuantitySelector from "../shared/QuantitySelector";
 import ProductActions from "./ProductActions";
 import { Product } from "@/lib/definitions";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import ProductCarousel from "./ProductCarousel";
 import ProductRating from "./ProductRating";
 import ProductSizeSelector from "./ProductSizeSelector";
@@ -41,6 +41,7 @@ export default function ProductDetails({
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const isInitialLoad = useRef(true);
 
   // State variables
   const [resetCarousel, setResetCarousel] = useState(false);
@@ -121,6 +122,14 @@ export default function ProductDetails({
 
     router.push(`?${params.toString()}`, { scroll: false });
   };
+
+  // Scroll to top on initial load
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      window.scrollTo({ top: 0, behavior: "instant" });
+      isInitialLoad.current = false;
+    }
+  }, []);
 
   // Update carousel when selection changes
   useEffect(() => {
