@@ -8,11 +8,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import ProductDetails from "@/components/product/ProductDetails";
-import RelatedProducts from "@/components/product/RelatedProducts";
 import ProductBanner from "@/components/product/ProductBanner";
 import FAQ from "@/components/shared/FAQ";
 import StickyProductSummary from "@/components/product/StickyProductSummry";
 import { ProductInfo } from "@/components/product/ProductInfo";
+import LazyRelatedProducts from "@/components/product/LazyRelatedProducts";
 
 // fetch product data
 async function getProductData(slug: string) {
@@ -74,7 +74,8 @@ export default async function Product({
       <ProductInfo product={product} />
       <StickyProductSummary product={product} />
       <ProductBanner product={product} />
-      <RelatedProducts
+      {/* Related Products */}
+      <LazyRelatedProducts
         categories={categoriesSlugs}
         face={product.faces[0]?.slug}
         product={product}
