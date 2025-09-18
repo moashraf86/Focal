@@ -11,7 +11,7 @@ import { Trash } from "lucide-react";
 import CheckoutBox from "./CheckoutBox";
 import CartSkeleton from "./CartSkeleton";
 import Link from "next/link";
-import RelatedProducts from "../product/RelatedProducts";
+import LazyRelatedProducts from "../product/LazyRelatedProducts";
 
 export default function Cart() {
   //  fetch cart items
@@ -115,7 +115,7 @@ export default function Cart() {
           )}
         </div>
       </section>
-      <RelatedProducts categories={["men"]} face="1969" />
+      <LazyRelatedProducts categories={["men"]} face="1969" />
     </>
   );
 }
