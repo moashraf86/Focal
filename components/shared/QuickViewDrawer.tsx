@@ -111,7 +111,7 @@ export default function QuickViewDrawer({
                 alt={selectedImage?.hash || "Product image"}
                 width={65}
                 height={80}
-                quality={100}
+                quality={80}
                 className="object-cover object-center"
                 priority
               />
@@ -145,7 +145,7 @@ export default function QuickViewDrawer({
               alt={selectedImage?.hash || "Product image"}
               width={120}
               height={120}
-              quality={100}
+              quality={80}
               className="object-cover object-center"
               priority
             />

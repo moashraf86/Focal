@@ -55,7 +55,7 @@ export default function MenBanner({ product }: { product: Product }) {
               src={webBanner}
               alt="Product Banner"
               className="hidden lg:block absolute inset-0 object-cover object-center w-full h-full"
-              quality={100}
+              quality={80}
               width={2800}
               height={1400}
             />
@@ -64,7 +64,7 @@ export default function MenBanner({ product }: { product: Product }) {
               src={mobileBanner}
               alt="Product Banner"
               className="lg:hidden"
-              quality={100}
+              quality={80}
               width={1080}
               height={1080}
             />

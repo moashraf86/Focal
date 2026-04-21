@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import {
+  fetchAllFaceSlugs,
   fetchFaces,
   fetchProductsByFace,
   fetchProductsByFaceBase,
 } from "@/lib/data";
+
+export const dynamicParams = true;
 import ProductList from "@/components/product/ProductList";
 import Image from "next/image";
 import {
@@ -39,6 +42,12 @@ type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
+
+// Generate static params for the face page
+export async function generateStaticParams() {
+  const slugs = await fetchAllFaceSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 // Generate dynamic metadata for the face page
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -80,7 +89,7 @@ export default async function FacePage({ params, searchParams }: Props) {
       price_min ||
       price_max ||
       collection ||
-      (sort_by && sort_by !== "createdAt:desc")
+      (sort_by && sort_by !== "createdAt:desc"),
   );
 
   // Fetch base data (heavily cached)
@@ -107,7 +116,7 @@ export default async function FacePage({ params, searchParams }: Props) {
 
   // Precompute filter options from ALL face products (not just base/cached results)
   const { allSizes, allColors, allCollections } = computeFilterOptions(
-    allFaceProductsForFilters
+    allFaceProductsForFilters,
   );
 
   // Calculate pagination

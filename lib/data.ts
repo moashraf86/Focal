@@ -544,7 +544,7 @@ export async function fetchProductsByFaceBase(
     query,
     {
       tags: ["face-base"],
-      revalidate: 3600000, // 1 hour
+      revalidate: 3600, // 1 hour
     }
   );
 
@@ -599,7 +599,7 @@ export async function fetchProductsByFace(
     query,
     {
       tags: ["face-filtered"],
-      revalidate: 300000, // 5 minutes for filtered results
+      revalidate: 300, // 5 minutes for filtered results
     }
   );
 
@@ -700,4 +700,57 @@ export async function fetchFeaturedProducts(): Promise<{
   );
 
   return { products: response.data };
+}
+
+// Slug-only fetchers used by generateStaticParams
+
+export async function fetchAllProductSlugs(): Promise<string[]> {
+  const query = {
+    fields: ["slug"],
+    pagination: { limit: 1000, start: 0 },
+  };
+  try {
+    const response: StrapiResponse<Pick<Product, "slug">> = await fetchData(
+      "/products",
+      query,
+      { tags: ["products-base"], revalidate: 3600 }
+    );
+    return response.data.map((p) => p.slug);
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchAllCategorySlugs(): Promise<string[]> {
+  const query = {
+    fields: ["slug"],
+    pagination: { limit: 100, start: 0 },
+  };
+  try {
+    const response: StrapiResponse<Pick<Category, "slug">> = await fetchData(
+      "/categories",
+      query,
+      { tags: ["categories"], revalidate: 7200 }
+    );
+    return response.data.map((c) => c.slug);
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchAllFaceSlugs(): Promise<string[]> {
+  const query = {
+    fields: ["slug"],
+    pagination: { limit: 100, start: 0 },
+  };
+  try {
+    const response: StrapiResponse<Pick<Face, "slug">> = await fetchData(
+      "/faces",
+      query,
+      { tags: ["faces"], revalidate: 7200 }
+    );
+    return response.data.map((f) => f.slug);
+  } catch {
+    return [];
+  }
 }
