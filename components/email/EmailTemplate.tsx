@@ -139,6 +139,7 @@ export function EmailTemplate({
                                     }}
                                   >
                                     {selectedImage && (
+                                      // eslint-disable-next-line @next/next/no-img-element
                                       <img
                                         src={selectedImage.formats.small.url}
                                         alt={item.product.name}

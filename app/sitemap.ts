@@ -2,12 +2,15 @@ import type { MetadataRoute } from "next";
 import { fetchCategories, fetchFaces, fetchAllProducts } from "@/lib/data";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Fetch all categories, faces, and products
-  const [{ categories }, { faces }, { products }] = await Promise.all([
+  const [categoriesResult, facesResult, productsResult] = await Promise.allSettled([
     fetchCategories(),
     fetchFaces(),
     fetchAllProducts(),
   ]);
+
+  const categories = categoriesResult.status === "fulfilled" ? categoriesResult.value.categories : [];
+  const faces = facesResult.status === "fulfilled" ? facesResult.value.faces : [];
+  const products = productsResult.status === "fulfilled" ? productsResult.value.products : [];
 
   const baseUrl = "https://focal-mu.vercel.app";
 
