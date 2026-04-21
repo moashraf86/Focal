@@ -8,6 +8,7 @@ export default function RevalidateButton() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-revalidate-secret": process.env.NEXT_PUBLIC_REVALIDATE_SECRET ?? "",
       },
       body: JSON.stringify({
         tag: tag,

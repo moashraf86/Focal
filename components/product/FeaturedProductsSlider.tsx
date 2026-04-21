@@ -66,7 +66,8 @@ export default function FeaturedProductsSlider({
                 src={product.featuredBannerImg.url}
                 alt={product.featuredBannerImg.alternativeText}
                 fill
-                quality={100}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                quality={80}
                 className="object-cover object-center"
               />
             )}

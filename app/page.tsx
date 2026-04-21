@@ -1,4 +1,6 @@
 import Carousel from "@/components/layout/HeroCarousel";
+
+export const revalidate = 3600;
 import Categories from "@/components/layout/Categories";
 import WhyChooseUs from "@/components/shared/WhyChooseUs";
 import BestsellingSection from "@/components/layout/BestsellingSection";

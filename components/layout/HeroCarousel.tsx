@@ -134,6 +134,8 @@ export default function HeroCarousel() {
               activeIndex === index ? "opacity-100" : "opacity-0"
             )}
             fill
+            sizes="100vw"
+            priority={index === 0}
             loading={index === 0 ? "eager" : "lazy"}
           />
         </div>

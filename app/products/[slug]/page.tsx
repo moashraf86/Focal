@@ -1,4 +1,7 @@
-import { fetchProductBySlug } from "@/lib/data";
+import { fetchAllProductSlugs, fetchProductBySlug } from "@/lib/data";
+
+export const revalidate = 3600;
+export const dynamicParams = true;
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,6 +16,12 @@ import FAQ from "@/components/shared/FAQ";
 import StickyProductSummary from "@/components/product/StickyProductSummry";
 import { ProductInfo } from "@/components/product/ProductInfo";
 import LazyRelatedProducts from "@/components/product/LazyRelatedProducts";
+import ScrollToTop from "@/components/product/ScrollToTop";
+
+export async function generateStaticParams() {
+  const slugs = await fetchAllProductSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 // fetch product data
 async function getProductData(slug: string) {
@@ -59,6 +68,7 @@ export default async function Product({
 
   return (
     <main>
+      <ScrollToTop />
       <Breadcrumb className="container max-w-screen-xl">
         <BreadcrumbList>
           <BreadcrumbItem>

@@ -57,7 +57,7 @@ export default function WomenBanner({ product }: { product: Product }) {
                 alt="Product Banner"
                 width={1800}
                 height={1800}
-                quality={100}
+                quality={80}
                 loading="lazy"
               />
             )}

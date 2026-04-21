@@ -69,7 +69,7 @@ export default function ProductHotspotCard({
               alt={product.images[0].alternativeText}
               width={product.images[0].formats.thumbnail.width}
               height={product.images[0].formats.thumbnail.height}
-              quality={100}
+              quality={80}
               className="object-cover object-center h-full w-full"
             />
           </div>

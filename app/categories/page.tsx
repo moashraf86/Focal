@@ -3,6 +3,8 @@ import {
   fetchAllProductsBase,
   fetchCategories,
 } from "@/lib/data";
+
+export const revalidate = 3600;
 import { Product } from "@/lib/definitions";
 import {
   expandProducts,

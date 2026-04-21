@@ -116,7 +116,7 @@ export default function SearchDrawer() {
                   alt={product.images[0].alternativeText}
                   width="96"
                   height="120"
-                  quality={100}
+                  quality={80}
                   className="object-cover aspect-[4/5]"
                   loading="lazy"
                 />

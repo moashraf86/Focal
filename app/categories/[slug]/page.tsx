@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import {
+  fetchAllCategorySlugs,
   fetchCategories,
   fetchProductsByCategory,
   fetchProductsByCategoryBase,
 } from "@/lib/data";
+
+export const dynamicParams = true;
 import ProductList from "@/components/product/ProductList";
 import Image from "next/image";
 import {
@@ -39,6 +42,11 @@ type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
+
+export async function generateStaticParams() {
+  const slugs = await fetchAllCategorySlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 // Generate dynamic metadata for the category page
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

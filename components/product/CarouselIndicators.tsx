@@ -42,7 +42,7 @@ export default function CarouselIndicators({
               src={images[index].formats?.small?.url || images[index].url}
               alt={images[index].alternativeText || "Indicator image"}
               fill
-              quality={100}
+              quality={80}
               className="object-cover object-center"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
