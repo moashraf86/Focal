@@ -29,7 +29,7 @@ export default function ProductCarousel({
   const [current, setCurrent] = useState<number>(0);
   const imageRef = useRef<HTMLImageElement>(null);
   const [indicatorsMaxHeight, setIndicatorsMaxHeight] = useState<number>(
-    imageRef.current?.clientHeight || 0
+    imageRef.current?.clientHeight || 0,
   );
   const size = useWindowSize();
   const [fancyboxRef] = useFancybox({
@@ -114,7 +114,7 @@ export default function ProductCarousel({
       }}
       className={cn(
         "w-full flex flex-col-reverse lg:flex-row gap-4",
-        className
+        className,
       )}
       setApi={setApi}
     >
@@ -128,21 +128,31 @@ export default function ProductCarousel({
       <div className="relative w-full">
         <CarouselContent ref={fancyboxRef}>
           {images.map((image, index) => (
-            <CarouselItem key={index} ref={imageRef}>
+            <CarouselItem
+              key={index}
+              ref={imageRef}
+              className="w-full aspect-square"
+            >
               <div
-                className="relative"
+                className="relative w-full h-full bg-muted animate-pulse"
                 onClick={handleImageClick}
                 onMouseMove={handleMouseMove}
               >
                 <Image
                   src={image.url}
                   alt={image.alternativeText || "Product image"}
-                  height={500}
-                  width={500}
-                  className="object-cover object-center aspect-auto w-full h-full"
+                  fill
+                  className="object-cover object-center aspect-auto w-full h-full opacity-0 transition-opacity duration-300"
+                  onLoad={(e) => {
+                    e.currentTarget.classList.remove("opacity-0");
+                    e.currentTarget
+                      .closest("div")
+                      ?.classList.remove("animate-pulse");
+                  }}
                   quality={90}
                   sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw"
                   loading={index === 0 ? "eager" : "lazy"}
+                  priority={index === 0}
                 />
               </div>
             </CarouselItem>
