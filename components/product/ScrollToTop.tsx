@@ -1,7 +1,14 @@
 "use client";
-import useScrollToTop from "@/hooks/useScrollToTop";
+
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 export default function ScrollToTop() {
-  useScrollToTop();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [pathname]);
+
   return null;
 }

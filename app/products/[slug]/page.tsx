@@ -17,6 +17,8 @@ import StickyProductSummary from "@/components/product/StickyProductSummry";
 import { ProductInfo } from "@/components/product/ProductInfo";
 import LazyRelatedProducts from "@/components/product/LazyRelatedProducts";
 import ScrollToTop from "@/components/product/ScrollToTop";
+import { Suspense } from "react";
+import ProductDetailsSkeleton from "@/components/product/ProductDetailsSkeleton";
 
 export async function generateStaticParams() {
   const slugs = await fetchAllProductSlugs();
@@ -80,7 +82,9 @@ export default async function Product({
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <ProductDetails product={product} />
+      <Suspense fallback={<ProductDetailsSkeleton />}>
+        <ProductDetails product={product} />
+      </Suspense>
       <ProductInfo product={product} />
       <StickyProductSummary product={product} />
       <ProductBanner product={product} />
