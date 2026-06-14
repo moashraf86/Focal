@@ -15,7 +15,7 @@ export default function Logo({ className }: { className?: string }) {
         src="/logo.avif"
         width={96}
         height={20}
-        quality={100}
+        quality={80}
         className={cn("object-scale-down object-center")}
       />
     </Link>

@@ -4,7 +4,6 @@ import {
   fetchCategories,
 } from "@/lib/data";
 
-export const revalidate = 3600;
 import { Product } from "@/lib/definitions";
 import {
   expandProducts,
@@ -49,7 +48,7 @@ const computeFilterOptions = (products: Product[]) => {
     // Check if product collections contain slug "strap" or "gift-set"
     const hasStrapOrGiftSetCollection = product.collections?.some(
       (collection) =>
-        collection.slug === "strap" || collection.slug === "gift-set"
+        collection.slug === "strap" || collection.slug === "gift-set",
     );
 
     // Return empty array if it's a strap/gift-set product OR if sizes is undefined/null
@@ -66,7 +65,7 @@ const computeFilterOptions = (products: Product[]) => {
 
   const allColorsData = allSizesData.flatMap((size) => size?.colors || []);
   const allCollectionsData = products.flatMap(
-    (product) => product.collections || []
+    (product) => product.collections || [],
   );
 
   return {
@@ -89,7 +88,7 @@ export default async function Categories({ searchParams }: Props) {
       price_min ||
       price_max ||
       collection ||
-      (sort_by && sort_by !== "createdAt:desc")
+      (sort_by && sort_by !== "createdAt:desc"),
   );
 
   // Fetch base data (heavily cached) - this is for the paginated display
@@ -105,7 +104,7 @@ export default async function Categories({ searchParams }: Props) {
 
   // Precompute filter options from ALL products (not just paginated results)
   const { allSizes, allColors, allCollections } = computeFilterOptions(
-    allProductsForFilters
+    allProductsForFilters,
   );
 
   // Calculate pagination

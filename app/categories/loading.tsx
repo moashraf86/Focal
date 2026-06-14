@@ -28,7 +28,7 @@ const categories = [
   },
 ];
 
-export default async function Loading() {
+export default function Loading() {
   return (
     <main>
       {/* Banner image */}
