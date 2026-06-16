@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cacheLife } from "next/cache";
 import {
   fetchAllCategorySlugs,
   fetchCategories,
@@ -6,7 +7,6 @@ import {
   fetchProductsByCategoryBase,
 } from "@/lib/data";
 
-export const dynamicParams = true;
 import ProductList from "@/components/product/ProductList";
 import Image from "next/image";
 import {
@@ -23,7 +23,9 @@ import ProductsFilter from "@/components/product/ProductsFilter";
 import { Product } from "@/lib/definitions";
 import SmartPagination from "@/components/ui/smartPagination";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import NavigationBar from "@/components/shared/NavigationBar";
+import Loading from "./loading";
 
 // Precompute filter options
 const computeFilterOptions = (products: Product[]) => {
@@ -74,10 +76,66 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function CategoryPage({ params, searchParams }: Props) {
+export default function CategoryPage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <CategoryPageInner params={params} searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function CategoryPageInner({ params, searchParams }: Props) {
   const { slug } = await params;
   const { sort_by, size, color, price_min, price_max, collection, page } =
     await searchParams;
+
+  const { categories } = await fetchCategories();
+  const category = categories.find((c) => c.slug === slug);
+  if (!category) {
+    notFound();
+  }
+
+  return (
+    <CategoryContent
+      slug={slug}
+      sortBy={sort_by}
+      size={size}
+      color={color}
+      priceMin={price_min}
+      priceMax={price_max}
+      collection={collection}
+      page={page}
+    />
+  );
+}
+
+type ContentProps = {
+  slug: string;
+  sortBy?: string | string[];
+  size?: string | string[];
+  color?: string | string[];
+  priceMin?: string | string[];
+  priceMax?: string | string[];
+  collection?: string | string[];
+  page?: string | string[];
+};
+
+async function CategoryContent({
+  slug,
+  sortBy,
+  size,
+  color,
+  priceMin,
+  priceMax,
+  collection,
+  page,
+}: ContentProps) {
+  "use cache";
+  cacheLife("hours");
+
+  const sort_by = sortBy;
+  const price_min = priceMin;
+  const price_max = priceMax;
 
   const currentPage = page ? parseInt(page as string) : 1;
 
@@ -88,7 +146,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       price_min ||
       price_max ||
       collection ||
-      (sort_by && sort_by !== "createdAt:desc")
+      (sort_by && sort_by !== "createdAt:desc"),
   );
 
   // Fetch base data (heavily cached)
@@ -99,11 +157,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     ]);
 
   // Get current category
-  const category = categories.find((category) => category.slug === slug);
-
-  if (!category) {
-    notFound();
-  }
+  const category = categories.find((category) => category.slug === slug)!;
 
   // Fetch ALL products for this category (without any filters) for filter calculations
   // This ensures filters show all available options across the entire category dataset
@@ -116,7 +170,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   // Precompute filter options from ALL category products (not just base/cached results)
   const { allSizes, allColors, allCollections } = computeFilterOptions(
-    allCategoryProductsForFilters
+    allCategoryProductsForFilters,
   );
 
   // Calculate pagination

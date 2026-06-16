@@ -1,12 +1,15 @@
+import { cacheLife } from "next/cache";
 import Carousel from "@/components/layout/HeroCarousel";
 
-export const revalidate = 3600;
 import Categories from "@/components/layout/Categories";
 import WhyChooseUs from "@/components/shared/WhyChooseUs";
 import BestsellingSection from "@/components/layout/BestsellingSection";
 import { FeaturedSection } from "@/components/layout/FeaturedSection";
 
-export default function Home() {
+export default async function Home() {
+  "use cache";
+  cacheLife("hours");
+
   return (
     <main>
       <Carousel />

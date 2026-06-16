@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cacheLife } from "next/cache";
 import {
   fetchAllFaceSlugs,
   fetchFaces,
@@ -6,7 +7,6 @@ import {
   fetchProductsByFaceBase,
 } from "@/lib/data";
 
-export const dynamicParams = true;
 import ProductList from "@/components/product/ProductList";
 import Image from "next/image";
 import {
@@ -21,9 +21,11 @@ import {
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { Product } from "@/lib/definitions";
 import SmartPagination from "@/components/ui/smartPagination";
 import NavigationBar from "@/components/shared/NavigationBar";
+import Loading from "./loading";
 
 // Precompute filter options
 const computeFilterOptions = (products: Product[]) => {
@@ -76,9 +78,59 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function FacePage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <FacePageInner params={params} searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function FacePageInner({ params, searchParams }: Props) {
   const { slug } = await params;
   const { sort_by, size, color, price_min, price_max, collection, page } =
     await searchParams;
+
+  return (
+    <FaceContent
+      slug={slug}
+      sortBy={sort_by}
+      size={size}
+      color={color}
+      priceMin={price_min}
+      priceMax={price_max}
+      collection={collection}
+      page={page}
+    />
+  );
+}
+
+type ContentProps = {
+  slug: string;
+  sortBy?: string | string[];
+  size?: string | string[];
+  color?: string | string[];
+  priceMin?: string | string[];
+  priceMax?: string | string[];
+  collection?: string | string[];
+  page?: string | string[];
+};
+
+async function FaceContent({
+  slug,
+  sortBy,
+  size,
+  color,
+  priceMin,
+  priceMax,
+  collection,
+  page,
+}: ContentProps) {
+  "use cache";
+  cacheLife("hours");
+
+  const sort_by = sortBy;
+  const price_min = priceMin;
+  const price_max = priceMax;
 
   const currentPage = page ? parseInt(page as string) : 1;
 

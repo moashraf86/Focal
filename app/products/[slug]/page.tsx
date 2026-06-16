@@ -1,7 +1,6 @@
+import { cacheLife } from "next/cache";
 import { fetchAllProductSlugs, fetchProductBySlug } from "@/lib/data";
 
-export const revalidate = 3600;
-export const dynamicParams = true;
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -59,6 +58,9 @@ export default async function Product({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  "use cache";
+  cacheLife("hours");
+
   const { slug } = await params;
   const product = await getProductData(slug);
 

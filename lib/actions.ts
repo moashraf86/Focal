@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { Address, CartItem, PaymentMethod, Product } from "./definitions";
 
 // [1] create cart entry
@@ -359,6 +359,6 @@ export const createOrder = async (data: {
     console.error("Error creating order:", error);
     throw error;
   } finally {
-    revalidateTag("orders");
+    updateTag("orders");
   }
 };

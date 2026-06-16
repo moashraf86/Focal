@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import Footer from "@/components/layout/Footer";
 import StoreFeatures from "@/components/shared/StoreFeatures";
@@ -37,13 +38,15 @@ export default function RootLayout({
     <ClerkProvider afterSignOutUrl="/sign-in">
       <html lang="en">
         <body className={`${barlow.className} antialiased`}>
-          <Header />
-          {children}
-          <StoreFeatures />
-          <Footer />
-          <QuickView />
-          <Toaster />
-          <SearchDrawer />
+          <Suspense fallback={null}>
+            <Header />
+            {children}
+            <StoreFeatures />
+            <Footer />
+            <QuickView />
+            <Toaster />
+            <SearchDrawer />
+          </Suspense>
         </body>
       </html>
     </ClerkProvider>

@@ -1,10 +1,9 @@
+import { cacheLife } from "next/cache";
 import {
   fetchAllProducts,
   fetchAllProductsBase,
   fetchCategories,
 } from "@/lib/data";
-
-export const revalidate = 3600;
 
 import { Product } from "@/lib/definitions";
 import {
@@ -17,6 +16,8 @@ import {
   getAvailableSizes,
 } from "@/lib/helper";
 import Image from "next/image";
+import { Suspense } from "react";
+import Loading from "./loading";
 import ProductList from "@/components/product/ProductList";
 import ProductSorting from "@/components/product/ProductSorting";
 import ProductsFilter from "@/components/product/ProductsFilter";
@@ -77,9 +78,56 @@ const computeFilterOptions = (products: Product[]) => {
   };
 };
 
-export default async function Categories({ searchParams }: Props) {
+export default function Categories({ searchParams }: Props) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <CategoriesInner searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function CategoriesInner({ searchParams }: Props) {
   const { sort_by, size, color, price_min, price_max, collection, page } =
     await searchParams;
+
+  return (
+    <CategoriesContent
+      sortBy={sort_by}
+      size={size}
+      color={color}
+      priceMin={price_min}
+      priceMax={price_max}
+      collection={collection}
+      page={page}
+    />
+  );
+}
+
+type ContentProps = {
+  sortBy?: string | string[];
+  size?: string | string[];
+  color?: string | string[];
+  priceMin?: string | string[];
+  priceMax?: string | string[];
+  collection?: string | string[];
+  page?: string | string[];
+};
+
+async function CategoriesContent({
+  sortBy,
+  size,
+  color,
+  priceMin,
+  priceMax,
+  collection,
+  page,
+}: ContentProps) {
+  "use cache";
+  cacheLife("hours");
+
+  const sort_by = sortBy;
+  const price_min = priceMin;
+  const price_max = priceMax;
 
   const currentPage = page ? parseInt(page as string) : 1;
 
