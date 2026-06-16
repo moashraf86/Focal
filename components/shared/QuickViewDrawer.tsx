@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import React, { useLayoutEffect, useMemo, useRef } from "react";
 import { useWindowSize } from "@uidotdev/usehooks";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { Product } from "@/lib/definitions";
@@ -62,7 +62,7 @@ export default function QuickViewDrawer({
   }, [availableColors, selectedColor, product]);
 
   // Set initial values when product changes
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (product) {
       updateState({
         selectedSize: currentSize,
@@ -70,8 +70,6 @@ export default function QuickViewDrawer({
         quantity: 1,
       });
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
   if (!product) return null;
@@ -118,6 +116,7 @@ export default function QuickViewDrawer({
               <div className="space-y-1">
                 <Link
                   href={`/products/${product.slug}`}
+                  onClick={onClose}
                   className="font-barlow capitalize hover:underline"
                 >
                   {product.name}
@@ -126,6 +125,7 @@ export default function QuickViewDrawer({
                   <ProductPrice price={product.price} />
                   <Link
                     href={`/products/${product.slug}?size=${selectedSize}&color=${selectedColor}`}
+                    onClick={onClose}
                     className="capitalize text-sm md:text-base font-barlow font-light underline underline-offset-2 decoration-primary/50 text-primary/70 hover:text-primary hover:decoration-primary"
                   >
                     View details
@@ -150,12 +150,13 @@ export default function QuickViewDrawer({
               priority
             />
             <div className="space-y-2">
-              <Link
-                href={`/products/${product.slug}`}
-                className="font-barlow font-light hover:underline underline-offset-2"
-              >
-                {product.name}
-              </Link>
+<Link
+              href={`/products/${product.slug}`}
+              onClick={onClose}
+              className="font-barlow font-light hover:underline underline-offset-2"
+            >
+              {product.name}
+            </Link>
               <ProductPrice price={product.price} />
             </div>
           </div>
@@ -224,6 +225,7 @@ export default function QuickViewDrawer({
           <div className="flex items-center justify-center">
             <Link
               href={href}
+              onClick={onClose}
               className="capitalize font-barlow hidden md:inline-block font-light underline text-primary/70 hover:text-primary"
             >
               View details

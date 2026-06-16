@@ -34,18 +34,6 @@ export function useQuickView() {
     return () => void listeners.delete(setState);
   }, []);
 
-  React.useLayoutEffect(() => {
-    if (memoryState.isOpen) {
-      memoryState = {
-        ...memoryState,
-        isOpen: false,
-        selectedSize: "",
-        selectedColor: "",
-        quantity: 1,
-      };
-    }
-  }, []);
-
   const updateState = (partial: Partial<QuickViewState>) => {
     memoryState = { ...memoryState, ...partial };
     listeners.forEach((listener) => listener(memoryState));

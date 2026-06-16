@@ -4,7 +4,7 @@ import { useQuickView } from "@/hooks/useQuickView";
 import QuickViewDrawer from "@/components/shared/QuickViewDrawer";
 
 export default function QuickView() {
-  const { isOpen, product, ...state } = useQuickView();
+  const { isOpen, product, closeQuickView } = useQuickView();
 
   if (!product) return null;
 
@@ -12,8 +12,7 @@ export default function QuickView() {
     <QuickViewDrawer
       isOpen={isOpen}
       product={product}
-      onClose={state.closeQuickView}
-      {...state}
+      onClose={closeQuickView}
     />
   );
 }
