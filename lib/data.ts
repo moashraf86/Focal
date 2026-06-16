@@ -96,7 +96,7 @@ const fetchData = async <T>(
   options: {
     tags?: string[];
     revalidate?: number | false;
-  } = {}
+  } = {},
 ): Promise<T> => {
   const queryString = qs.stringify(query, { encodeValuesOnly: true });
   const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${endpoint}?${queryString}`;
@@ -155,7 +155,7 @@ const buildFilters = (filters: filterType) => {
 
 // Fetch all products (base data - heavily cached)
 export async function fetchAllProductsBase(
-  page: number
+  page: number,
 ): Promise<{ products: Product[]; pagination: Pagination }> {
   const query = {
     sort: ["createdAt:desc"],
@@ -175,7 +175,7 @@ export async function fetchAllProductsBase(
     {
       tags: ["products-base"],
       revalidate: 3600, // 1 hour
-    }
+    },
   );
 
   const pagination = response.meta.pagination as unknown as Pagination;
@@ -185,7 +185,7 @@ export async function fetchAllProductsBase(
 
 // Fetch all products with filters (optimized)
 export async function fetchAllProducts(
-  filters: filterType = {}
+  filters: filterType = {},
 ): Promise<{ products: Product[]; pagination: Pagination }> {
   const { sort = "createdAt:desc", page, ...otherFilters } = filters;
 
@@ -223,7 +223,7 @@ export async function fetchAllProducts(
     {
       tags: ["products-filtered"],
       revalidate: 3600, // 1 hour for filtered results
-    }
+    },
   );
 
   // Create pagination object - if no pagination was requested, create a mock one
@@ -241,7 +241,7 @@ export async function fetchAllProducts(
 // Base fetch function for products by category (optimized)
 export async function fetchProductsByCategoryBase(
   slug: string | string[],
-  page: number
+  page: number,
 ): Promise<{ products: Product[]; pagination: Pagination }> {
   const query = {
     filters: {
@@ -268,7 +268,7 @@ export async function fetchProductsByCategoryBase(
     {
       tags: ["category-base"],
       revalidate: 3600, // 1 hour
-    }
+    },
   );
 
   const pagination = response.meta.pagination as unknown as Pagination;
@@ -278,7 +278,7 @@ export async function fetchProductsByCategoryBase(
 
 // Fetch by category (optimized)
 export async function fetchProductsByCategory(
-  filters: filterType = {}
+  filters: filterType = {},
 ): Promise<{ products: Product[]; pagination: Pagination }> {
   const { slug, sort = "createdAt:desc", page, ...otherFilters } = filters;
 
@@ -322,7 +322,7 @@ export async function fetchProductsByCategory(
     {
       tags: ["category-filtered"],
       revalidate: 3600, // 1 hour
-    }
+    },
   );
 
   const pagination = page
@@ -338,7 +338,7 @@ export async function fetchProductsByCategory(
 
 // Fetch product by slug (optimized)
 export async function fetchProductBySlug(
-  slug: string
+  slug: string,
 ): Promise<{ product: Product }> {
   const query = {
     filters: { slug: { $eq: slug } },
@@ -351,7 +351,7 @@ export async function fetchProductBySlug(
     {
       tags: ["product"],
       revalidate: 3600, // 1 hour
-    }
+    },
   );
 
   return { product: response.data[0] };
@@ -382,7 +382,7 @@ export async function searchProducts(queryText: string): Promise<Product[]> {
     {
       tags: ["search"],
       revalidate: 3600, // 1 hour for search results
-    }
+    },
   );
 
   return response.data;
@@ -423,7 +423,7 @@ export const fetchOrderById = async (id: string): Promise<Order> => {
       {
         tags: ["order"],
         revalidate: 3600, // 1 hour
-      }
+      },
     );
 
     return response.data;
@@ -492,7 +492,7 @@ export async function fetchCategories(): Promise<{ categories: Category[] }> {
     {
       tags: ["categories"],
       revalidate: 7200, // 2 hours - categories change infrequently
-    }
+    },
   );
 
   return { categories: response.data };
@@ -519,7 +519,7 @@ export async function fetchFaces(): Promise<{ faces: Face[] }> {
 // Fetch by face (optimized)
 export async function fetchProductsByFaceBase(
   slug: string | string[],
-  page: number
+  page: number,
 ): Promise<{ products: Product[]; pagination: Pagination }> {
   const query = {
     filters: {
@@ -545,7 +545,7 @@ export async function fetchProductsByFaceBase(
     {
       tags: ["face-base"],
       revalidate: 3600, // 1 hour
-    }
+    },
   );
 
   const pagination = response.meta.pagination as unknown as Pagination;
@@ -555,7 +555,7 @@ export async function fetchProductsByFaceBase(
 
 // Fetch by face (optimized with pagination support)
 export async function fetchProductsByFace(
-  filters: filterType = {}
+  filters: filterType = {},
 ): Promise<{ products: Product[]; pagination: Pagination }> {
   const { slug, sort = "createdAt:desc", page, ...otherFilters } = filters;
 
@@ -600,7 +600,7 @@ export async function fetchProductsByFace(
     {
       tags: ["face-filtered"],
       revalidate: 300, // 5 minutes for filtered results
-    }
+    },
   );
 
   // Create pagination object - if no pagination was requested, create a mock one
@@ -621,7 +621,7 @@ export async function fetchProductsByFace(
 const fetchStaticData = async <T>(
   endpoint: string,
   query: Record<string, unknown>,
-  tags: string[]
+  tags: string[],
 ): Promise<T> => {
   const queryString = qs.stringify(query);
   const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${endpoint}?${queryString}`;
@@ -656,7 +656,7 @@ const FEATURED_POPULATE = {
  * Fetch bestselling products for a specific gender (optimized for static)
  */
 export async function fetchBestsellingProducts(
-  gender: string
+  gender: string,
 ): Promise<{ products: Product[] }> {
   const query = {
     filters: {
@@ -670,7 +670,7 @@ export async function fetchBestsellingProducts(
   const response: StrapiResponse<Product> = await fetchStaticData(
     "/products",
     query,
-    ["bestselling-products"]
+    ["bestselling-products"],
   );
 
   return { products: response.data };
@@ -696,7 +696,7 @@ export async function fetchFeaturedProducts(): Promise<{
   const response: StrapiResponse<Product> = await fetchStaticData(
     "/products",
     query,
-    ["featured-products"]
+    ["featured-products"],
   );
 
   return { products: response.data };
@@ -713,7 +713,7 @@ export async function fetchAllProductSlugs(): Promise<string[]> {
     const response: StrapiResponse<Pick<Product, "slug">> = await fetchData(
       "/products",
       query,
-      { tags: ["products-base"], revalidate: 3600 }
+      { tags: ["products-base"], revalidate: 3600 },
     );
     return response.data.map((p) => p.slug);
   } catch {
@@ -730,7 +730,7 @@ export async function fetchAllCategorySlugs(): Promise<string[]> {
     const response: StrapiResponse<Pick<Category, "slug">> = await fetchData(
       "/categories",
       query,
-      { tags: ["categories"], revalidate: 7200 }
+      { tags: ["categories"], revalidate: 7200 },
     );
     return response.data.map((c) => c.slug);
   } catch {
@@ -747,7 +747,7 @@ export async function fetchAllFaceSlugs(): Promise<string[]> {
     const response: StrapiResponse<Pick<Face, "slug">> = await fetchData(
       "/faces",
       query,
-      { tags: ["faces"], revalidate: 7200 }
+      { tags: ["faces"], revalidate: 7200 },
     );
     return response.data.map((f) => f.slug);
   } catch {
