@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useWindowSize } from "@uidotdev/usehooks";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { Product } from "@/lib/definitions";
@@ -36,7 +36,7 @@ export default function QuickViewDrawer({
   const pathname = usePathname();
   const prevPathnameRef = useRef(pathname);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Store previous pathname in ref
     const prevPathname = prevPathnameRef.current;
     prevPathnameRef.current = pathname;

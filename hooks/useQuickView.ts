@@ -21,11 +21,29 @@ let memoryState: QuickViewState = {
 };
 
 export function useQuickView() {
-  const [state, setState] = React.useState<QuickViewState>(memoryState);
+  const [state, setState] = React.useState<QuickViewState>({
+    isOpen: false,
+    product: null,
+    selectedSize: "",
+    selectedColor: "",
+    quantity: 1,
+  });
 
   React.useEffect(() => {
     listeners.add(setState);
     return () => void listeners.delete(setState);
+  }, []);
+
+  React.useLayoutEffect(() => {
+    if (memoryState.isOpen) {
+      memoryState = {
+        ...memoryState,
+        isOpen: false,
+        selectedSize: "",
+        selectedColor: "",
+        quantity: 1,
+      };
+    }
   }, []);
 
   const updateState = (partial: Partial<QuickViewState>) => {
@@ -36,7 +54,7 @@ export function useQuickView() {
   const openQuickView = (
     product: Product,
     chosenSize: Size,
-    chosenColor?: Color | undefined
+    chosenColor?: Color | undefined,
   ) => {
     updateState({
       isOpen: true,
