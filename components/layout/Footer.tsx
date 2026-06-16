@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Logo from "../shared/Logo";
+import CopyrightYear from "../shared/CopyrightYear";
+import { Suspense } from "react";
 
 export default function Footer() {
   return (
@@ -147,7 +149,11 @@ export default function Footer() {
       {/* Copyright */}
       <div className="border-t border-gray-300 pt-8 mt-8 text-center">
         <p className="text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Focal. All rights reserved.
+          &copy;{" "}
+          <Suspense fallback={<span>2026</span>}>
+            <CopyrightYear />
+          </Suspense>{" "}
+          Focal. All rights reserved.
         </p>
       </div>
     </footer>
