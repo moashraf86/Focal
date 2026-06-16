@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState, useLayoutEffect } from "react";
 import { Color, Product, Size } from "@/lib/definitions";
 
 type QuickViewState = {
@@ -21,15 +21,11 @@ let memoryState: QuickViewState = {
 };
 
 export function useQuickView() {
-  const [state, setState] = React.useState<QuickViewState>({
-    isOpen: false,
-    product: null,
-    selectedSize: "",
-    selectedColor: "",
-    quantity: 1,
-  });
+  const [state, setState] = useState<QuickViewState>(() => ({
+    ...memoryState,
+  }));
 
-  React.useEffect(() => {
+  useLayoutEffect(() => {
     listeners.add(setState);
     return () => void listeners.delete(setState);
   }, []);
